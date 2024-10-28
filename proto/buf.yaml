@@ -1,0 +1,12 @@
+version: v1
+name: buf.build/hippocrat-dao/hippo-protocol
+deps:
+  - buf.build/googleapis/googleapis
+  - buf.build/cosmos/gogo-proto
+  - buf.build/cosmos/cosmos-sdk
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
