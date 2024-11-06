@@ -7,7 +7,7 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	"github.com/hippocrat-dao/hippo-protocol/app"
-	"github.com/hippocrat-dao/hippo-protocol/cmd/hippod/cmd"
+	"github.com/hippocrat-dao/hippo-protocol/hippod/cmd"
 )
 
 func main() {
