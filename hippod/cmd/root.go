@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/hippocrat-dao/hippo-protocol/app/params"
+	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/viper"
 
 	dbm "github.com/cometbft/cometbft-db"
@@ -39,7 +40,7 @@ var ChainID string
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// Set config for prefixes
-	app.SetConfig()
+	consensus.SetWalletPrefix()
 
 	encodingConfig := app.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
