@@ -39,8 +39,8 @@ var ChainID string
 // NewRootCmd creates a new root command for simd. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	// Set config for prefixes
-	consensus.SetWalletPrefix()
+	// Set config for wallet
+	consensus.SetWalletConfig()
 
 	encodingConfig := app.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
