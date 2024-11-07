@@ -13,11 +13,18 @@ const (
 	ConsensusNodePubkeyPrefix = AddrPrefix + "valconspub"
 )
 
-// Set prefix of address and pubkey for general, validator and consensus node
-func SetWalletPrefix() {
+const (
+	BIP44Purpose  = 44
+	BIP44CoinType = 0
+)
+
+// Set prefix of address and pubkey for general, validator and consensus node.
+//
+// Set BIP44 path purpose and coin type.
+func SetWalletConfig() {
 	config := sdk.GetConfig()
-	config.SetPurpose(44)
-	config.SetCoinType(0)
+	config.SetPurpose(BIP44Purpose)
+	config.SetCoinType(BIP44CoinType)
 	config.SetBech32PrefixForAccount(AddrPrefix, PubkeyPrefix)
 	config.SetBech32PrefixForValidator(ValidatorAddrPrefix, ValidatorPubkeyPrefix)
 	config.SetBech32PrefixForConsensusNode(ConsensusNodeAddrPrefix, ConsensusNodePubkeyPrefix)
