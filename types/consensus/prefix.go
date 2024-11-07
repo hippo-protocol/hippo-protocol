@@ -5,20 +5,21 @@ import (
 )
 
 const (
-	AccountAddressPrefix   = "hippo"
-	AccountPubKeyPrefix    = AccountAddressPrefix + "pub"
-	ValidatorAddressPrefix = AccountAddressPrefix + "valoper"
-	ValidatorPubKeyPrefix  = AccountAddressPrefix + "valoperpub"
-	ConsNodeAddressPrefix  = AccountAddressPrefix + "valcons"
-	ConsNodePubKeyPrefix   = AccountAddressPrefix + "valconspub"
+	AddrPrefix                = "hippo"
+	PubkeyPrefix              = AddrPrefix + "pub"
+	ValidatorAddrPrefix       = AddrPrefix + "valoper"
+	ValidatorPubkeyPrefix     = AddrPrefix + "valoperpub"
+	ConsensusNodeAddrPrefix   = AddrPrefix + "valcons"
+	ConsensusNodePubkeyPrefix = AddrPrefix + "valconspub"
 )
 
-func SetAddrPrefix() {
+// Set prefix of address and pubkey for general, validator and consensus node
+func SetWalletPrefix() {
 	config := sdk.GetConfig()
 	config.SetPurpose(44)
 	config.SetCoinType(0)
-	config.SetBech32PrefixForAccount(AccountAddressPrefix, AccountPubKeyPrefix)
-	config.SetBech32PrefixForValidator(ValidatorAddressPrefix, ValidatorPubKeyPrefix)
-	config.SetBech32PrefixForConsensusNode(ConsNodeAddressPrefix, ConsNodePubKeyPrefix)
+	config.SetBech32PrefixForAccount(AddrPrefix, PubkeyPrefix)
+	config.SetBech32PrefixForValidator(ValidatorAddrPrefix, ValidatorPubkeyPrefix)
+	config.SetBech32PrefixForConsensusNode(ConsensusNodeAddrPrefix, ConsensusNodePubkeyPrefix)
 	config.Seal()
 }

@@ -40,7 +40,7 @@ var ChainID string
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// Set config for prefixes
-	consensus.SetAddrPrefix()
+	consensus.SetWalletPrefix()
 
 	encodingConfig := app.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
