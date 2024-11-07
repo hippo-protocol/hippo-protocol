@@ -1,14 +1,11 @@
-package app
+package consensus
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 const (
-	AccountAddressPrefix = "hippo"
-)
-
-var (
+	AccountAddressPrefix   = "hippo"
 	AccountPubKeyPrefix    = AccountAddressPrefix + "pub"
 	ValidatorAddressPrefix = AccountAddressPrefix + "valoper"
 	ValidatorPubKeyPrefix  = AccountAddressPrefix + "valoperpub"
@@ -16,7 +13,7 @@ var (
 	ConsNodePubKeyPrefix   = AccountAddressPrefix + "valconspub"
 )
 
-func SetConfig() {
+func SetAddrPrefix() {
 	config := sdk.GetConfig()
 	config.SetPurpose(44)
 	config.SetCoinType(0)
