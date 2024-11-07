@@ -1,4 +1,4 @@
-package assets
+package consensus
 
 const (
 	MicroHippoDenom = "uhippo"

@@ -36,7 +36,7 @@ import (
 	"github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/hippocrat-dao/hippo-protocol/types/assets"
+	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
 )
 
@@ -191,7 +191,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	}
 	stakingGenState.Params.UnbondingTime = unbondingPeriod
 	stakingGenState.Params.MaxValidators = 50
-	stakingGenState.Params.BondDenom = assets.MicroHippoDenom
+	stakingGenState.Params.BondDenom = consensus.MicroHippoDenom
 	stakingGenState.Params.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
 	appState[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenState)
 
@@ -200,7 +200,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 		return nil, err
 	}
 	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(7, 2)) // 7% inflation
-	mintGenState.Params.MintDenom = assets.MicroHippoDenom
+	mintGenState.Params.MintDenom = consensus.MicroHippoDenom
 	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(3, 2) // 3%
 	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(7, 2)        // 7%
 	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(10, 2)       // 10%
@@ -219,7 +219,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 		return nil, err
 	}
 	minDepositTokens := sdk.TokensFromConsensusPower(100000, sdk.DefaultPowerReduction) // 100,000 HP
-	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(assets.MicroHippoDenom, minDepositTokens)}
+	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.MicroHippoDenom, minDepositTokens)}
 	maxDepositPeriod := 60 * 60 * 24 * 14 * time.Second // 14 days
 	govGenState.Params.MaxDepositPeriod = &maxDepositPeriod
 	votingPeriod := 60 * 60 * 24 * 3 * time.Second // 3 days (shortened voting period)
@@ -230,7 +230,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[crisistypes.ModuleName], &crisisGenState); err != nil {
 		return nil, err
 	}
-	crisisGenState.ConstantFee = sdk.NewCoin(assets.MicroHippoDenom, sdk.NewInt(1000000000000)) // Spend 1,000,000 HP for invariants check
+	crisisGenState.ConstantFee = sdk.NewCoin(consensus.MicroHippoDenom, sdk.NewInt(1000000000000)) // Spend 1,000,000 HP for invariants check
 	appState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
 	var slashingGenState slashingtypes.GenesisState
