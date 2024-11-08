@@ -10,4 +10,7 @@ const (
 	MicroHippoPrecision = int64(6)
 	MilliHippoPrecision = int64(3)
 	CentiHippoPrecision = int64(2)
+
+	DefaultHippoDenom     = AlphaHippoDenom
+	DefaultHippoPrecision = AlphaHippoPrecision
 )

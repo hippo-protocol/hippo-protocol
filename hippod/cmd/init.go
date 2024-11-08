@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"os"
 	"path/filepath"
 	"time"
@@ -189,9 +190,15 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[stakingtypes.ModuleName], &stakingGenState); err != nil {
 		return nil, err
 	}
+
+	err := sdk.RegisterDenom(consensus.DefaultHippoDenom, sdk.NewDecWithPrec(1, consensus.DefaultHippoPrecision))
+	if err != nil {
+		panic(err)
+	}
+
 	stakingGenState.Params.UnbondingTime = unbondingPeriod
 	stakingGenState.Params.MaxValidators = 50
-	stakingGenState.Params.BondDenom = consensus.MicroHippoDenom
+	stakingGenState.Params.BondDenom = consensus.DefaultHippoDenom
 	stakingGenState.Params.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
 	appState[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenState)
 
@@ -200,7 +207,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 		return nil, err
 	}
 	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(7, 2)) // 7% inflation
-	mintGenState.Params.MintDenom = consensus.MicroHippoDenom
+	mintGenState.Params.MintDenom = consensus.DefaultHippoDenom
 	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(3, 2) // 3%
 	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(7, 2)        // 7%
 	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(10, 2)       // 10%
@@ -218,8 +225,11 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[govtypes.ModuleName], &govGenState); err != nil {
 		return nil, err
 	}
-	minDepositTokens := sdk.TokensFromConsensusPower(100000, sdk.DefaultPowerReduction) // 100,000 HP
-	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.MicroHippoDenom, minDepositTokens)}
+	// apply custom power reduction for 'a' base denom unit 10^18
+	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(consensus.DefaultHippoPrecision), nil))
+
+	minDepositTokens := sdk.TokensFromConsensusPower(100_000, sdk.DefaultPowerReduction) // 100,000 HP
+	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.DefaultHippoDenom, minDepositTokens)}
 	maxDepositPeriod := 60 * 60 * 24 * 14 * time.Second // 14 days
 	govGenState.Params.MaxDepositPeriod = &maxDepositPeriod
 	votingPeriod := 60 * 60 * 24 * 3 * time.Second // 3 days (shortened voting period)
@@ -230,7 +240,8 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[crisistypes.ModuleName], &crisisGenState); err != nil {
 		return nil, err
 	}
-	crisisGenState.ConstantFee = sdk.NewCoin(consensus.MicroHippoDenom, sdk.NewInt(1000000000000)) // Spend 1,000,000 HP for invariants check
+	constantFee := sdk.TokensFromConsensusPower(1_000_000, sdk.DefaultPowerReduction)  // 1,000,000 HP
+	crisisGenState.ConstantFee = sdk.NewCoin(consensus.DefaultHippoDenom, constantFee) // Spend 1,000,000 HP for invariants check
 	appState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
 	var slashingGenState slashingtypes.GenesisState
