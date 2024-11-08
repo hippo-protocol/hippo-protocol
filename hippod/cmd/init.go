@@ -186,6 +186,9 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 // overrideGenesis overrides some parameters in the genesis doc to the hippo-specific values.
 func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map[string]json.RawMessage) (json.RawMessage, error) {
+	// apply custom power reduction for 'a' base denom unit 10^18
+	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(consensus.DefaultHippoPrecision), nil))
+
 	var stakingGenState stakingtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[stakingtypes.ModuleName], &stakingGenState); err != nil {
 		return nil, err
@@ -206,11 +209,11 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[minttypes.ModuleName], &mintGenState); err != nil {
 		return nil, err
 	}
-	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(7, 2)) // 7% inflation
+	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(25, 2)) // 25% inflation
 	mintGenState.Params.MintDenom = consensus.DefaultHippoDenom
-	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(3, 2) // 3%
-	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(7, 2)        // 7%
-	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(10, 2)       // 10%
+	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(20, 2) // 20%
+	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(0, 2)         // 0%
+	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(10, 2)        // 10%
 	mintGenState.Params.BlocksPerYear = uint64(60*60*24*365) / uint64(blockTimeSec)
 	appState[minttypes.ModuleName] = cdc.MustMarshalJSON(&mintGenState)
 
@@ -225,9 +228,6 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[govtypes.ModuleName], &govGenState); err != nil {
 		return nil, err
 	}
-	// apply custom power reduction for 'a' base denom unit 10^18
-	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(consensus.DefaultHippoPrecision), nil))
-
 	minDepositTokens := sdk.TokensFromConsensusPower(100_000, sdk.DefaultPowerReduction) // 100,000 HP
 	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.DefaultHippoDenom, minDepositTokens)}
 	maxDepositPeriod := 60 * 60 * 24 * 14 * time.Second // 14 days
