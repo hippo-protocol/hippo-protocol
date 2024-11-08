@@ -213,7 +213,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	mintGenState.Params.MintDenom = consensus.DefaultHippoDenom
 	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(20, 2) // 20%
 	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(0, 2)         // 0%
-	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(10, 2)        // 10%
+	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(25, 2)        // 25%
 	mintGenState.Params.BlocksPerYear = uint64(60*60*24*365) / uint64(blockTimeSec)
 	appState[minttypes.ModuleName] = cdc.MustMarshalJSON(&mintGenState)
 
