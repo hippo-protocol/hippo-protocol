@@ -98,7 +98,7 @@ func initAppConfig() (string, interface{}) {
 	}
 
 	srvCfg := serverconfig.DefaultConfig()
-	srvCfg.MinGasPrices = "5uhippo"
+	srvCfg.MinGasPrices = consensus.MinGasPrices
 
 	HippoAppConfig := CustomAppConfig{Config: *srvCfg}
 
