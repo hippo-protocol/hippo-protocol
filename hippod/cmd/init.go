@@ -210,7 +210,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	}
 	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(consensus.Minter, 2)) // 25% inflation
 	mintGenState.Params.MintDenom = consensus.DefaultHippoDenom
-	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(consensus.InflationRateChange, 2) // 20%
+	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(consensus.InflationRateChange, 2) // 25%
 	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(consensus.InflationMin, 2)               // 0%
 	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(consensus.InflationMax, 2)               // 25%
 	mintGenState.Params.BlocksPerYear = consensus.BlocksPerYear
