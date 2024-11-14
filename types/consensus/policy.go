@@ -3,7 +3,7 @@ package consensus
 import "time"
 
 const (
-	MinGasPrices    = "5uhippo"
+	MinGasPrices    = "5000000000000ahippo"
 	BlockTimeSec    = 6
 	UnbondingPeriod = 60 * 60 * 24 * 7 * 3 * time.Second
 	// staking
