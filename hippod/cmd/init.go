@@ -211,7 +211,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[distrtypes.ModuleName], &distrGenState); err != nil {
 		return nil, err
 	}
-	distrGenState.Params.CommunityTax = sdk.ZeroDec()
+	distrGenState.Params.CommunityTax = sdk.NewDecWithPrec(consensus.CommunityTax, 2)
 	appState[distrtypes.ModuleName] = cdc.MustMarshalJSON(&distrGenState)
 
 	var govGenState govv1types.GenesisState
