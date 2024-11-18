@@ -8,30 +8,27 @@ If you want to spin up a quick testnet with your friends, you can follow these s
 Unless otherwise noted, every step must be done by everyone who wants to participate
 in this testnet.
 
-1. From the root directory of the Cosmos SDK repository, run `$ make build`. This will build the
-   `hippod` binary inside a new `build` directory. The following instructions are run from inside
-   the `build` directory.
-2. If you've run `hippod` before, you may need to reset your database before starting a new
+1. If you've run `hippod` before, you may need to reset your database before starting a new
    testnet. You can reset your database with the following command: `$ rm -rf .hippo` from your
    Home(or User) directory.
-3. `$ ./hippod init hippo --chain-id hippo-1`. This will initialize a new working directory
+2. `$ go run hippod/main.go init hippo --chain-id hippo-1`. This will initialize a new working directory
    at the default location `~/.hippod`. You need to provide a "moniker" and a "chain id". These
    two names are "hippo" and "hippo-1" here.
-4. `$ ./hippod keys add alice`. This will create a new key, with a name of your choosing(for here, alice).
+3. `$ go run hippod/main.go keys add alice`. This will create a new key, with a name of your choosing(for here, alice).
    Save the output of this command somewhere; you'll need the address generated here later.
-5. `$ ./hippod genesis add-genesis-account alice 10000000000000000000000000ahippo`, where `key_name` is the same key name as
+4. `$ go run hippod/main.go genesis add-genesis-account alice 10000000000000000000000000ahippo`, where `key_name` is the same key name as
    before; and `10000000000000000000000000ahippo` is `amount`.
-6. `$ ./hippod genesis gentx alice 1000000000ahippo --chain-id hippo-1`. This will create the genesis
+5. `$ go run hippod/main.go genesis gentx alice 1000000000ahippo --chain-id hippo-1`. This will create the genesis
    transaction for your new chain. Here `amount` should be at least `1000000000ahippo`. If you
    provide too much or too little, you will encounter an error when starting your node.
-7. Now, one person needs to create the genesis file `genesis.json` using the genesis transactions
+6. Now, one person needs to create the genesis file `genesis.json` using the genesis transactions
    from every participant, by gathering all the genesis transactions under `config/gentx` and then
-   calling `$ ./hippod genesis collect-gentxs`. This will create a new `genesis.json` file that includes data
+   calling `$ go run hippod/main.go genesis collect-gentxs`. This will create a new `genesis.json` file that includes data
    from all the validators (we sometimes call it the "super genesis file" to distinguish it from
    single-validator genesis files).
-8. Once you've received the super genesis file, overwrite your original `genesis.json` file with
+7. Once you've received the super genesis file, overwrite your original `genesis.json` file with
    the new super `genesis.json`.
-9. Modify your `config/config.toml` (in the simapp working directory) to include the other participants as
+8. Modify your `config/config.toml` (in the simapp working directory) to include the other participants as
    persistent peers:
 
    ```text
@@ -39,10 +36,10 @@ in this testnet.
    persistent_peers = "[validator_address]@[ip_address]:[port],[validator_address]@[ip_address]:[port]"
    ```
 
-   You can find `validator_address` by running `$ ./hippod tendermint show-node-id`. The output will
+   You can find `validator_address` by running `$ go run hippod/main.go tendermint show-node-id`. The output will
    be the hex-encoded `validator_address`. The default `port` is 26656.
 
-10. Now you can start your nodes: `$ ./hippod start`.
+9. Now you can start your nodes: `$ go run hippod/main.go start`.
 
 Now you have a hippod testnet that you can use to try out changes to the Cosmos SDK or Tendermint!
 
