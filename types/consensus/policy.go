@@ -15,6 +15,8 @@ const (
 	InflationMin        = 0
 	InflationMax        = 25
 	BlocksPerYear       = uint64(60*60*24*365) / uint64(BlockTimeSec)
+	// distr
+	CommunityTax = 0
 	// gov
 	MinDepositTokens = 100_000
 	MaxDepositPeriod = 60 * 60 * 24 * 14 * time.Second
