@@ -18,7 +18,7 @@ in this testnet.
    Save the output of this command somewhere; you'll need the address generated here later.
 4. `$ go run hippod/main.go genesis add-genesis-account alice 10000000000000000000000000ahippo`, where `key_name` is the same key name as
    before; and `10000000000000000000000000ahippo` is `amount`.
-5. `$ go run hippod/main.go genesis gentx alice 1000000000ahippo --chain-id hippo-1`. This will create the genesis
+5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahippo --chain-id hippo-1`. This will create the genesis
    transaction for your new chain. Here `amount` should be at least `1000000000ahippo`. If you
    provide too much or too little, you will encounter an error when starting your node.
 6. Now, one person needs to create the genesis file `genesis.json` using the genesis transactions
