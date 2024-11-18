@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"os"
 	"path/filepath"
 
@@ -185,17 +184,9 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 // overrideGenesis overrides some parameters in the genesis doc to the hippo-specific values.
 func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map[string]json.RawMessage) (json.RawMessage, error) {
-	// apply custom power reduction for 'a' base denom unit 10^18
-	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(consensus.DefaultHippoPrecision), nil))
-
 	var stakingGenState stakingtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[stakingtypes.ModuleName], &stakingGenState); err != nil {
 		return nil, err
-	}
-
-	err := sdk.RegisterDenom(consensus.DefaultHippoDenom, sdk.NewDecWithPrec(1, consensus.DefaultHippoPrecision))
-	if err != nil {
-		panic(err)
 	}
 
 	stakingGenState.Params.UnbondingTime = unbondingPeriod
