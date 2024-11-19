@@ -8,7 +8,7 @@ const (
 	UnbondingPeriod = 60 * 60 * 24 * 7 * 3 * time.Second
 	// staking
 	MaxValidators     = 50
-	MinCommissionRate = 5
+	MinCommissionRate = 10
 	// mint
 	Minter              = 25
 	InflationRateChange = 25
