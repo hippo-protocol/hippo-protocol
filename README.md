@@ -8,9 +8,9 @@ If you want to spin up a quick testnet with your friends, you can follow these s
 Unless otherwise noted, every step must be done by everyone who wants to participate
 in this testnet.
 
-1. If you've run `hippod` before, you may need to reset your database before starting a new
-   testnet. You can reset your database with the following command: `$ rm -rf .hippo` from your
-   Home(or User) directory.
+1. If you've run `hippod` before, you may need to reset your genesis file and database before starting a new
+   testnet. You can do with the following command: `$ rm -rf .hippo` from your
+   Home(or User) directory. If you want to reset only database, just do `$ go run hippod/main.go tendermint unsafe-reset-all` in root dir.
 2. `$ go run hippod/main.go init hippo --chain-id hippo-1`. This will initialize a new working directory
    at the default location `~/.hippod`. You need to provide a "moniker" and a "chain id". These
    two names are "hippo" and "hippo-1" here.
@@ -19,7 +19,7 @@ in this testnet.
 4. `$ go run hippod/main.go genesis add-genesis-account alice 10000000000000000000000000ahippo`, where `key_name` is the same key name as
    before; and `10000000000000000000000000ahippo` is `amount`.
 5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahippo --chain-id hippo-1`. This will create the genesis
-   transaction for your new chain. Here `amount` should be at least `1000000000ahippo`. If you
+   transaction for your new chain. Here `amount` should be at least `1000000000000000000ahippo`. If you
    provide too much or too little, you will encounter an error when starting your node.
 6. Now, one person needs to create the genesis file `genesis.json` using the genesis transactions
    from every participant, by gathering all the genesis transactions under `config/gentx` and then
