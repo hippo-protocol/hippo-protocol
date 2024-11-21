@@ -20,7 +20,7 @@ const (
 	// gov
 	MinDepositTokens = 100_000
 	MaxDepositPeriod = 60 * 60 * 24 * 14 * time.Second
-	VotingPeriod     = 60 * 60 * 24 * 3 * time.Second
+	VotingPeriod     = 60 * 60 * 24 * 14 * time.Second
 	// crisis
 	ConstantFee = 1_000_000
 	// slashing
