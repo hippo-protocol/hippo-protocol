@@ -218,7 +218,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[govtypes.ModuleName], &govGenState); err != nil {
 		return nil, err
 	}
-	minDepositTokens := sdk.TokensFromConsensusPower(consensus.MinDepositTokens, sdk.DefaultPowerReduction) // 100,000 HP
+	minDepositTokens := sdk.TokensFromConsensusPower(consensus.MinDepositTokens, sdk.DefaultPowerReduction) // 50,000 HP
 	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.DefaultHippoDenom, minDepositTokens)}
 	maxDepositPeriod := consensus.MaxDepositPeriod // 14 days
 	govGenState.Params.MaxDepositPeriod = &maxDepositPeriod

@@ -18,7 +18,7 @@ const (
 	// distr
 	CommunityTax = 0
 	// gov
-	MinDepositTokens = 100_000
+	MinDepositTokens = 50_000
 	MaxDepositPeriod = 60 * 60 * 24 * 14 * time.Second
 	VotingPeriod     = 60 * 60 * 24 * 14 * time.Second
 	// crisis
