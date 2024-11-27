@@ -230,7 +230,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[crisistypes.ModuleName], &crisisGenState); err != nil {
 		return nil, err
 	}
-	constantFee := sdk.TokensFromConsensusPower(consensus.ConstantFee, sdk.DefaultPowerReduction) // 1,000,000 HP
+	constantFee := sdk.TokensFromConsensusPower(consensus.ConstantFee, sdk.DefaultPowerReduction) // 100,000 HP
 	crisisGenState.ConstantFee = sdk.NewCoin(consensus.DefaultHippoDenom, constantFee)            // Spend 1,000,000 HP for invariants check
 	appState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
