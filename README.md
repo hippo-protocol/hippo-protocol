@@ -8,16 +8,16 @@ If you want to spin up a quick testnet with your friends, you can follow these s
 Unless otherwise noted, every step must be done by everyone who wants to participate
 in this testnet.
 
-1. If you've run `hippod` before, you may need to reset your genesis file and database before starting a new
+1. If you've run `hippod` before, you may need to reset your genesis file(including gentx) and database before starting a new
    testnet. You can do with the following command: `$ rm -rf .hippo` from your
    Home(or User) directory. If you want to reset only database, just do `$ go run hippod/main.go tendermint unsafe-reset-all` in root dir.
 2. `$ go run hippod/main.go init hippo --chain-id hippo-1`. This will initialize a new working directory
    at the default location `~/.hippod`. You need to provide a "moniker" and a "chain id". These
-   two names are "hippo" and "hippo-1" here.
+   two names are "hippo" and "hippo-1" here. If you want to overwrite just genesis file(not including gentx), add `--overwrite` flag.
 3. `$ go run hippod/main.go keys add alice`. This will create a new key, with a name of your choosing(for here, alice).
    Save the output of this command somewhere; you'll need the address generated here later.
-4. `$ go run hippod/main.go genesis add-genesis-account alice 10000000000000000000000000ahippo`, where `key_name` is the same key name as
-   before; and `10000000000000000000000000ahippo` is `amount`.
+4. `$ go run hippod/main.go genesis add-genesis-account alice 1084734273380000000000000000ahippo`, where `key_name` is the same key name as
+   before; and `1084734273380000000000000000ahippo` is `amount`.
 5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahippo --chain-id hippo-1`. This will create the genesis
    transaction for your new chain. Here `amount` should be at least `1000000000000000000ahippo`. If you
    provide too much or too little, you will encounter an error when starting your node.
