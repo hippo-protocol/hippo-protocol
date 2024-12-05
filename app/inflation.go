@@ -12,26 +12,43 @@ import (
 // It can be used to specify a custom inflation calculation logic, instead of relying on the
 // default logic provided by the sdk.
 func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio sdk.Dec) sdk.Dec {
-	// The target annual inflation rate is recalculated for each previsions cycle. The
-	// inflation is also subject to a rate change (positive or negative) depending on
-	// the distance from the desired ratio (67%). The maximum rate change possible is
-	// defined to be 13% per year, however the annual inflation is capped as between
-	// 7% and 20%.
+	//	targetSupply <- genesisSupply
+	//	targetInflatedToken <- firstYearInflatedToken
+	//	currentYear <- 1 + floor(currentBlockHeight / BlocksPerYear)
+	//
+	//	for i <-1 to currentYear do
+	//		if i % 2 = 1 and i != 1 then
+	//			targetInflatedToken <- targetInflatedToken / 2
+	//		end
+	//		targetSupply <- targetSupply + targetInflatedToken
+	//	end
+	//
+	//	inflation <- targetInflatedToken / (targetSupply - targetInflatedToken)
 
-	// (1 - bondedRatio/GoalBonded) * InflationRateChange
-	inflationRateChangePerYear := math.LegacyOneDec().
-		Sub(bondedRatio.Quo(params.GoalBonded)).
-		Mul(params.InflationRateChange)
-	inflationRateChange := inflationRateChangePerYear.Quo(math.LegacyNewDec(int64(params.BlocksPerYear)))
+	genesisSupply := int64(1_084_734_273)
+	firstYearInflatedToken := int64(271_183_568)
 
-	// adjust the new annual inflation for this next cycle
-	inflation := minter.Inflation.Add(inflationRateChange) // note inflationRateChange may be negative
+	targetSupply := genesisSupply
+	targetInflatedToken := firstYearInflatedToken
+	currentYear := 1 + (ctx.BlockHeight() / int64(params.BlocksPerYear))
+
+	for i := int64(1); i <= currentYear; i++ {
+		if i%2 == 1 && i != 1 {
+			targetInflatedToken /= 2
+		}
+		targetSupply += targetInflatedToken
+	}
+
+	inflation := math.LegacyNewDec(targetInflatedToken).Quo(math.LegacyNewDec(targetSupply).Sub(math.LegacyNewDec(targetInflatedToken)))
+
 	if inflation.GT(params.InflationMax) {
 		inflation = params.InflationMax
 	}
 	if inflation.LT(params.InflationMin) {
 		inflation = params.InflationMin
 	}
+
+	ctx.Logger().Info("INFLATION:::" + inflation.String())
 
 	return inflation
 }
