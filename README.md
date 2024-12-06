@@ -16,10 +16,10 @@ in this testnet.
    two names are "hippo" and "hippo-1" here. If you want to overwrite just genesis file(not including gentx), add `--overwrite` flag.
 3. `$ go run hippod/main.go keys add alice`. This will create a new key, with a name of your choosing(for here, alice).
    Save the output of this command somewhere; you'll need the address generated here later.
-4. `$ go run hippod/main.go genesis add-genesis-account alice 1084734273380000000000000000ahippo`, where `key_name` is the same key name as
-   before; and `1084734273380000000000000000ahippo` is `amount`.
-5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahippo --chain-id hippo-1`. This will create the genesis
-   transaction for your new chain. Here `amount` should be at least `1000000000000000000ahippo`. If you
+4. `$ go run hippod/main.go genesis add-genesis-account alice 1084734273380000000000000000ahp`, where `key_name` is the same key name as
+   before; and `1084734273380000000000000000ahp` is `amount`.
+5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahp --chain-id hippo-1`. This will create the genesis
+   transaction for your new chain. Here `amount` should be at least `1000000000000000000ahp`. If you
    provide too much or too little, you will encounter an error when starting your node.
 6. Now, one person needs to create the genesis file `genesis.json` using the genesis transactions
    from every participant, by gathering all the genesis transactions under `config/gentx` and then
