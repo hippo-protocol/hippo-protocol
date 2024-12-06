@@ -1,10 +1,10 @@
 package consensus
 
 const (
-	AlphaHippoDenom = "ahippo" // 10^-18
-	MicroHippoDenom = "uhippo" // 10^-6
-	MilliHippoDenom = "mhippo" // 10^-3
-	CentiHippoDenom = "chippo" // 10^-2
+	AlphaHippoDenom = "ahp" // 10^-18
+	MicroHippoDenom = "uhp" // 10^-6
+	MilliHippoDenom = "mhp" // 10^-3
+	CentiHippoDenom = "chp" // 10^-2
 
 	AlphaHippoPrecision = int64(18)
 	MicroHippoPrecision = int64(6)
