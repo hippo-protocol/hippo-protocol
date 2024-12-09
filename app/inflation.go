@@ -23,7 +23,10 @@ func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, para
 	//		targetSupply <- targetSupply + targetInflatedToken
 	//	end
 	//
-	//	inflation <- targetInflatedToken / (targetSupply - targetInflatedToken)
+	//	currentYearMinedBlock <- currentBlockHeight - ((currentYear-1) * BlocksPerYear))
+	//	equalizer <- 1 - ((currentYearMinedBlock-1) / BlocksPerYear)
+	//
+	//	inflation <- targetInflatedToken / (targetSupply - (targetInflatedToken * equalizer ))
 
 	genesisSupply := int64(1_084_734_273)
 	firstYearInflatedToken := int64(271_183_568)
@@ -39,7 +42,10 @@ func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, para
 		targetSupply += targetInflatedToken
 	}
 
-	inflation := math.LegacyNewDec(targetInflatedToken).Quo(math.LegacyNewDec(targetSupply).Sub(math.LegacyNewDec(targetInflatedToken)))
+	currentYearMinedBlock := ctx.BlockHeight() - ((currentYear - 1) * int64(params.BlocksPerYear))
+	equalizer := math.LegacyOneDec().Sub((math.LegacyNewDec(currentYearMinedBlock - 1)).Quo(math.LegacyNewDec(int64(params.BlocksPerYear))))
+
+	inflation := math.LegacyNewDec(targetInflatedToken).Quo(math.LegacyNewDec(targetSupply).Sub(math.LegacyNewDec(targetInflatedToken).Mul(equalizer)))
 
 	if inflation.GT(params.InflationMax) {
 		inflation = params.InflationMax
