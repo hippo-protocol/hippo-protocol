@@ -7,7 +7,7 @@ const (
 	BlockTimeSec    = 6
 	UnbondingPeriod = 60 * 60 * 24 * 7 * 3 * time.Second
 	// staking
-	MaxValidators     = 21
+	MaxValidators     = 22
 	MinCommissionRate = 10
 	// mint
 	Minter              = 25
