@@ -28,7 +28,7 @@ in this testnet.
    single-validator genesis files).
 7. Once you've received the super genesis file, overwrite your original `genesis.json` file with
    the new super `genesis.json`.
-8. Modify your `config/config.toml` (in the simapp working directory) to include the other participants as
+8. Modify your `config/config.toml` (in the `.hippo` working directory) to include the other participants as
    persistent peers:
 
    ```text
