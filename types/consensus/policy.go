@@ -25,7 +25,7 @@ const (
 	ConstantFee = 100_000
 	// slashing
 	SignedBlocksWindow      = 10_000
-	MinSignedPerWindow      = 5
+	MinSignedPerWindow      = 75
 	SlashFractionDoubleSign = 5
-	SlashFractionDowntime   = 0.01
+	SlashFractionDowntime   = 0
 )
