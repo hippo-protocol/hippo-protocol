@@ -99,18 +99,33 @@ impl Sdk for Hippo {
     }
 }
 
-fn main() {
-    let key_pair = Hippo::create_keypair();
-    let pubkey_to_did = Hippo::key_to_did(key_pair.pubkey.clone());
-    let did_to_pubkey = Hippo::did_to_key(pubkey_to_did.clone());
+#[cfg(test)]
+mod tests {
+    use super::*; // Bring the outer functions into the test module's scope
 
-    let data = String::from("data");
-    let sig = Hippo::sign(data.clone(), key_pair.privkey.clone());
-    let is_verified = Hippo::verify(data, sig.clone(), key_pair.pubkey.clone());
+    #[test]
+    fn test_did() {
+        // given
+        let key_pair = Hippo::create_keypair();
+        // when
+        let pubkey_to_did = Hippo::key_to_did(key_pair.pubkey.clone());
+        let did_to_pubkey = Hippo::did_to_key(pubkey_to_did.clone());
+        // then
+        assert_eq!(key_pair.pubkey, did_to_pubkey);
+        assert!(pubkey_to_did.id.starts_with("did:hp"));
+    }
 
-    println!("key_pair: {:?}", key_pair);
-    println!("did: {:?}", pubkey_to_did);
-    println!("pubkey: {:?}", did_to_pubkey);
-    println!("sig: {:?}", sig);
-    println!("is_verified: {:?}", is_verified)
+    #[test]
+    fn test_ecdsa() {
+        // given
+        let key_pair = Hippo::create_keypair();
+        let data = String::from("data");
+        // when
+        let sig = Hippo::sign(data.clone(), key_pair.privkey);
+        let is_verified = Hippo::verify(data, sig, key_pair.pubkey);
+        // then
+        assert!(is_verified);
+    }
 }
+
+fn main() {}
