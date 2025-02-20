@@ -5,11 +5,11 @@ order: 4
 
 # Upgrade Your Node
 
-This document describes the upgrade procedure of a `gaiad` full-node to a new version.
+This document describes the upgrade procedure of a `hippod` full-node to a new version.
 
 ## Cosmovisor
 
-The Cosmos SDK provides a convenient process manager that wraps around the `gaiad` binary and can automatically swap in new binaries upon a successful governance upgrade proposal. Cosmovisor is entirely optional but recommended. More information can be found in [cosmos.network docs](https://docs.cosmos.network/v0.45/run-node/cosmovisor.html) and [cosmos-sdk/cosmovisor/readme](https://github.com/cosmos/cosmos-sdk/blob/v0.47.11/tools/cosmovisor/README.md).
+The Cosmos SDK provides a convenient process manager that wraps around the `hippod` binary and can automatically swap in new binaries upon a successful governance upgrade proposal. Cosmovisor is entirely optional but recommended. More information can be found in [cosmos.network docs](https://docs.cosmos.network/v0.45/run-node/cosmovisor.html) and [cosmos-sdk/cosmovisor/readme](https://github.com/cosmos/cosmos-sdk/blob/v0.47.11/tools/cosmovisor/README.md).
 
 ### Setup
 
@@ -23,24 +23,24 @@ Set up the environment variables
 
 ```bash
 echo "# Setup Cosmovisor" >> ~/.profile
-echo "export DAEMON_NAME=gaiad" >> ~/.profile
-echo "export DAEMON_HOME=$HOME/.gaia" >> ~/.profile
+echo "export DAEMON_NAME=hippod" >> ~/.profile
+echo "export DAEMON_HOME=$HOME/.hippo" >> ~/.profile
 source ~/.profile
 ```
 
 Create the appropriate directories
 
 ```bash
-mkdir -p ~/.gaia/cosmovisor/upgrades
-mkdir -p ~/.gaia/cosmovisor/genesis/bin/
-cp $(which gaiad) ~/.gaia/cosmovisor/genesis/bin/
+mkdir -p ~/.hippo/cosmovisor/upgrades
+mkdir -p ~/.hippo/cosmovisor/genesis/bin/
+cp $(which hippod) ~/.hippo/cosmovisor/genesis/bin/
 
-# verify the setup. 
-# It should return the same version as gaiad
+# verify the setup.
+# It should return the same version as hippod
 cosmovisor version
 ```
 
-Now `gaiad` can start by running
+Now `hippod` can start by running
 
 ```bash
 cosmovisor start
@@ -48,7 +48,7 @@ cosmovisor start
 
 ### Preparing an Upgrade
 
-Cosmovisor will continually poll  the `$DAEMON_HOME/data/upgrade-info.json` for new upgrade instructions. When an upgrade is ready, node operators can download the new binary and place it under `$DAEMON_HOME/cosmovisor/upgrades/<name>/bin` where `<name>` is the URI-encoded name of the upgrade as specified in the upgrade module plan.
+Cosmovisor will continually poll the `$DAEMON_HOME/data/upgrade-info.json` for new upgrade instructions. When an upgrade is ready, node operators can download the new binary and place it under `$DAEMON_HOME/cosmovisor/upgrades/<name>/bin` where `<name>` is the URI-encoded name of the upgrade as specified in the upgrade module plan.
 
 It is possible to have Cosmovisor automatically download the new binary. To do this set the following environment variable.
 
@@ -58,10 +58,10 @@ export DAEMON_ALLOW_DOWNLOAD_BINARIES=true
 
 ## Manual Software Upgrade
 
-First, stop your instance of `gaiad`. Next, upgrade the software:
+First, stop your instance of `hippod`. Next, upgrade the software:
 
 ```bash
-cd gaia
+cd hippo
 git fetch --all && git checkout <new_version>
 make install
 ```
@@ -70,12 +70,10 @@ make install
 _NOTE_: If you have issues at this step, please check that you have the latest stable version of GO installed.
 :::
 
-See the [testnet repo](https://github.com/cosmos/testnets) for details on which version is needed for which public testnet, and the [Gaia release page](https://github.com/cosmos/Gaia/releases) for details on each release.
-
 Your full node has been cleanly upgraded! If there are no breaking changes then you can simply restart the node by running:
 
 ```bash
-gaiad start
+hippod start
 ```
 
 ## Upgrade Genesis File
@@ -88,12 +86,12 @@ To upgrade the genesis file, you can either fetch it from a trusted source or ex
 
 ### Fetching from a Trusted Source
 
-If you are joining the mainnet, fetch the genesis from the [mainnet repo](https://github.com/cosmos/launch). If you are joining a public testnet, fetch the genesis from the appropriate testnet in the [testnet repo](https://github.com/cosmos/testnets). Otherwise, fetch it from your trusted source.
+If you are joining the mainnet, fetch the genesis from the [mainnet repo](https://github.com/hippocrat-dao/hippo-protocol).
 
 Save the new genesis as `new_genesis.json`. Then replace the old `genesis.json` with `new_genesis.json`
 
 ```bash
-cd $HOME/.gaia/config
+cd $HOME/.hippo/config
 cp -f genesis.json new_genesis.json
 mv new_genesis.json genesis.json
 ```
@@ -105,8 +103,8 @@ Then, go to the [reset data](#reset-data) section.
 If you were running a node in the previous version of the network and want to build your new genesis locally from a state of this previous network, use the following command:
 
 ```bash
-cd $HOME/.gaia/config
-gaiad export --for-zero-height --height=<export-height> > new_genesis.json
+cd $HOME/.hippo/config
+hippod export --for-zero-height --height=<export-height> > new_genesis.json
 ```
 
 The command above take a state at a certain height `<export-height>` and turns it into a new genesis file that can be used to start a new network.
@@ -127,7 +125,7 @@ If the version <new_version> you are upgrading to is not breaking from the previ
 :::
 
 :::warning
-If you are running a **validator node** on the mainnet, always be careful when doing `gaiad unsafe-reset-all`. You should never use this command if you are not switching `chain-id`.
+If you are running a **validator node** on the mainnet, always be careful when doing `hippod unsafe-reset-all`. You should never use this command if you are not switching `chain-id`.
 :::
 
 ::: danger IMPORTANT
@@ -137,7 +135,7 @@ Make sure that every node has a unique `priv_validator.json`. Do not copy the `p
 First, remove the outdated files and reset the data. **If you are running a validator node, make sure you understand what you are doing before resetting**.
 
 ```bash
-gaiad unsafe-reset-all
+hippod unsafe-reset-all
 ```
 
 Your node is now in a pristine state while keeping the original `priv_validator.json` and `config.toml`. If you had any sentry nodes or full nodes setup before, your node will still try to connect to them, but may fail if they haven't also been upgraded.
@@ -147,5 +145,5 @@ Your node is now in a pristine state while keeping the original `priv_validator.
 If there are no breaking changes then you can simply restart the node by running:
 
 ```bash
-gaiad start
+hippod start
 ```

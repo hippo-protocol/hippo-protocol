@@ -14,7 +14,9 @@ To become delegators, Atom holders need to send a ["Delegate transaction"](./del
 For a practical guide on how to become a delegator, click [here](./delegator-guide-cli.md).
 
 ## Choosing a validator
+
 <!-- markdown-link-check-disable-next-line -->
+
 In order to choose their validators, delegators have access to a range of information directly in [Mintscan](https://mintscan.io/cosmos/validators) or other Cosmos block explorers.
 
 - **Validator's moniker**: Name of the validator candidate.
@@ -58,34 +60,6 @@ Our validator's staking pool represents 10% of the total stake, which means the 
 - Delegators' total revenue = `80% * 100` Atoms - Commission = 72 Atoms
 
 Then, each delegator in the staking pool can claim their portion of the delegators' total revenue.
-
-## Liquid Staking
-
-The Liquid Staking module enacts a safety framework and associated governance-controlled parameters to regulate the adoption of liquid staking.
-
-The LSM mitigates liquid staking risks by limiting the total amount of ATOM that can be liquid staked to a percentage of all staked ATOM. As an additional risk-mitigation feature, the LSM introduces a requirement that validators self-bond ATOM to be eligible for delegations from liquid staking providers or to be eligible to mint LSM tokens. This mechanism is called the “validator bond”, and is technically distinct from the current self-bond mechanism, but functions similarly.
-
-At the same time, the LSM introduces the ability for staked ATOM to be instantly liquid staked, without having to wait for the unbonding period.
-
-The LSM enables users to instantly liquid stake their staked ATOM, without having to wait the twenty-one day unbonding period. This is important, because a very large portion of the ATOM supply is currently staked. Liquid staking ATOM that is already staked incurs a switching cost in the form of three weeks’ forfeited staking rewards. The LSM eliminates this switching cost.
-
-A user would be able to visit any liquid staking provider that has integrated with the LSM and click a button to convert her staked ATOM to liquid staked ATOM. It would be as easy as liquid staking unstaked ATOM.
-
-Technically speaking, this is accomplished by using something called an “LSM share.” Using the liquid staking module, a user can tokenize their staked ATOM and turn it into LSM shares. LSM shares can be redeemed for underlying staked tokens and are transferable. After staked ATOM is tokenized it can be immediately transferred to a liquid staking provider in exchange for liquid staking tokens - without having to wait for the unbonding period.
-
-### Toggling the ability to tokenize shares
-
-Currently the liquid staking module facilitates the immediate conversion of staked assets into liquid staked tokens. Despite the many benefits that come with this capability, it does inadvertently negate a protective measure available via traditional staking, where an account can stake their tokens to render them illiquid in the event that their wallet is compromised (the attacker would first need to unbond, then transfer out the tokens).
-
-Tokenization obviates this potential recovery measure, as an attacker could tokenize and immediately transfer staked tokens to another wallet. So, as an additional protective measure, the staking module permit accounts to selectively disable the tokenization of their stake with the `DisableTokenizeShares` message.
-
-The `DisableTokenizeShares` message is exposed by the staking module and can be executed as follows:
-
-```sh
-gaiad tx staking disable-tokenize-shares --from mykey  
-```
-
-When tokenization is disabled, a lock is placed on the account, effectively preventing the tokenization of any delegations. Re-enabling tokenization would initiate the removal of the lock, but the process is not immediate. The lock removal is queued, with the lock itself persisting throughout the unbonding period. Following the completion of the unbonding period, the lock would be completely removed, restoring the account's ability to tokenize. For liquid staking protocols that enable the lock, this delay better positions the base layer to coordinate a recovery in the event of an exploit.
 
 ## Risks
 

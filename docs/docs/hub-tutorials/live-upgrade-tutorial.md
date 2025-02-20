@@ -9,38 +9,37 @@ governance process.
 1. Start the network and trigger upgrade
 
    ```bash
-   # start a gaia application full-node
-   $ gaiad start
+   # start a hippo application full-node
+   $ hippod start
 
    # set up the cli config
-   $ gaiad config chain-id testing
+   $ hippod config chain-id testing
 
    # create an upgrade governance proposal
-   $ gaiad tx gov submit-proposal  <path-to-proposal-json> --from <name-or-key>
-   
+   $ hippod tx gov submit-proposal  <path-to-proposal-json> --from <name-or-key>
+
    Where proposal json file contains MsgSoftwareUpgrade e.g.
    `{
-		"messages": [
-		 {
-		  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
-		  "authority":"cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn" ,
-		  "plan": {
-		   "name": "plan name",
-		   "height": "1000" ,
-		   "info": "proposal info" ,
-		   "upgraded_client_state": null
-		  }
-		 }
-		],
-		"metadata": "ipfs://CID",
-		"deposit": "10000000stake",
-		"title": "proposal title",
-		"summary": "proposal summary"
-	}`
-   
+   	"messages": [
+   	 {
+   	  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+   	  "authority":"cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn" ,
+   	  "plan": {
+   	   "name": "plan name",
+   	   "height": "1000" ,
+   	   "info": "proposal info" ,
+   	   "upgraded_client_state": null
+   	  }
+   	 }
+   	],
+   	"metadata": "ipfs://CID",
+   	"deposit": "10000000stake",
+   	"title": "proposal title",
+   	"summary": "proposal summary"
+   }`
 
    # once the proposal passes you can query the pending plan
-   $ gaiad query upgrade plan
+   $ hippod query upgrade plan
    ```
 
 2. Performing an upgrade
@@ -60,9 +59,9 @@ governance process.
    ```
 
    Note that the process will hang indefinitely (doesn't exit to avoid restart loops). So, you must
-   manually kill the process and replace it with a new binary. Do so now with `Ctrl+C` or `killall gaiad`.
+   manually kill the process and replace it with a new binary. Do so now with `Ctrl+C` or `killall hippod`.
 
-   In `gaia/app/app.go`, after `upgrade.Keeper` is initialized and set in the app, set the
+   In `hippo/app/app.go`, after `upgrade.Keeper` is initialized and set in the app, set the
    corresponding upgrade `Handler` with the correct `<plan-name>`:
 
    ```go
@@ -79,17 +78,17 @@ governance process.
    Now, compile the new binary and run the upgraded code to complete the upgrade:
 
    ```bash
-   # create a new binary of gaia with the added upgrade handler
+   # create a new binary of hippo with the added upgrade handler
    $ make install
 
    # Restart the chain using the new binary. You should see the chain resume from
    # the upgrade height:
    # `I[2019-11-05|12:48:15.184] applying upgrade <plan-name> at height: <desired-upgrade-height>      module=main`
-   $ gaiad start
+   $ hippod start
 
    # verify there is no pending plan
-   $ gaiad query upgrade plan
+   $ hippod query upgrade plan
 
    # verify you can query the block header of the completed upgrade
-   $ gaiad query upgrade applied <plan-name>
+   $ hippod query upgrade applied <plan-name>
    ```

@@ -83,7 +83,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: "img/banner.jpg",
+      image: "img/hub.jpg",
       docs: {
         sidebar: {
           autoCollapseCategories: true,
@@ -91,11 +91,11 @@ const config = {
         },
       },
       navbar: {
-        title: "Cosmos Hub",
+        title: "",
         hideOnScroll: false,
         logo: {
           alt: "Cosmos Hub Logo",
-          src: "img/hub.svg",
+          src: "img/image.png",
           href: "/",
           target: "_self",
         },
@@ -106,116 +106,20 @@ const config = {
             position: "right",
             items: [
               {
-                href: "https://github.com/cosmos/gaia",
+                href: "https://github.com/hippocrat-dao/hippo-protocol",
                 html: '<i class="fa-fw fa-brands fa-github"></i> Github',
               },
               {
-                href: "https://twitter.com/cosmoshub",
+                href: "https://x.com/hippocrat_io",
                 html: '<i class="fa-fw fa-brands fa-twitter"></i> Twitter',
               },
               {
-                href: "https://discord.gg/interchain",
+                href: "https://discord.com/invite/hpo",
                 html: '<i class="fa-fw fa-brands fa-discord"></i> Discord',
               },
-              {
-                href: "https://forum.cosmos.network/",
-                html: '<i class="fa-fw fa-regular fa-comments"></i> Forum',
-              },
-              {
-                href: "https://reddit.com/r/cosmosnetwork",
-                html: '<i class="fa-fw fa-brands fa-reddit"></i> Reddit',
-              },
-              {
-                href: "https://www.youtube.com/c/CosmosProject",
-                html: '<i class="fa-fw fa-brands fa-youtube"></i> YouTube',
-              },
-            ],
-          },
-          {
-            type: "docsVersionDropdown",
-            position: "left",
-            // versions not yet migrated to docusaurus
-            dropdownItemsAfter: [
-              {
-                href: "https://github.com/cosmos/gaia/tree/legacy-docs",
-                label: "Archive",
-                target: "_blank",
-              },
             ],
           },
         ],
-      },
-      footer: {
-        style: "dark",
-        links: [
-          {
-            items: [
-              {
-                html: `<a href="https://cosmos.network"><img src="/img/logo-bw-inverse.svg" alt="Cosmos Logo"></a>`,
-              },
-            ],
-          },
-          {
-            title: "Documentation",
-            items: [
-              {
-                label: "Cosmos SDK",
-                href: "https://docs.cosmos.network/",
-              },
-              {
-                label: "CometBFT",
-                href: "https://docs.cometbft.com/",
-              },
-              {
-                label: "IBC-Go",
-                href: "https://ibc.cosmos.network/",
-              },
-              {
-                label: "Interchain Security",
-                href: "https://cosmos.github.io/interchain-security/",
-              },
-            ],
-          },
-          {
-            title: "Community",
-            items: [
-              {
-                label: "Forum",
-                href: "https://forum.cosmos.network/",
-              },
-              {
-                label: "Discord",
-                href: "https://discord.gg/interchain",
-              },
-              {
-                label: "Reddit",
-                href: "https://reddit.com/r/cosmosnetwork",
-              },
-              {
-                label: "Blog",
-                href: "https://blog.cosmos.network/",
-              },
-            ],
-          },
-          {
-            title: "Social",
-            items: [
-              {
-                label: "Twitter",
-                href: "https://twitter.com/cosmoshub",
-              },
-              {
-                label: "Youtube",
-                href: "https://www.youtube.com/c/CosmosProject",
-              },
-              {
-                label: "Telegram",
-                href: "https://t.me/cosmosproject",
-              },
-            ],
-          },
-        ],
-        copyright: `This website is maintained by Interchain Foundation & Informal Systems. The contents and opinions of this website are those of Interchain Foundation & Informal Systems.`,
       },
       prism: {
         theme: lightCodeTheme,
