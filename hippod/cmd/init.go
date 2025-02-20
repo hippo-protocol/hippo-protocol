@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	cfg "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/libs/cli"
@@ -36,7 +35,7 @@ import (
 	"github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/hippocrat-dao/hippo-protocol/types/assets"
+	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
 )
 
@@ -52,8 +51,8 @@ const (
 
 	// FlagStakingBondDenom defines a flag to specify the staking token in the genesis file.
 	FlagStakingBondDenom = "staking-bond-denom"
-	blockTimeSec         = 6                                  // 5s of timeout_commit + 1s
-	unbondingPeriod      = 60 * 60 * 24 * 7 * 3 * time.Second // three weeks
+	blockTimeSec         = consensus.BlockTimeSec    // 5s of timeout_commit + 1s
+	unbondingPeriod      = consensus.UnbondingPeriod // three weeks
 )
 
 type printInfo struct {
@@ -189,40 +188,41 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[stakingtypes.ModuleName], &stakingGenState); err != nil {
 		return nil, err
 	}
+
 	stakingGenState.Params.UnbondingTime = unbondingPeriod
-	stakingGenState.Params.MaxValidators = 50
-	stakingGenState.Params.BondDenom = assets.MicroHippoDenom
-	stakingGenState.Params.MinCommissionRate = sdk.NewDecWithPrec(5, 2)
+	stakingGenState.Params.MaxValidators = consensus.MaxValidators
+	stakingGenState.Params.BondDenom = consensus.DefaultHippoDenom
+	stakingGenState.Params.MinCommissionRate = sdk.NewDecWithPrec(consensus.MinCommissionRate, 2)
 	appState[stakingtypes.ModuleName] = cdc.MustMarshalJSON(&stakingGenState)
 
 	var mintGenState minttypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[minttypes.ModuleName], &mintGenState); err != nil {
 		return nil, err
 	}
-	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(7, 2)) // 7% inflation
-	mintGenState.Params.MintDenom = assets.MicroHippoDenom
-	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(3, 2) // 3%
-	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(7, 2)        // 7%
-	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(10, 2)       // 10%
-	mintGenState.Params.BlocksPerYear = uint64(60*60*24*365) / uint64(blockTimeSec)
+	mintGenState.Minter = minttypes.InitialMinter(sdk.NewDecWithPrec(consensus.Minter, 2)) // 25% inflation
+	mintGenState.Params.MintDenom = consensus.DefaultHippoDenom
+	mintGenState.Params.InflationRateChange = sdk.NewDecWithPrec(consensus.InflationRateChange, 2) // 25%
+	mintGenState.Params.InflationMin = sdk.NewDecWithPrec(consensus.InflationMin, 2)               // 0%
+	mintGenState.Params.InflationMax = sdk.NewDecWithPrec(consensus.InflationMax, 2)               // 25%
+	mintGenState.Params.BlocksPerYear = consensus.BlocksPerYear
 	appState[minttypes.ModuleName] = cdc.MustMarshalJSON(&mintGenState)
 
 	var distrGenState distrtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[distrtypes.ModuleName], &distrGenState); err != nil {
 		return nil, err
 	}
-	distrGenState.Params.CommunityTax = sdk.ZeroDec()
+	distrGenState.Params.CommunityTax = sdk.NewDecWithPrec(consensus.CommunityTax, 2)
 	appState[distrtypes.ModuleName] = cdc.MustMarshalJSON(&distrGenState)
 
 	var govGenState govv1types.GenesisState
 	if err := cdc.UnmarshalJSON(appState[govtypes.ModuleName], &govGenState); err != nil {
 		return nil, err
 	}
-	minDepositTokens := sdk.TokensFromConsensusPower(100000, sdk.DefaultPowerReduction) // 100,000 HP
-	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(assets.MicroHippoDenom, minDepositTokens)}
-	maxDepositPeriod := 60 * 60 * 24 * 14 * time.Second // 14 days
+	minDepositTokens := sdk.TokensFromConsensusPower(consensus.MinDepositTokens, sdk.DefaultPowerReduction) // 50,000 HP
+	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.DefaultHippoDenom, minDepositTokens)}
+	maxDepositPeriod := consensus.MaxDepositPeriod // 14 days
 	govGenState.Params.MaxDepositPeriod = &maxDepositPeriod
-	votingPeriod := 60 * 60 * 24 * 3 * time.Second // 3 days (shortened voting period)
+	votingPeriod := consensus.VotingPeriod
 	govGenState.Params.VotingPeriod = &votingPeriod
 	appState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
@@ -230,17 +230,18 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	if err := cdc.UnmarshalJSON(appState[crisistypes.ModuleName], &crisisGenState); err != nil {
 		return nil, err
 	}
-	crisisGenState.ConstantFee = sdk.NewCoin(assets.MicroHippoDenom, sdk.NewInt(1000000000000)) // Spend 1,000,000 HP for invariants check
+	constantFee := sdk.TokensFromConsensusPower(consensus.ConstantFee, sdk.DefaultPowerReduction) // 100,000 HP
+	crisisGenState.ConstantFee = sdk.NewCoin(consensus.DefaultHippoDenom, constantFee)            // Spend 1,000,000 HP for invariants check
 	appState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
 	var slashingGenState slashingtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[slashingtypes.ModuleName], &slashingGenState); err != nil {
 		return nil, err
 	}
-	slashingGenState.Params.SignedBlocksWindow = 10000
-	slashingGenState.Params.MinSignedPerWindow = sdk.NewDecWithPrec(5, 2)
-	slashingGenState.Params.SlashFractionDoubleSign = sdk.NewDecWithPrec(5, 2) // 5%
-	slashingGenState.Params.SlashFractionDowntime = sdk.NewDecWithPrec(1, 4)   // 0.01%
+	slashingGenState.Params.SignedBlocksWindow = consensus.SignedBlocksWindow
+	slashingGenState.Params.MinSignedPerWindow = sdk.NewDecWithPrec(consensus.MinSignedPerWindow, 2)
+	slashingGenState.Params.SlashFractionDoubleSign = sdk.NewDecWithPrec(consensus.SlashFractionDoubleSign, 2) // 5%
+	slashingGenState.Params.SlashFractionDowntime = sdk.NewDecWithPrec(consensus.SlashFractionDowntime*100, 4) // 0.01%
 	appState[slashingtypes.ModuleName] = cdc.MustMarshalJSON(&slashingGenState)
 
 	// Override Tendermint consensus params: https://docs.tendermint.com/master/tendermint-core/using-tendermint.html#fields
