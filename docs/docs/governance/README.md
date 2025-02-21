@@ -9,11 +9,5 @@ This repository provides background information on these different kinds of prop
 
 ## Community
 
-Hippo Protocol governance is driven by the Hippo Protocol community, and much of the documentation in this repo was funded by the community fund itself in
-[Proposal 23](https://www.mintscan.io/cosmos/proposals/23) and [Proposal 63](https://www.mintscan.io/cosmos/proposals/63).
-Governance discussions happen in a number of places moderated by diverse community members, including:
-
-- [Forum](http://forum.cosmos.network/)
-- [Discord](https://discord.gg/interchain)
-- [Reddit](http://reddit.com/r/cosmosnetwork)
-- anywhere else you might interact with members of the Cosmos community!
+Hippo Protocol governance is driven by the Hippo Protocol community.
+Governance discussions happen in a number of places moderated by diverse community members

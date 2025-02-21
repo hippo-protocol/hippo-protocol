@@ -31,13 +31,14 @@ Enter proposal summary: Upgrade to v15
 Enter proposal details: <v15 upgrade changelog details>
 Enter proposal proposal forum url: /
 Enter proposal vote option context: Vote YES to support running this binary on the Hippo Protocol mainnet.
-Enter proposal deposit: 100001ahp
-Enter msg authority: cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn
+Enter proposal deposit: 1000000000000000000ahp
+Enter msg authority: hippo10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn
 ```
 
 In your `draft_proposal.json` populate the `height` with your desired upgrade height and populate the `info` field with additional information (must be a valid JSON string):
 
 ```json
+// example binary from gaia, cosmos mainnet.
 {
   "binaries": {
     "darwin/amd64": "https://github.com/cosmos/gaia/releases/download/v15.0.0/gaiad-v15.0.0-darwin-amd64?checksum=sha256:7157f03fbad4f53a4c73cde4e75454f4a40a9b09619d3295232341fec99ad138",

@@ -24,7 +24,7 @@ The state defined in the genesis file contains all the necessary information, li
 The `genesis_time` is defined at the top of the genesis file. It is a `UTC` timestamp that specifies when the blockchain is due to start. At this time, genesis validators are supposed to come online and start participating in the consensus process. The blockchain starts when more than 2/3rd of the genesis validators (weighted by voting power) are online.
 
 ```json
-"genesis_time": "2019-03-13T17:00:00.000000000Z",
+"genesis_time": "2025-04-01T00:00:00.000000000Z",
 ```
 
 The `chain_id` is a unique identifier for your chain. It helps differentiate between different chains using the same version of the software.
@@ -85,7 +85,7 @@ This command creates an item in the `accounts` list, under the `app_state` secti
         "coins": [
           {
             "denom": "ahp",
-            "amount": "10000000"
+            "amount": "1000000000000000000"
           }
         ],
         "sequence_number": "0",
@@ -131,7 +131,7 @@ The `staking` module handles the bulk of the Proof-of-Stake logic of the state-m
 ```json
 "staking": {
       "pool": {
-        "not_bonded_tokens": "10000000",
+        "not_bonded_tokens": "1000000000000000000",
         "bonded_tokens": "0"
       },
       "params": {
@@ -175,16 +175,16 @@ The `mint` module governs the logic of inflating the supply of token. The `mint`
 ```json
 "mint": {
       "minter": {
-        "inflation": "0.070000000000000000",
+        "inflation": "0.250000000000000000",
         "annual_provisions": "0.000000000000000000"
       },
       "params": {
         "mint_denom": "ahp",
-        "inflation_rate_change": "0.130000000000000000",
-        "inflation_max": "0.200000000000000000",
-        "inflation_min": "0.070000000000000000",
+        "inflation_rate_change": "0.250000000000000000",
+        "inflation_max": "0.250000000000000000",
+        "inflation_min": "0.000000000000000000",
         "goal_bonded": "0.670000000000000000",
-        "blocks_per_year": "6311520"
+        "blocks_per_year": "5256000"
       }
     }
 ```
@@ -192,7 +192,7 @@ The `mint` module governs the logic of inflating the supply of token. The `mint`
 Let us break down the parameters:
 
 - `minter`
-  - `inflation`: Initial yearly percentage of increase in the total supply of staking token, compounded weekly. A `0.070000000000000000` value means the target is `7%` yearly inflation, compounded weekly.
+  - `inflation`: Initial yearly percentage of increase in the total supply of staking token, compounded weekly. A `0.250000000000000000` value means the target is `25%` yearly inflation, compounded weekly.
   - `annual_provisions`: Calculated each block. Initialize at `0.000000000000000000`.
 - `params`
   - `mint_denom`: Denom of the staking token that is inflated.
@@ -211,7 +211,7 @@ The `distribution` module handles the logic of distribution block provisions and
       "fee_pool": {
         "community_pool": null
       },
-      "community_tax": "0.020000000000000000",
+      "community_tax": "0.920000000000000000",
       "base_proposer_reward": "0.010000000000000000",
       "bonus_proposer_reward": "0.040000000000000000",
       "withdraw_addr_enabled": false,
@@ -257,7 +257,7 @@ The `gov` module handles all governance-related transactions. The initial state 
         "min_deposit": [
           {
             "denom": "ahp",
-            "amount": "512000000"
+            "amount": "50000000000000000000000"
           }
         ],
         "max_deposit_period": "1209600000000000"
@@ -266,7 +266,7 @@ The `gov` module handles all governance-related transactions. The initial state 
         "voting_period": "1209600000000000"
       },
       "tally_params": {
-        "quorum": "0.4",
+        "quorum": "0.334",
         "threshold": "0.5",
         "veto": "0.334",
         "governance_penalty": "0.0"
@@ -300,10 +300,10 @@ The `slashing` module handles the logic to slash delegators if their validator m
       "params": {
         "max_evidence_age": "1814400000000000",
         "signed_blocks_window": "10000",
-        "min_signed_per_window": "0.050000000000000000",
+        "min_signed_per_window": "0.750000000000000000",
         "downtime_jail_duration": "600000000000",
         "slash_fraction_double_sign": "0.050000000000000000",
-        "slash_fraction_downtime": "0.000100000000000000"
+        "slash_fraction_downtime": "0.000000000000000000"
       },
       "signing_infos": {},
       "missed_blocks": {}

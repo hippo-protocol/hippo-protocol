@@ -39,19 +39,13 @@ You can begin by using the command `hippod q [module] -h` to get help about the 
 bond_denom: ahp
 historical_entries: 10000
 max_entries: 7
-max_validators: 180
+max_validators: 22
 unbonding_time: 1814400s
 ```
 
 If a parameter-change proposal is successful, the change takes effect immediately upon completion of the voting period.
 
 **Note:** You cannot currently query the `bank` module's parameter, which is `sendenabled`. You also cannot query the `crisis` module's parameters.
-
-## Why create a parameter change proposal?
-
-Parameters are what govern many aspects of the chain's behaviour. As circumstances and attitudes change, sometimes you might want to change a parameter to bring the chain's behaviour in line with community opinion. For example, the Hippo Protocol launched with 100 active validators and there have been 4 proposals to date that have increased the `MaxValidators` parameter. At the time of writing, the active set contains 180 validators.
-
-The Hippo Protocol has been viewed as a slow-moving, highly secure chain and that is reflected in some of its other parameters, such as a 21 day unbonding period and 14 day voting period. These are quite long compared to other chains in the Cosmos Ecosystem
 
 ## Risks in parameter change proposals
 

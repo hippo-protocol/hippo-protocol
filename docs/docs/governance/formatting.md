@@ -23,12 +23,12 @@ There are four components:
 
 1. **Title** - the distinguishing name of the proposal, typically the way that explorers list proposals
 2. **Summary** - the body of the proposal that further describes what is being proposed and details surrounding the proposal
-3. **Deposit** - the amount that will be contributed to the deposit (in micro-HPs "ahp") from the account submitting the proposal
+3. **Deposit** - the amount that will be contributed to the deposit (in alpha-HPs "ahp") from the account submitting the proposal
 4. **Metadata** - usually a link to an off-chain resource
 
 ### Real example
 
-[Proposal 12](https://www.mintscan.io/cosmos/proposals/12) asked if the Hippo Protocol community of validators charging 0% commission was harmful to the success of the Hippo Protocol.
+Proposal could ask if the Hippo Protocol community of validators charging 0% commission is harmful to the success of the Hippo Protocol.
 
 You can use `hippod tx gov draft-proposal` and choose `text` to create the proposal file.
 
@@ -38,7 +38,7 @@ You must submit the proposal using `hippod tx gov submit-proposal <path_to_text_
 {
   "title": "Are Validators Charging 0% Commission Harmful to the Success of the Hippo Protocol?",
   "summary": "This governance proposal is intended to act purely as a signalling proposal. Throughout this history of the Hippo Protocol, there has been much debate about the impact that validators charging 0% commission has on the Hippo Protocol, particularly with respect to the decentralization of the Hippo Protocol and the sustainability for validator operations. Discussion around this topic has taken place in many places including numerous threads on the Cosmos Forum, public Telegram channels, and in-person meetups. Because this has been one of the primary discussion points in off-chain Cosmos governance discussions, we believe it is important to get a signal on the matter from the on-chain governance process of the Hippo Protocol. There have been past discussions on the Cosmos Forum about placing an in-protocol restriction on validators from charging 0% commission. https://forum.cosmos.network/t/governance-limit-validators-from-0-commission-fee/2182 This proposal is NOT proposing a protocol-enforced minimum. It is merely a signalling proposal to query the viewpoint of the bonded Atom holders as a whole. We encourage people to discuss the question behind this governance proposal in the associated Hippo Protocol forum post here: https://forum.cosmos.network/t/proposal-are-validators-charging-0-commission-harmful-to-the-success-of-the-cosmos-hub/2505 Also, for voters who believe that 0% commission rates are harmful to the network, we encourage optionally sharing your belief on what a healthy minimum commission rate for the network using the memo field of their vote transaction on this governance proposal or linking to a longer written explanation such as a Forum or blog post. The question on this proposal is “Are validators charging 0% commission harmful to the success of the Hippo Protocol?”. A Yes vote is stating that they ARE harmful to the network's success, and a No vote is a statement that they are NOT harmful.",
-  "deposit": "100000ahp",
+  "deposit": "1000000000000000000ahp",
   "metadata": "ipfs://CID"
 }
 ```
@@ -50,16 +50,16 @@ There are five (5) components:
 1. **Title** - the distinguishing name of the proposal, typically the way that explorers list proposals
 2. **Summary** - the body of the proposal that further describes what is being proposed and details surrounding the proposal
 3. **Recipient** - the Hippo Protocol (bech32-based) address that will receive funding from the Community Pool
-4. **Amount** - the amount of funding that the recipient will receive in micro-HPs (ahp)
-5. **Deposit** - the amount that will be contributed to the deposit (in micro-HPs "ahp") from the account submitting the proposal
+4. **Amount** - the amount of funding that the recipient will receive in alpha-HPs (ahp)
+5. **Deposit** - the amount that will be contributed to the deposit (in alpha-HPs "ahp") from the account submitting the proposal
 
 If the description says that a certain address will receive a certain number of HPs, it should also be programmed to do that, but it's possible that that's not the case (accidentally or otherwise). Check that the description aligns with the 'recipient' address.
 
 ### Real example
 
-The `amount` is `1000000000ahp`. 1,000,000 micro-HP is equal to 1 HP, so `recipient` address `hippo1xf2qwf6g6xvuttpf37xwrgp08qq984244952ze` will receive 1000 HP if this proposal is passed.
+The `amount` is `1000000000000000000ahp`. 1000000000000000000 alpha-HP is equal to 1 HP, so `recipient` address `hippo1xf2qwf6g6xvuttpf37xwrgp08qq984244952ze` will receive 1000 HP if this proposal is passed.
 
-The `deposit": "1000000ahp` results in 1 HP being used from the proposal submitter's account.
+The `"deposit": "1000000000000000000ahp` results in 1 HP being used from the proposal submitter's account.
 
 You can use the `hippod tx gov draft-proposal` utility and choose `/cosmos.distribution.v1beta1.MsgCommunityPoolSpend` to create a draft proposal file.
 
@@ -75,12 +75,12 @@ You must use `hippod tx gov submit-proposal <path_to_proposal_file.json>` to sub
       "amount": [
         {
           "denom": "ahp",
-          "amount": "10000000000"
+          "amount": "1000000000000000000000"
         }
       ]
     }
   ],
-  "deposit": "100000ahp",
+  "deposit": "1000000000000000000ahp",
   "proposer": "hippo12xpdapokdfpsodf32das75sokdaadapsokd1sa",
   "metadata": "Community Pool Spend Proposal Example",
   "title": "Activate governance discussions on the Discourse forum using community pool funds",
@@ -109,7 +109,7 @@ For `param-change` proposals, there are arguably seven (7) components, though th
 4. **Subspace** - the Hippo Protocol module with the parameter that is being changed
 5. **Key** - the parameter that will be changed
 6. **Value** - the value of the parameter that will be changed by the governance mechanism
-7. **Deposit** - the amount that will be contributed to the deposit (in micro-HPs "ahp") from the account submitting the proposal
+7. **Deposit** - the amount that will be contributed to the deposit (in alpha-HPs "ahp") from the account submitting the proposal
 
 The components must be presented as shown in the example.
 
@@ -137,6 +137,6 @@ Not all explorers will show the proposed parameter changes that are coded into t
       "value": true
     }
   ],
-  "deposit": "100000ahp"
+  "deposit": "1000000000000000000ahp"
 }
 ```

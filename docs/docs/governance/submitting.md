@@ -101,8 +101,8 @@ hippod q gov params -o json
       ...
       "min_deposit": [
          {
-               "denom": "stake",
-               "amount": "10000000"
+               "denom": "ahp",
+               "amount": "1000000000000000000"
          }
       ],
       "min_initial_deposit_ratio": "0.000000000000000000"
@@ -181,7 +181,7 @@ Here is an example of the `draft_proposal.json` file:
   }
  ],
  "metadata": "ipfs://CID",
- "deposit": "1000000ahp",
+ "deposit": "1000000000000000000ahp",
  "title": "Updating the staking params (min_comission_rate)",
  "summary": "This proposal will attempt to update the min_commission_rate staking parameter. During proposal creation and submission **all** proposal fields must be specified. Pay attention that you don't unintentionally specify different values for fields that you did not intend to change."
 }
@@ -207,14 +207,14 @@ Use `hippod tx gov --help` to get more info about the CLI options, we will expla
    - The transaction will only use the amount of gas needed to process the transaction.
 3. `--fees` is a flat-rate incentive for a validator to process your transaction.
    - Many nodes use a minimum fee to disincentivize transaction spamming.
-   - 7500ahp is equal to 0.0075 HP.
+   - 1000000000000000000ahp is equal to 1 HP.
 4. `--node` is using an established node to send the transaction to the Hippo Protocol 4 network. For available nodes, please look at the [Chain Registry](https://github.com/cosmos/chain-registry/blob/master/cosmoshub/chain.json).
 
 **Note**: be careful what you use for `--fees`. A mistake here could result in spending hundreds or thousands of HPs accidentally, which cannot be recovered.
 
 ### Verifying your transaction
 
-After posting your transaction, your command line interface (hippod) will provide you with the transaction's hash, which you can either query using hippod or by searching the transaction hash using [Mintscan](https://www.mintscan.io/cosmos/txs/0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57). The hash should look something like this: `0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57`.
+After posting your transaction, your command line interface (hippod) will provide you with the transaction's hash, which you can either query using hippod or by searching the transaction hash using [Hippo River](https://www.mintscan.io/cosmos/txs/0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57). The hash should look something like this: `0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57`.
 
 Alternatively, you can check your Tx status and information using:
 
@@ -230,7 +230,7 @@ There are a number of reasons why a transaction may fail. Here are two examples:
 
 2. **Incorrect denomination** - You may have specified an amount in 'ahippo' or 'hp' instead of 'ahp', causing the transaction to fail.
 
-If you encounter a problem, try to troubleshoot it first, and then ask for help on the Hippo Protocol forum: [https://forum.cosmos.network](https://forum.cosmos.network). We can learn from failed attempts and use them to improve upon this guide.
+If you encounter a problem, try to troubleshoot it first, and then ask for help on the Hippo Protocol github. We can learn from failed attempts and use them to improve upon this guide.
 
 ### Depositing funds after a proposal has been submitted
 
@@ -253,18 +253,3 @@ hippod tx gov deposit <proposal-id> <deposit_amount> --from <name>
 ```
 
 The amount per deposit is equal to `min_deposit * min_deposit_ratio`. Only `ahp` is supported as deposit denom. Transactions where `deposit_amount < (min_deposit * min_deposit_ratio)` will be rejected.
-
-### Submitting your proposal to the testnet
-
-Submitting to the testnet is identical to mainnet submissions aside from a few changes:
-
-1. The chain-id is `theta-testnet-001`.
-2. The list of usable endpoints can be found [here](https://github.com/cosmos/testnets/tree/master/public#readme).
-3. You will need testnet tokens, not HP. There is a faucet available in the Developer [Discord](https://discord.com/invite/cosmosnetwork).
-
-You may want to submit your proposal to the testnet chain before the mainnet for a number of reasons:
-
-1. To see what the proposal description will look like.
-2. To signal that your proposal is about to go live on the mainnet.
-3. To share what the proposal will look like in advance with stakeholders.
-4. To test the functionality of the governance features.

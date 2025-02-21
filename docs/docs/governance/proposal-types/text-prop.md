@@ -66,7 +66,7 @@ Enter proposal summary: Proposal summary
 Enter proposal details: Details, all the details
 Enter proposal forum url: /
 Enter proposal vote option context: Vote yes if <...>
-Enter proposal deposit: 100001ahp
+Enter proposal deposit: 1000000000000000000ahp
 ```
 
 Check `draft_proposal.json`, your result should be similar to this:
@@ -74,7 +74,7 @@ Check `draft_proposal.json`, your result should be similar to this:
 ```json
 {
   "metadata": "ipfs://CID",
-  "deposit": "100001ahp",
+  "deposit": "1000000000000000000ahp",
   "title": "Title",
   "summary": "Proposal summary"
 }

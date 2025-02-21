@@ -359,7 +359,7 @@ For each command, you can use the `-h` or `--help` flag to get more information.
 ## Sending Transactions
 
 :::warning
-On Hippo Protocol mainnet, the accepted denom is `ahp`, where `1hp = 1,000,000ahp`
+On Hippo Protocol mainnet, the accepted denom is `ahp`, where `1hp = 1000000000000000000ahp`
 :::
 
 ### A Note on Gas and Fees
@@ -377,7 +377,7 @@ The `gasPrice` is the price of each unit of `gas`. Each validator sets a `min-ga
 The transaction `fees` are the product of `gas` and `gasPrice`. As a user, you have to input 2 out of 3. The higher the `gasPrice`/`fees`, the higher the chance that your transaction will get included in a block.
 
 :::tip
-For mainnet, the recommended `gas-prices` is `0.0025ahp`.
+For mainnet, the recommended `fees` is `1000000000000000000ahp`.
 :::
 
 ### Sending Tokens
@@ -392,8 +392,9 @@ For mainnet, the recommended `gas-prices` is `0.0025ahp`.
 
 ```bash
 // Send a certain amount of tokens to an address
-// Ex value for parameters (do not actually use these values in your tx!!): <to_address>hippo16m93fezfiezhvnjajzrfyszml8qm92a0w67ntjhd3d0 <amount>=1000000ahp
-// Ex value for flags: <gasPrice>=0.0025ahp
+// Ex value for parameters (do not actually use these values in your tx!!)
+// : <to_address>hippo16m93fezfiezhvnjajzrfyszml8qm92a0w67ntjhd3d0 <amount>=1000000000000000000ahp
+// Ex value for flags: <fees>=1000000000000000000ahp
 
 hippod tx bank send [from_key_or_address] [to_address] [amount] [flags]
 ```
@@ -414,30 +415,30 @@ hippod tx bank send [from_key_or_address] [to_address] [amount] [flags]
 
 ```bash
 // Bond a certain amount of HPs to a given validator
-// ex value for flags: <validatorAddress>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=10000000ahp, <gasPrice>=0.0025ahp
+// ex value for flags: <validatorAddress>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToBound>=1000000000000000000ahp, <fees>=1000000000000000000ahp
 
-hippod tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
+hippod tx staking delegate <validatorAddress> <amountToBond> --from <delegatorKeyName> --fees <fees>
 
 
 // Redelegate a certain amount of HPs from a validator to another
 // Can only be used if already bonded to a validator
 // Redelegation takes effect immediately, there is no waiting period to redelegate
 // After a redelegation, no other redelegation can be made from the account for the next 3 weeks
-// ex value for flags: <stcValidatorAddress>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToRedelegate>=100000000ahp, <gasPrice>=0.0025ahp
+// ex value for flags: <stcValidatorAddress>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToRedelegate>=1000000000000000000ahp, <fees>=1000000000000000000ahp
 
-hippod tx staking redelegate <srcValidatorAddress> <destValidatorAddress> <amountToRedelegate> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
+hippod tx staking redelegate <srcValidatorAddress> <destValidatorAddress> <amountToRedelegate> --from <delegatorKeyName> --fees <fees>
 
 // Withdraw all rewards
-// ex value for flag: <gasPrice>=0.0025ahp
+// ex value for flag: <fees>=1000000000000000000ahp
 
-hippod tx distribution withdraw-all-rewards --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
+hippod tx distribution withdraw-all-rewards --from <delegatorKeyName> --fees <fees>
 
 
 // Unbond a certain amount of HPs from a given validator
 // You will have to wait 3 weeks before your HPs are fully unbonded and transferrable
-// ex value for flags: <validatorAddress>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=10000000ahp, <gasPrice>=0.0025ahp
+// ex value for flags: <validatorAddress>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <amountToUnbound>=1000000000000000000ahp, <fees>=1000000000000000000ahp
 
-hippod tx staking unbond <validatorAddress> <amountToUnbond> --from <delegatorKeyName> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice>
+hippod tx staking unbond <validatorAddress> <amountToUnbond> --from <delegatorKeyName> --fees <fees>
 ```
 
 :::warning
@@ -490,22 +491,22 @@ At the end of the voting period, the proposal is accepted if there are more than
 ```bash
 // Submit a Proposal
 // <type>=text/parameter_change/software_upgrade
-// ex value for flag: <gasPrice>=0.0025ahp
+// ex value for flag: <fees>=1000000000000000000ahp
 
 // the proposal must meet the minimum deposit amount - please check the current chain params
-hippod tx gov submit-legacy-proposal --title "Test Text Proposal" --description "My awesome proposal" --type "text" --deposit=10000000ahp --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --from <delegatorKeyName>
+hippod tx gov submit-legacy-proposal --title "Test Text Proposal" --description "My awesome proposal" --type "text" --deposit=1000000000000000000ahp --fees <fees> --from <delegatorKeyName>
 
 // Increase deposit of a proposal
 // Retrieve proposalID from $hippod query gov proposals --status deposit_period
-// ex value for parameter: <deposit>=10000000ahp
+// ex value for parameter: <deposit>=1000000000000000000ahp
 
-hippod tx gov deposit <proposalID> <deposit> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --from <delegatorKeyName>
+hippod tx gov deposit <proposalID> <deposit> --fees <fees> --from <delegatorKeyName>
 
 // Vote on a proposal
 // Retrieve proposalID from $hippod query gov proposals --status voting_period
 // <option>=yes/no/no_with_veto/abstain
 
-hippod tx gov vote <proposalID> <option> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --from <delegatorKeyName>
+hippod tx gov vote <proposalID> <option> --fees <fees> --from <delegatorKeyName> --from <delegatorKeyName>
 ```
 
 ### Signing Transactions From an Offline Computer
@@ -514,9 +515,9 @@ If you do not have a ledger device and want to interact with your private key on
 
 ```bash
 // Bond HPs
-// ex value for flags: <amountToBound>=10000000ahp, <bech32AddressOfValidator>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <gasPrice>=0.0025ahp, <delegatorAddress>=hippo10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg
+// ex value for flags: <amountToBound>=1000000000000000000ahp, <bech32AddressOfValidator>=hippovaloper18thamkhnj9wz8pa4nhnp9rldprgant57pk2m8s, <fees>=1000000000000000000ahp, <delegatorAddress>=hippo10snjt8dmpr5my0h76xj48ty80uzwhraqalu4eg
 
-hippod tx staking delegate <validatorAddress> <amountToBond> --from <delegatorAddress> --gas auto --gas-adjustment 1.5 --gas-prices <gasPrice> --generate-only > unsignedTX.json
+hippod tx staking delegate <validatorAddress> <amountToBond> --from <delegatorAddress>  --fees <fees> --generate-only > unsignedTX.json
 ```
 
 In order to sign, you will also need the `chain-id`, `account-number` and `sequence`. The `chain-id` is a unique identifier for the blockchain on which you are submitting the transaction. The `account-number` is an identifier generated when your account first receives funds. The `sequence` number is used to keep track of the number of transactions you have sent and prevent replay attacks.

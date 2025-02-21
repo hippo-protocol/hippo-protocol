@@ -178,13 +178,7 @@ to ensure that your transaction is included in a block,
 e.g.
 
 ```bash
-hippod tx bank send ... --fees=50000ahp
-```
-
-or
-
-```bash
-hippod tx bank send ... --gas-prices=0.0025ahp
+hippod tx bank send ... --fees=1000000000000000000ahp
 ```
 
 ### Account
@@ -211,7 +205,7 @@ When you query an account balance with zero tokens, you will get this error: `No
 The following command could be used to send coins from one account to another:
 
 ```bash
-hippod tx bank send sender_key_name_or_address recipient_address 10faucetToken \
+hippod tx bank send sender_key_name_or_address recipient_address 1000000000000000000ahp \
   --chain-id=chain_id
 ```
 
@@ -242,7 +236,7 @@ You can simulate a transaction without actually broadcasting it by appending the
 `--dry-run` flag to the command line:
 
 ```bash
-hippod tx bank send <sender_key_name_or_address> <destination_hippoaccaddr> 10faucetToken \
+hippod tx bank send <sender_key_name_or_address> <destination_hippoaccaddr> 1000000000000000000ahp \
   --chain-id=<chain_id> \
   --dry-run
 ```
@@ -251,7 +245,7 @@ Furthermore, you can build a transaction and print its JSON format to STDOUT by
 appending `--generate-only` to the list of the command line arguments:
 
 ```bash
-hippod tx bank send <sender_address> <recipient_address> 10faucetToken \
+hippod tx bank send <sender_address> <recipient_address> 1000000000000000000ahp \
   --chain-id=<chain_id> \
   --generate-only > unsignedSendTx.json
 ```
@@ -404,7 +398,7 @@ On the Hippo Protocol mainnet, we delegate `ahp`, where `1hp = 1000000ahp`. Here
 
 ```bash
 hippod tx staking delegate \
-  --amount=10000000ahp \
+  --amount=1000000000000000000ahp \
   --validator=<validator> \
   --from=<key_name> \
   --chain-id=<chain_id>
@@ -442,7 +436,7 @@ amount of tokens, use the following command.
 ```bash
 hippod tx staking unbond \
   <validator_addr> \
-  10hp \
+  1000000000000000000ahp \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -477,7 +471,7 @@ A redelegation is a type delegation that allows you to bond illiquid tokens from
 hippod tx staking redelegate \
   <src-validator-operator-addr> \
   <dst-validator-operator-addr> \
-  10hp \
+  1000000000000000000ahp \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -583,7 +577,7 @@ hippod tx gov submit-proposal \
   --title=<title> \
   --description=<description> \
   --type="Text" \
-  --deposit="1000000ahp" \
+  --deposit="1000000000000000000ahp" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -615,8 +609,8 @@ Where `proposal.json` contains the following:
   ],
   "deposit": [
     {
-      "denom": "stake",
-      "amount": "10000000"
+      "denom": "ahp",
+      "amount": "1000000000000000000"
     }
   ]
 }
@@ -662,10 +656,10 @@ hippod query gov proposer <proposal_id>
 
 #### Increase Deposit
 
-In order for a proposal to be broadcasted to the network, the amount deposited must be above a `minDeposit` value (initial value: `512000000ahp`). If the proposal you previously created didn't meet this requirement, you can still increase the total amount deposited to activate it. Once the minimum deposit is reached, the proposal enters voting period:
+In order for a proposal to be broadcasted to the network, the amount deposited must be above a `minDeposit` value (initial value: `50,000HP`). If the proposal you previously created didn't meet this requirement, you can still increase the total amount deposited to activate it. Once the minimum deposit is reached, the proposal enters voting period:
 
 ```bash
-hippod tx gov deposit <proposal_id> "10000000ahp" \
+hippod tx gov deposit <proposal_id> "1000000000000000000ahp" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -839,7 +833,7 @@ The first step to create a multisig transaction is to initiate it on behalf
 of the multisig address created above:
 
 ```bash
-hippod tx bank send hippo1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 1000000ahp \
+hippod tx bank send hippo1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 1000000000000000000ahp \
   --from=<multisig_address> \
   --generate-only > unsignedTx.json
 ```

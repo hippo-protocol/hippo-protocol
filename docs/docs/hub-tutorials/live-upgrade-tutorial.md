@@ -33,7 +33,7 @@ governance process.
    	 }
    	],
    	"metadata": "ipfs://CID",
-   	"deposit": "10000000stake",
+   	"deposit": "1000000000000000000ahp",
    	"title": "proposal title",
    	"summary": "proposal summary"
    }`

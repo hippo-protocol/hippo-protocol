@@ -57,15 +57,7 @@ Any participant in the network can signal that they want to become a validator b
 
 After a validator is created, HP holders can delegate HP to them, effectively adding stake to the validator's pool. The total stake of an address is the combination of HP bonded by delegators and HP self-bonded by the validator.
 
-From all validator candidates that signaled themselves, the 180 validators with the most total stake are the designated **validators**. If a validator's total stake falls below the top 180, then that validator loses its validator privileges. The validator cannot participate in consensus or generate rewards until the stake is high enough to be in the top 180. Over time, the maximum number of validators may be increased via on-chain governance proposal.
-
-## Testnet
-
-### How can I join the testnet?
-
-The testnet is a great environment to test your validator setup before launch.
-
-Testnet participation is a great way to signal to the community that you are ready and able to operate a validator. For details, see [Join the Public Testnet](../hub-tutorials/join-testnet.md) documentation.
+From all validator candidates that signaled themselves, the 22 validators with the most total stake are the designated **validators**. If a validator's total stake falls below the top 22, then that validator loses its validator privileges. The validator cannot participate in consensus or generate rewards until the stake is high enough to be in the top 22. Over time, the maximum number of validators may be increased via on-chain governance proposal.
 
 ## Additional Concepts
 
@@ -89,7 +81,7 @@ After a validator is created with a `create-validator` transaction, the validato
 - `in validator set`: Validator is in the active set and participates in consensus. The validator is earning rewards and can be slashed for misbehavior.
 - `jailed`: Validator misbehaved and is in jail, i.e. outside of the validator set.
 
-  - If the jailing is due to being offline for too long (i.e. having missed more than `95%` out of the last `10,000` blocks), the validator can send an `unjail` transaction in order to re-enter the validator set.
+  - If the jailing is due to being offline for too long (i.e. having missed more than `25%` out of the last `10,000` blocks), the validator can send an `unjail` transaction in order to re-enter the validator set.
   - If the jailing is due to double signing, the validator cannot unjail.
 
 - `unbonded`: Validator is not in the active set, and therefore not signing blocks. The validator cannot be slashed and does not earn any reward. It is still possible to delegate HP to an unbonded validator. Undelegating from an `unbonded` validator is immediate, meaning that the tokens are not subject to the unbonding period.
@@ -169,7 +161,7 @@ It's highly advised to inform your delegators when doing this, as they will stil
 Each member of a validator's staking pool earns different types of revenue:
 
 - **Block rewards:** Native tokens of applications (e.g. HP on the Hippo Protocol) run by validators are inflated to produce block provisions. These provisions exist to incentivize HP holders to bond their stake. Non-bonded HP are diluted over time.
-- **Transaction fees:** The Hippo Protocol maintains an allow list of tokens that are accepted as fee payment. The initial fee token is the `hp`.
+- **Transaction fees:** The Hippo Protocol maintains an allow list of tokens that are accepted as fee payment. The initial fee token is the `ahp`.
 
 This total revenue is divided among validators' staking pools according to each validator's weight. Then, within each validator's staking pool the revenue is divided among delegators in proportion to each delegator's stake. A commission on delegators' revenue is applied by the validator before it is distributed.
 
@@ -200,29 +192,6 @@ Then, each delegator can claim their part of the 79.2 HP in proportion to their 
 Fees are similarly distributed with the exception that the block proposer can get a bonus on the fees of the block they propose if the proposer includes more than the strict minimum of required precommits.
 
 When a validator is selected to propose the next block, the validator must include at least 2/3 precommits of the previous block. However, an incentive to include more than 2/3 precommits is a bonus. The bonus is linear: it ranges from 1% if the proposer includes 2/3rd precommits (minimum for the block to be valid) to 5% if the proposer includes 100% precommits. Of course the proposer must not wait too long or other validators may timeout and move on to the next proposer. As such, validators have to find a balance between wait-time to get the most signatures and risk of losing out on proposing the next block. This mechanism aims to incentivize non-empty block proposals, better networking between validators, and mitigates censorship.
-
-For a concrete example to illustrate the aforementioned concept, there are 10 validators with equal stake. Each validator applies a 1% commission rate and has 20% of self-delegated HP. Now comes a successful block that collects a total of 1025.51020408 HP in fees.
-
-First, a 2% tax is applied. The corresponding HP go to the reserve pool. The reserve pool's funds can be allocated through governance to fund bounties and upgrades.
-
-- `2% * 1025.51020408 = 20.51020408` HP go to the reserve pool.
-
-1005 HP now remain. For this example, the proposer included 100% of the signatures in its block so the proposer obtains the full bonus of 5%.
-
-To solve this simple equation to find the reward R for each validator:
-
-`9*R + R + R*5% = 1005 ⇔ R = 1005/10.05 = 100`
-
-- For the proposer validator:
-  - The pool obtains `R + R * 5%`: 105 HP
-  - Commission: `105 * 80% * 1%` = 0.84 HP
-  - Validator's reward: `105 * 20% + Commission` = 21.84 HP
-  - Delegators' rewards: `105 * 80% - Commission` = 83.16 HP (each delegator is able to claim its portion of these rewards in proportion to their stake)
-- For each non-proposer validator:
-  - The pool obtains R: 100 HP
-  - Commission: `100 * 80% * 1%` = 0.8 HP
-  - Validator's reward: `100 * 20% + Commission` = 20.8 HP
-  - Delegators' rewards: `100 * 80% - Commission` = 79.2 HP (each delegator is able to claim their portion of these rewards in proportion to their stake)
 
 ### What are the slashing conditions?
 
@@ -267,16 +236,6 @@ Once delegated to a validator, sign a `ValidatorBond` message.
 
 No, in the event of a slash, a validator bond is slashed at the same rate as a regular bond.
 
-### Can I unbond my validator bond?
-
-If all the liquid staking capacity made available by a validator’s validator bond is utilized, validator bond delegated to that validator cannot be unbonded. If new capacity becomes available (either by redemption of liquid staking tokens or addition or new validator bond), then existing validator bond can be undelegated.
-
-Example: Suppose the validator bond factor is 250 and Validator V bonds 2 HP, then liquid staking providers delegate 500 HP to Validator V. Now Validator V cannot remove any of their validator bond because the full liquid staking capacity made available by Validator V’s validator bond is consumed.
-
-If liquid staking providers undelegate 250 HP from Validator V, Validator V can now remove 1 HP of validator bond.
-
-If, instead, the ICF or a community member validator bonds 1 additional HP to Validator V, Validator V can now remove 1 HP of validator bond.
-
 ### Can I validator bond some of my tokens and delegate the remaining portion normally?
 
 The `ValidatorBond` message converts the full balance delegated to a validator into validator bond. To validator bond some tokens and delegate the remaining portion normally, use two addresses: the first will delegate + ValidatorBond, and the second will just delegate.
@@ -319,8 +278,6 @@ Running an effective operation is key to avoiding unexpected unbonding or slashi
 ### What are the maintenance requirements?
 
 Validators are expected to perform regular software updates to accommodate chain upgrades and bug fixes. It is suggested to consider using [Cosmovisor](https://docs.cosmos.network/v0.45/run-node/cosmovisor.html) to partially automate this process.
-
-During an chain upgrade, progress is discussed in a private channel in the [Interchain Discord](https://discord.gg/interchain). If your validator is in the active set we encourage you to request access to that channel by contacting a moderator.
 
 ### How can validators protect themselves from denial-of-service attacks?
 

@@ -37,15 +37,14 @@ Don't use more `ahp` than you have!
 
 ```bash
 hippod tx staking create-validator \
-  --amount=1000000ahp \
+  --amount=1000000000000000000ahp \
   --pubkey=$(hippod tendermint show-validator) \
   --moniker="choose a moniker" \
   --chain-id=<chain_id> \
   --commission-rate="0.10" \
   --commission-max-rate="0.20" \
   --commission-max-change-rate="0.01" \
-  --gas="auto" \
-  --gas-prices="0.0025ahp" \
+  --fees=1000000000000000000ahp \
   --from=<key_name>
 ```
 
@@ -70,8 +69,7 @@ hippod tx staking edit-validator
   --identity=6A0D65E29A4CBC8E \
   --details="To infinity and beyond!" \
   --chain-id=<chain_id> \
-  --gas="auto" \
-  --gas-prices="0.0025ahp" \
+  --fees=1000000000000000000ahp \
   --from=<key_name> \
   --commission-rate="0.10"
 ```

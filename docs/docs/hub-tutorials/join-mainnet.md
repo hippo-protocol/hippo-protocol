@@ -60,13 +60,13 @@ Make sure the following prerequisites are completed:
 
 ## Hardware
 
-Running a full archive node can be resource intensive as the full current `hippo-protocol-1` state is over `1.4TB`. For those who wish to run state sync or use quicksync, the following hardware configuration is recommended:
+Running a full archive node can be resource intensive. For those who wish to run state sync or use quicksync, the following hardware configuration is recommended:
 
 | Node Type | RAM  | Storage     |
 | --------- | ---- | ----------- |
-| Validator | 32GB | 500GB-2TB\* |
-| Full      | 16GB | 2TB         |
-| Default   | 16GB | 1TB         |
+| Validator | 16GB | 500GB-2TB\* |
+| Full      | 8GB  | 2TB         |
+| Default   | 8GB  | 1TB         |
 
 \* Storage size for validators will depend on level of pruning.
 
@@ -111,7 +111,7 @@ persistent_peers = "<node id 1>@<node address 1>:26656,<node id 2>@<node address
 
 ### Gas & Fees
 
-On Hippo Protocol mainnet, the accepted denom is `ahp`, where `1hp = 1.000.000ahp`
+On Hippo Protocol mainnet, the accepted denom is `ahp`, where `1hp = 1000000000000000000ahp`
 
 Transactions on the Hippo Protocol network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
 
@@ -125,7 +125,7 @@ The `gasPrice` is the price of each unit of `gas`. Each validator sets a `min-ga
 
 The transaction `fees` are the product of `gas` and `gasPrice`. The higher the `gasPrice`/`fees`, the higher the chance that a transaction will get included in a block.
 
-**For mainnet, the recommended `gas-prices` is `0.0025ahp`.**
+**For mainnet, the recommended `fess` is `1hp(= 1000000000000000000ahp)`.**
 
 A full-node keeps unconfirmed transactions in its mempool. In order to protect it from spam, it is better to set a `minimum-gas-prices` that the transaction must meet in order to be accepted in the node's mempool. This parameter can be set in `~/.hippo/config/app.toml`.
 
@@ -133,10 +133,10 @@ A full-node keeps unconfirmed transactions in its mempool. In order to protect i
 # The minimum gas prices a validator is willing to accept for processing a
 # transaction. A transaction's fees must meet the minimum of any denomination
 # specified in this config (e.g. 0.25token1;0.0001token2).
-minimum-gas-prices = "0.0025ahp"
+minimum-gas-prices = "5000000000000ahp"
 ```
 
-The initial recommended `min-gas-prices` is `0.0025ahp`, but this can be changed later.
+The initial recommended `min-gas-prices` is `5000000000000ahp`, but this can be changed later.
 
 ### Pruning of State
 
@@ -245,7 +245,6 @@ Start Hippo to begin syncing with the `skip-invariants` flag. For more informati
 
 ```bash
 hippod start --x-crisis-skip-assert-invariants
-
 ```
 
 The node will begin rebuilding state until it hits the first upgrade height at block `6910000`. If Cosmovisor is set up then there's nothing else to do besides wait, otherwise the node operator will need to perform the manual upgrade twice.
@@ -306,7 +305,7 @@ Once state sync successfully completes, the node will begin to process blocks no
 
 ## Snapshots
 
-Saving and serving snapshots helps nodes rapidly join the network. Snapshots are now enabled by default effective `1/20/21`.
+Saving and serving snapshots helps nodes rapidly join the network.
 
 While not advised, if a node operator needs to customize this feature, it can be configured in `~/.hippo/config/app.toml`. The Hippo Protocol recommends setting this value to match `pruning-keep-every` in `config.toml`.
 

@@ -5,7 +5,7 @@ order: 4
 
 ## What is a delegator?
 
-People who cannot or do not want to operate [validator nodes](../validators/overview.md) can still participate in the staking process as delegators. Indeed, validators are not chosen based on their self-delegated stake but based on their total stake, which is the sum of their self-delegated stake and of the stake that is delegated to them. This is an important property, as it makes delegators a safeguard against validators that exhibit bad behavior. If a validator misbehaves, their delegators will move their HPs away from them, thereby reducing their stake. Eventually, if a validator's stake falls under the top 180 addresses with highest stake, they will exit the validator set.
+People who cannot or do not want to operate [validator nodes](../validators/overview.md) can still participate in the staking process as delegators. Indeed, validators are not chosen based on their self-delegated stake but based on their total stake, which is the sum of their self-delegated stake and of the stake that is delegated to them. This is an important property, as it makes delegators a safeguard against validators that exhibit bad behavior. If a validator misbehaves, their delegators will move their HPs away from them, thereby reducing their stake. Eventually, if a validator's stake falls under the top 22 addresses with highest stake, they will exit the validator set.
 
 **Delegators share the revenue of their validators, but they also share the risks.** In terms of revenue, validators and delegators differ in that validators can apply a commission on the revenue that goes to their delegator before it is distributed. This commission is known to delegators beforehand and can only change according to predefined constraints (see [section](#choosing-a-validator) below). In terms of risk, delegators' HPs can be slashed if their validator misbehaves. For more, see [Risks](#risks) section.
 
@@ -39,7 +39,7 @@ Being a delegator is not a passive task. Here are the main directives of a deleg
 
 Validators and delegators earn revenue in exchange for their services. This revenue is given in three forms:
 
-- **Block provisions (HPs):** They are paid in newly created HPs. Block provisions exist to incentivize HP holders to stake. The yearly inflation rate is calculated to target 2/3 bonded stake. If the total bonded stake in the network is less than 2/3 of the total HP supply, inflation increases until it reaches 20%. If the total bonded stake is more than 2/3 of the HP supply, inflation decreases until it reaches 7%. This means that if total bonded stake stays less than 2/3 of the total HP supply for a prolonged period of time, unbonded HP holders can expect their HP value to deflate by 20% (compounded) per year.
+- **Block provisions (HPs):** They are paid in newly created HPs. Block provisions exist to incentivize HP holders to stake. The yearly inflation rate begins with 25% and decreases to 0 as time goes, pursuing sustainable incentive economy only with fees, similar to that of Bitcoin.
 - **Transaction fees (various tokens):** Each transfer on the Hippo Protocol comes with transactions fees. These fees can be paid in any currency that is whitelisted by the Hub's governance. Fees are distributed to bonded HP holders in proportion to their stake. The first whitelisted token at launch is the HP.
 
 ## Validator Commission

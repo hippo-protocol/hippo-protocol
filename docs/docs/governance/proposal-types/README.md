@@ -21,7 +21,6 @@ Ideally, a proposal should only fail to pass because voters are aware, engaged, 
 If you are considering drafting a proposal, you should first review the general background on drafting and submitting a proposal:
 
 1. [How the voting process and governance mechanism works](../process.md)
-1. [How to draft your proposal and engage with the Hippo community about it](../best-practices.md)
 1. [How to format proposals](../formatting.md)
 1. [How to submit your proposal](../submitting.md)
 

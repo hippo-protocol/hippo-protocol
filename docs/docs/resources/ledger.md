@@ -102,7 +102,7 @@ Be sure to change the _keyName_ parameter to be a meaningful name. The `ledger` 
 hippod keys add <keyName> --ledger
 
 ➜ NAME: TYPE: ADDRESS:     PUBKEY:
-<keyName> ledger cosmos1... cosmospub1...
+<keyName> ledger hippo1... hippopub1...
 ```
 
 Cosmos uses [HD Wallets](./hd-wallets.md). This means you can setup many accounts using the same Ledger seed. To create another account from your Ledger device, run (change the integer i to some value >= 0 to choose the account for HD derivation):
@@ -123,11 +123,11 @@ Confirm that the address displayed on the device matches that displayed when you
 
 ### Connect to a full node
 
-Next, you need to configure hippod with the URL of a Cosmos full node and the appropriate `chain_id`. In this example we connect to the public load balanced full node operated by Chorus One on the `cosmoshub-2` chain. But you can point your `hippod` to any Cosmos full node. Be sure that the `chain-id` is set to the same chain as the full node.
+Next, you need to configure hippod with the URL of a Cosmos full node and the appropriate `chain_id`. In this example we connect to the public load balanced full node operated by Chorus One on the `hippo-protocol-1` chain. But you can point your `hippod` to any Cosmos full node. Be sure that the `chain-id` is set to the same chain as the full node.
 
 ```bash
-hippod config node https://cosmos.chorus.one:26657
-hippod config chain_id cosmoshub-2
+hippod config node https://rpc.testnet.hippo-protocol.com:26657
+hippod config chain_id hippo-protocol-1
 ```
 
 Test your connection with a query such as:
@@ -172,7 +172,7 @@ To receive funds to the Cosmos account on your Ledger device, retrieve the addre
 hippod keys list
 
 ➜ NAME: TYPE: ADDRESS:     PUBKEY:
-<keyName> ledger cosmos1... cosmospub1...
+<keyName> ledger hippo1... hippopub1...
 ```
 
 ### Further documentation
@@ -200,20 +200,9 @@ hippod tx --help
 
 Transactions in Cosmos embed the [Standard Transaction type](https://godoc.org/github.com/cosmos/cosmos-sdk/x/auth#StdTx) from the Cosmos SDK. The Ledger device displays a serialized JSON representation of this object for you to review before signing the transaction. Here are the fields and what they mean:
 
-- `chain-id`: The chain to which you are broadcasting the tx, such as the `hippo-13003` testnet or `cosmoshub-2`: mainnet.
+- `chain-id`: The chain to which you are broadcasting the tx, such as the `hippo-protocol-testnet-1` testnet or `hippo-protocol-1`: mainnet.
 - `account_number`: The global id of the sending account assigned when the account receives funds for the first time.
 - `sequence`: The nonce for this account, incremented with each transaction.
 - `fee`: JSON object describing the transaction fee, its gas amount and coin denomination
 - `memo`: optional text field used in various ways to tag transactions.
 - `msgs_<index>/<field>`: The array of messages included in the transaction. Double click to drill down into nested fields of the JSON.
-
-## Support
-
-For further support, start by looking over the posts in our [forum](https://forum.cosmos.network/search?q=ledger)
-
-Feel welcome to reach out in our [Telegram channel](https://t.me/cosmosproject) to ask for help.
-
-Here are a few relevant and helpful tutorials from the wonderful Cosmos community:
-
-- [Catdotfish](https://catdotfish.medium.com/) - [How to use the Keplr Wallet](https://medium.com/chainapsis/how-to-use-keplr-wallet-40afc80907f6)
-- [Cryptium Labs](https://medium.com/cryptium) - [How to store your ATOMS on your Ledger and delegate with the command line](https://medium.com/cryptium-cosmos/how-to-store-your-cosmos-atoms-on-your-ledger-and-delegate-with-the-command-line-929eb29705f)
