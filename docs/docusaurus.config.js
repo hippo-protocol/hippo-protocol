@@ -11,9 +11,9 @@ const algoliaIndexName = "cosmos_network";
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Cosmos Hub",
+  title: "Hippo Protocol",
   tagline: "",
-  favicon: "/img/hub.svg",
+  favicon: "/img/hippo-logo.png",
 
   // Set the production url of your site here
   url: "https://hub.cosmos.network",
@@ -83,7 +83,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: "img/hub.jpg",
+      image: "img/hippo-logo.jpg",
       docs: {
         sidebar: {
           autoCollapseCategories: true,
