@@ -5,10 +5,11 @@ order: 5
 
 If you have a final draft of your proposal ready to submit, you may want to push your proposal live on the testnet first. These are the three primary steps to getting your proposal live on-chain.
 
-Interacting with the Cosmos Hub via the command line in order to run queries or submit proposals has several prerequisites:
-- You will need to compile [`gaiad`](../getting-started/installation) from source into a binary file executable by your operating system eg. MacOS, Windows, Linux
-- You will need to indicate which chain you are querying, and currently this is `--chain-id cosmoshub-4`
-- You will need to connect to a full node. You can find a list of available Cosmos Hub endpoints under the [API section](https://github.com/cosmos/chain-registry/blob/master/cosmoshub/chain.json) in the [Chain Registry](https://github.com/cosmos/chain-registry).
+Interacting with the Hippo Protocol via the command line in order to run queries or submit proposals has several prerequisites:
+
+- You will need to compile [`hippod`](../getting-started/installation) from source into a binary file executable by your operating system eg. MacOS, Windows, Linux
+- You will need to indicate which chain you are querying, and currently this is `--chain-id hippo-protocol-1`
+- You will need to connect to a full node. You can find a list of available Hippo Protocol endpoints under the [API section](https://github.com/cosmos/chain-registry/blob/master/cosmoshub/chain.json) in the [Chain Registry](https://github.com/cosmos/chain-registry).
 - More info is in the Walkthrough Example section.
 
 Running a full node can be difficult for those not technically-inclined, so you may choose to use a third-party's full node. In this case, the primary security risk is that of censorship: it's the single place where you have a single gateway to the network, and any messages submitted through an untrusted node could be censored.
@@ -35,7 +36,7 @@ The reason we use IPFS is that it is a decentralized means of storage, making it
 
 ## Formatting the JSON file for the governance proposal
 
-Prior to sending the transaction that submits your proposal on-chain, you must create a JSON file. This file will contain the information that will be stored on-chain as the governance proposal. Begin by creating a new text (.txt) file to enter this information. Use [these best practices](./best-practices.md) as a guide for the contents of your proposal. When you're done, save the file as a .json file. 
+Prior to sending the transaction that submits your proposal on-chain, you must create a JSON file. This file will contain the information that will be stored on-chain as the governance proposal. Begin by creating a new text (.txt) file to enter this information. Use [these best practices](./best-practices.md) as a guide for the contents of your proposal. When you're done, save the file as a .json file.
 
 Each proposal type is unique in how the JSON should be formatted.
 See the relevant section for the type of proposal you are drafting:
@@ -48,31 +49,34 @@ Once on-chain, most people will rely upon block explorers to interpret this info
 
 ## Sending the transaction that submits your governance proposal
 
-For information on how to use gaiad (the command line interface) to submit an on-chain proposal through the governance module, please refer to the [gaiad CLI tutorials](../hub-tutorials/gaiad) for the Cosmos Hub documentation.
+For information on how to use hippod (the command line interface) to submit an on-chain proposal through the governance module, please refer to the [hippod CLI tutorials](../hub-tutorials/hippod) for the Hippo Protocol documentation.
 
 ### Proposal types
 
-There are 2 proposal types that can be submitted to the CosmosHub governance module.
+There are 2 proposal types that can be submitted to the Hippo Protocol governance module.
 
 #### Legacy proposals (cosmos-sdk < v0.47)
-These proposals can be submitted using `gaiad tx gov submit-legacy-proposal`.
+
+These proposals can be submitted using `hippod tx gov submit-legacy-proposal`.
 
 Available proposals that can be submitted using this Tx are:
-  * cancel-software-upgrade
-  * change-reward-denoms
-  * consumer-addition
-  * consumer-removal
-  * ibc-upgrade
-  * param-change (does not work for standard cosmos-sdk modules, works on IBC and ICS modules)
-  * software-upgrade
-  * update-client
+
+- cancel-software-upgrade
+- change-reward-denoms
+- consumer-addition
+- consumer-removal
+- ibc-upgrade
+- param-change (does not work for standard cosmos-sdk modules, works on IBC and ICS modules)
+- software-upgrade
+- update-client
 
 You can read more about submitting a legacy proposal in the [cosmos-sdk docs](https://docs.cosmos.network/v0.47/build/modules/gov#submit-legacy-proposal)
 
 #### Proposals (cosmos-sdk >= v0.47)
-These proposals can be submitted using `gaiad tx gov submit-proposal`.
 
-Using `gaiad tx gov draft-proposal` can help prepare a proposal. The tool will create a file containing the specified proposal message and it also helps with populating all the required proposal fields.
+These proposals can be submitted using `hippod tx gov submit-proposal`.
+
+Using `hippod tx gov draft-proposal` can help prepare a proposal. The tool will create a file containing the specified proposal message and it also helps with populating all the required proposal fields.
 You can always edit the file after you create it using `draft-proposal`
 
 Most cosmos-sdk modules allow changing their governance gated parameters using a `MsgUpdateParams` which is a new way of updating governance parameters. It is important to note that `MsgUpdateParams` requires **all parameters to be specified** in the proposal message.
@@ -80,15 +84,17 @@ Most cosmos-sdk modules allow changing their governance gated parameters using a
 You can read more about submitting a proposal in the [cosmos-sdk docs](https://docs.cosmos.network/v0.47/build/modules/gov#submit-proposal)
 
 #### Minimal Deposit amount
+
 :::tip
-Please note that cosmoshub-4 uses a minimum initial deposit amount.
+Please note that hippo-protocol-1 uses a minimum initial deposit amount.
 :::
 
 Proposals cannot be submitted successfully without providing a minimum initial deposit. In practice, this means that the `deposit` field in your proposal has to meet the `min_initial_deposit` governance parameter.
-The minimum deposit is equal to `min_deposit * min_initial_deposit_ratio`. Only `uatom` is supported as deposit denom.
+The minimum deposit is equal to `min_deposit * min_initial_deposit_ratio`. Only `ahp` is supported as deposit denom.
+
 ```shell
 // checking the min_initial_deposit
-gaiad q gov params -o json
+hippod q gov params -o json
 {
    ...
    "params": {
@@ -103,14 +109,14 @@ gaiad q gov params -o json
 }
 ```
 
-
 ### Walkthrough example (changing x/staking params)
 
 Let's illustrate how to change the `x/staking` parameters.
 
 The module has the following parameters (values don't reflect actual on-chain values):
+
 ```shell
-gaiad q staking params -o json
+hippod q staking params -o json
 {
     "unbonding_time": "86400s",
     "max_validators": 100,
@@ -125,8 +131,9 @@ gaiad q staking params -o json
 ```
 
 We will use `draft-proposal` to help us create a proposal file that we will later submit.
+
 ```shell
-gaiad tx gov draft-proposal
+hippod tx gov draft-proposal
 // running the command will start a terminal applet allowing you to choose the proposal type
 
 // 1st screen
@@ -150,21 +157,22 @@ Use the arrow keys to navigate: ↓ ↑ → ←
 ```
 
 After choosing the `/cosmos.staking.v1beta1.MsgUpdateParams` message, the applet will allow you to set the message fields and some other proposal details.
-Upon completion, the proposal will be available in the directory where you called the `gaiad` command inside the `draft_proposal.json` file.
+Upon completion, the proposal will be available in the directory where you called the `hippod` command inside the `draft_proposal.json` file.
 
 Here is an example of the `draft_proposal.json` file:
+
 ```JSON
 {
  "messages": [
   {
    "@type": "/cosmos.staking.v1beta1.MsgUpdateParams",
-   "authority": "cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn",
+   "authority": "hippo10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn",
    "params": {
     "unbonding_time": "86400s",
     "max_validators": 100,
     "max_entries": 7,
     "historical_entries": 10000,
-    "bond_denom": "uatom",
+    "bond_denom": "ahp",
     "min_commission_rate": "0.050000000000000000",  // we are changing this from 0.000000000000000000
     "validator_bond_factor": "-1.000000000000000000",
     "global_liquid_staking_cap": "1.000000000000000000",
@@ -173,86 +181,89 @@ Here is an example of the `draft_proposal.json` file:
   }
  ],
  "metadata": "ipfs://CID",
- "deposit": "1000000uatom",
+ "deposit": "1000000ahp",
  "title": "Updating the staking params (min_comission_rate)",
  "summary": "This proposal will attempt to update the min_commission_rate staking parameter. During proposal creation and submission **all** proposal fields must be specified. Pay attention that you don't unintentionally specify different values for fields that you did not intend to change."
 }
 ```
 
-
 Finally, we submit the proposal:
 
 ```sh
-gaiad tx gov submit-proposal <path_to_proposal.json>
+hippod tx gov submit-proposal <path_to_proposal.json>
    --from <submitter address> \
-   --chain-id cosmoshub-4 \
+   --chain-id hippo-protocol-1 \
    --gas <max gas allocated> \
    --fees <fees allocated> \
    --node <node address> \
 ```
 
-Use `gaiad tx gov --help` to get more info about the CLI options, we will explain some options below:
+Use `hippod tx gov --help` to get more info about the CLI options, we will explain some options below:
 
 1. `--from` is the account key that pays the transaction fee and deposit amount. This account key must be already saved in the keyring on your device and it must be an address you control (e.g. `--from hypha-dev-wallet`).
-5. `--gas` is the maximum amount of gas permitted to be used to process the transaction (e.g. `--gas 500000`).
+2. `--gas` is the maximum amount of gas permitted to be used to process the transaction (e.g. `--gas 500000`).
    - The more content there is in the description of your proposal, the more gas your transaction will consume
    - If this number isn't high enough and there isn't enough gas to process your transaction, the transaction will fail.
    - The transaction will only use the amount of gas needed to process the transaction.
-6. `--fees` is a flat-rate incentive for a validator to process your transaction.
+3. `--fees` is a flat-rate incentive for a validator to process your transaction.
    - Many nodes use a minimum fee to disincentivize transaction spamming.
-   - 7500uatom is equal to 0.0075 ATOM.
-8. `--node` is using an established node to send the transaction to the Cosmos Hub 4 network. For available nodes, please look at the [Chain Registry](https://github.com/cosmos/chain-registry/blob/master/cosmoshub/chain.json).
+   - 7500ahp is equal to 0.0075 HP.
+4. `--node` is using an established node to send the transaction to the Hippo Protocol 4 network. For available nodes, please look at the [Chain Registry](https://github.com/cosmos/chain-registry/blob/master/cosmoshub/chain.json).
 
-**Note**: be careful what you use for `--fees`. A mistake here could result in spending hundreds or thousands of ATOMs accidentally, which cannot be recovered.
+**Note**: be careful what you use for `--fees`. A mistake here could result in spending hundreds or thousands of HPs accidentally, which cannot be recovered.
 
 ### Verifying your transaction
 
-After posting your transaction, your command line interface (gaiad) will provide you with the transaction's hash, which you can either query using gaiad or by searching the transaction hash using [Mintscan](https://www.mintscan.io/cosmos/txs/0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57). The hash should look something like this: `0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57`.
+After posting your transaction, your command line interface (hippod) will provide you with the transaction's hash, which you can either query using hippod or by searching the transaction hash using [Mintscan](https://www.mintscan.io/cosmos/txs/0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57). The hash should look something like this: `0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57`.
 
 Alternatively, you can check your Tx status and information using:
+
 ```shell
-gaiad q tx <hash>
+hippod q tx <hash>
 ```
 
 ### Troubleshooting a failed transaction
 
 There are a number of reasons why a transaction may fail. Here are two examples:
+
 1. **Running out of gas** - The more data there is in a transaction, the more gas it will need to be processed. If you don't specify enough gas, the transaction will fail.
 
-2. **Incorrect denomination** - You may have specified an amount in 'utom' or 'atom' instead of 'uatom', causing the transaction to fail.
+2. **Incorrect denomination** - You may have specified an amount in 'ahippo' or 'hp' instead of 'ahp', causing the transaction to fail.
 
-If you encounter a problem, try to troubleshoot it first, and then ask for help on the Cosmos Hub forum: [https://forum.cosmos.network](https://forum.cosmos.network). We can learn from failed attempts and use them to improve upon this guide.
+If you encounter a problem, try to troubleshoot it first, and then ask for help on the Hippo Protocol forum: [https://forum.cosmos.network](https://forum.cosmos.network). We can learn from failed attempts and use them to improve upon this guide.
 
 ### Depositing funds after a proposal has been submitted
+
 Sometimes a proposal is submitted without having the minimum token amount deposited yet. In these cases you would want to be able to deposit more tokens to get the proposal into the voting stage. In order to deposit tokens, you'll need to know what your proposal ID is after you've submitted your proposal. You can query all proposals by the following command:
 
 ```sh
-gaiad q gov proposals
+hippod q gov proposals
 ```
 
 If there are a lot of proposals on the chain already, you can also filter by your own address. For the proposal above, that would be:
 
 ```sh
-gaiad q gov proposals --depositor cosmos1hxv7mpztvln45eghez6evw2ypcw4vjmsmr8cdx
+hippod q gov proposals --depositor hippo1hxv7mpztvln45eghez6evw2ypcw4vjmsmr8cdx
 ```
 
 Once you have the proposal ID, this is the command to deposit extra tokens:
 
 ```sh
-gaiad tx gov deposit <proposal-id> <deposit_amount> --from <name>
+hippod tx gov deposit <proposal-id> <deposit_amount> --from <name>
 ```
 
-The amount per deposit is equal to `min_deposit * min_deposit_ratio`. Only `uatom` is supported as deposit denom. Transactions where `deposit_amount < (min_deposit * min_deposit_ratio)` will be rejected.
-
-
+The amount per deposit is equal to `min_deposit * min_deposit_ratio`. Only `ahp` is supported as deposit denom. Transactions where `deposit_amount < (min_deposit * min_deposit_ratio)` will be rejected.
 
 ### Submitting your proposal to the testnet
+
 Submitting to the testnet is identical to mainnet submissions aside from a few changes:
+
 1. The chain-id is `theta-testnet-001`.
 2. The list of usable endpoints can be found [here](https://github.com/cosmos/testnets/tree/master/public#readme).
-3. You will need testnet tokens, not ATOM. There is a faucet available in the Developer [Discord](https://discord.com/invite/cosmosnetwork).
+3. You will need testnet tokens, not HP. There is a faucet available in the Developer [Discord](https://discord.com/invite/cosmosnetwork).
 
 You may want to submit your proposal to the testnet chain before the mainnet for a number of reasons:
+
 1. To see what the proposal description will look like.
 2. To signal that your proposal is about to go live on the mainnet.
 3. To share what the proposal will look like in advance with stakeholders.

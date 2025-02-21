@@ -111,7 +111,7 @@ persistent_peers = "<node id 1>@<node address 1>:26656,<node id 2>@<node address
 
 ### Gas & Fees
 
-On Hippo Protocol mainnet, the accepted denom is `uatom`, where `1atom = 1.000.000uatom`
+On Hippo Protocol mainnet, the accepted denom is `ahp`, where `1hp = 1.000.000ahp`
 
 Transactions on the Hippo Protocol network need to include a transaction fee in order to be processed. This fee pays for the gas required to run the transaction. The formula is the following:
 
@@ -125,7 +125,7 @@ The `gasPrice` is the price of each unit of `gas`. Each validator sets a `min-ga
 
 The transaction `fees` are the product of `gas` and `gasPrice`. The higher the `gasPrice`/`fees`, the higher the chance that a transaction will get included in a block.
 
-**For mainnet, the recommended `gas-prices` is `0.0025uatom`.**
+**For mainnet, the recommended `gas-prices` is `0.0025ahp`.**
 
 A full-node keeps unconfirmed transactions in its mempool. In order to protect it from spam, it is better to set a `minimum-gas-prices` that the transaction must meet in order to be accepted in the node's mempool. This parameter can be set in `~/.hippo/config/app.toml`.
 
@@ -133,10 +133,10 @@ A full-node keeps unconfirmed transactions in its mempool. In order to protect i
 # The minimum gas prices a validator is willing to accept for processing a
 # transaction. A transaction's fees must meet the minimum of any denomination
 # specified in this config (e.g. 0.25token1;0.0001token2).
-minimum-gas-prices = "0.0025uatom"
+minimum-gas-prices = "0.0025ahp"
 ```
 
-The initial recommended `min-gas-prices` is `0.0025uatom`, but this can be changed later.
+The initial recommended `min-gas-prices` is `0.0025ahp`, but this can be changed later.
 
 ### Pruning of State
 
@@ -412,7 +412,7 @@ hippod export --height [height] --for-zero-height > [filename].json
 ## Verify Mainnet
 
 Help to prevent a catastrophe by running invariants on each block on your full
-node. In essence, by running invariants the node operator ensures that the state of mainnet is the correct expected state. One vital invariant check is that no atoms are being created or destroyed outside of expected protocol, however there are many other invariant checks each unique to their respective module. Because invariant checks are computationally expensive, they are not enabled by default. To run a node with these checks start your node without the `--x-crisis-skip-assert-invariants` flag:
+node. In essence, by running invariants the node operator ensures that the state of mainnet is the correct expected state. One vital invariant check is that no hps are being created or destroyed outside of expected protocol, however there are many other invariant checks each unique to their respective module. Because invariant checks are computationally expensive, they are not enabled by default. To run a node with these checks start your node without the `--x-crisis-skip-assert-invariants` flag:
 
 ```bash
 hippod start

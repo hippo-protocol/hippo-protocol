@@ -47,7 +47,7 @@ export const currentParams = {
   crisis: {
     ConstantFee: {
       amount: "1333000000",
-      denom: "uatom",
+      denom: "ahp",
     },
   },
   distribution: {
@@ -62,7 +62,7 @@ export const currentParams = {
       min_deposit: [
         {
           amount: "250000000",
-          denom: "uatom",
+          denom: "ahp",
         },
       ],
     },
@@ -99,7 +99,7 @@ export const currentParams = {
     inflation_max: "0.200000000000000000",
     inflation_min: "0.070000000000000000",
     inflation_rate_change: "1.000000000000000000",
-    mint_denom: "uatom",
+    mint_denom: "ahp",
   },
   slashing: {
     downtime_jail_duration: "600000000000",

@@ -22,7 +22,7 @@ Learn more about [being a delegator](./delegators/delegator-faq.md), learn about
 Do your own research and take precautions in regards to wallet security. Maintaining proper security practices is solely your responsibility when using third party wallets.
 :::
 
-These community-maintained web and mobile wallets allow you to store & transfer ATOM, delegate ATOM to validators, and vote on on-chain governance proposals. Note that we do not endorse any of the wallets, they are listed for your convenience.
+These community-maintained web and mobile wallets allow you to store & transfer HP, delegate HP to validators, and vote on on-chain governance proposals. Note that we do not endorse any of the wallets, they are listed for your convenience.
 
 - [Keplr](https://wallet.keplr.app) - Web
 - [Ledger](https://www.ledger.com/cosmos-wallet) - Hardware
@@ -45,7 +45,7 @@ If you are looking to run a validator node, follow the [validator setup guide](.
 
 ## Join the Community
 
-Have questions, comments, or new ideas? Participate in the Cosmos community through one of the following channels.
+Have questions, comments, or new ideas? Participate in the Hippo community through one of the following channels.
 
 - [Telegram](https://t.me/hippocrat_official)
 - [Discord](https://discord.com/invite/hpo)

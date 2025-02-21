@@ -23,7 +23,7 @@ governance process.
    	"messages": [
    	 {
    	  "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
-   	  "authority":"cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn" ,
+   	  "authority":"hippo10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn" ,
    	  "plan": {
    	   "name": "plan name",
    	   "height": "1000" ,

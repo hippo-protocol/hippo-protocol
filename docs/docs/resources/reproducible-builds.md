@@ -1,5 +1,5 @@
 ---
-title: Building Gaia Deterministically
+title: Building Hippo Deterministically
 order: 5
 ---
 
@@ -9,29 +9,29 @@ The [Tendermint rbuilder Docker image](https://github.com/tendermint/images/tree
 
 Make sure you have [Docker installed on your system](https://docs.docker.com/get-docker/).
 
-All the following instructions have been tested on *Ubuntu 18.04.2 LTS* with *docker 20.10.2*.
+All the following instructions have been tested on _Ubuntu 18.04.2 LTS_ with _docker 20.10.2_.
 
 ## Build
 
-Clone `gaia`:
+Clone `hippo`:
 
 ```sh
-git clone https://github.com/cosmos/gaia.git
+git clone https://github.com/hippocrat-dao/hippo-protocol.git
 ```
 
 Checkout the commit, branch, or release tag you want to build:
 
 ```sh
-cd gaia/
+cd hippo/
 git checkout v4.2.1
 ```
 
 The buildsystem supports and produces binaries for the following architectures:
 
-* **darwin/amd64**
-* **linux/amd64**
-* **linux/arm64**
-* **windows/amd64**
+- **darwin/amd64**
+- **linux/amd64**
+- **linux/arm64**
+- **windows/amd64**
 
 Run the following command to launch a build for all supported architectures:
 
@@ -44,7 +44,7 @@ The `artifacts/build_report` file contains the list of the build artifacts and t
 build sanity. An example of its contents follows:
 
 ```sh
-App: gaiad
+App: hippod
 Version: v4.2.1
 Commit: dbd8a6fb522c571debf958837f9113c56d418f6b
 Files:

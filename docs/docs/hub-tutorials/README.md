@@ -5,7 +5,7 @@ order: 1
 
 This folder contains tutorials related to the `hippod` application.
 
-- [Interacting with the `hippod` binary](./gaiad.md)
+- [Interacting with the `hippod` binary](./hippod.md)
 - [Running a full-node for the Hippo Protocol Mainnet](./join-mainnet.md)
 - [Running a full-node for a `hippo` testnet](./join-testnet.md)
 - [Upgrading a node from a previous version](./upgrade-node.md)

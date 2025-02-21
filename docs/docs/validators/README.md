@@ -3,10 +3,10 @@ title: Validators
 order: 1
 ---
 
-This folder contains documentation relevant to validators of the Cosmos Hub and other `gaia` blockchains.
+This folder contains documentation relevant to validators of the Hippo Protocol and other `hippo` blockchains.
 
 - [Validator Overview](./overview.md)
-- [Setting Up a Validator for Cosmos Hub Mainnet](./validator-setup.md)
+- [Setting Up a Validator for Hippo Protocol Mainnet](./validator-setup.md)
 - [Validator FAQ](./validator-faq.md)
 - [Validator Security Notice](./security.md)
 - Key Management Systems

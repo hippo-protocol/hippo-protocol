@@ -1,5 +1,5 @@
 ---
-title: Interacting with Hipod (CLI)
+title: Interacting with Hippod (CLI)
 order: 5
 ---
 
@@ -173,45 +173,19 @@ is included in a block.
 
 ### Fees & Gas
 
-The Hippo Protocol uses the `x/feemarket` module to
-dynamically vary the gas price based on demand.
-
 You need to specify a sufficient gas price or total fees
 to ensure that your transaction is included in a block,
 e.g.
 
 ```bash
-hippod tx bank send ... --fees=50000uatom
+hippod tx bank send ... --fees=50000ahp
 ```
 
 or
 
 ```bash
-hippod tx bank send ... --gas-prices=0.0025uatom
+hippod tx bank send ... --gas-prices=0.0025ahp
 ```
-
-To find out more about the current minimal gas price, you can query the feemarket module:
-
-```bash
-hippod q feemarket gas-prices
-```
-
-or
-
-```bash
-hippod q feemarket gas-prices uatom
-```
-
-which will output the current gas price similar to this:
-
-```bash
-price:
-  amount: "0.005"
-  denom: uatom
-```
-
-For more information, check out how to query the [feemarket](https://github.com/skip-mev/feemarket/blob/main/docs/SPEC.md#gas-price),
-or check out the [feemarket integration guide](https://github.com/skip-mev/feemarket/blob/main/docs/INTEGRATIONS.md).
 
 ### Account
 
@@ -426,11 +400,11 @@ hippod query staking validator <account_hippoval>
 
 #### Bond Tokens
 
-On the Hippo Protocol mainnet, we delegate `uatom`, where `1atom = 1000000uatom`. Here's how you can bond tokens to a testnet validator (_i.e._ delegate):
+On the Hippo Protocol mainnet, we delegate `ahp`, where `1hp = 1000000ahp`. Here's how you can bond tokens to a testnet validator (_i.e._ delegate):
 
 ```bash
 hippod tx staking delegate \
-  --amount=10000000uatom \
+  --amount=10000000ahp \
   --validator=<validator> \
   --from=<key_name> \
   --chain-id=<chain_id>
@@ -468,7 +442,7 @@ amount of tokens, use the following command.
 ```bash
 hippod tx staking unbond \
   <validator_addr> \
-  10atom \
+  10hp \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -503,7 +477,7 @@ A redelegation is a type delegation that allows you to bond illiquid tokens from
 hippod tx staking redelegate \
   <src-validator-operator-addr> \
   <dst-validator-operator-addr> \
-  10atom \
+  10hp \
   --from=<key_name> \
   --chain-id=<chain_id>
 ```
@@ -576,11 +550,11 @@ You can also query all of the delegations to a particular validator:
 Governance is the process from which users in the Hippo Protocol can come to consensus
 on software upgrades, parameters of the mainnet or signaling mechanisms through
 text proposals. This is done through voting on proposals, which will be submitted
-by `ATOM` holders on the mainnet.
+by `HP` holders on the mainnet.
 
 Some considerations about the voting process:
 
-- Voting is done by bonded `ATOM` holders on a 1 bonded `ATOM` 1 vote basis
+- Voting is done by bonded `HP` holders on a 1 bonded `HP` 1 vote basis
 - Delegators inherit the vote of their validator if they don't vote
 - Votes are tallied at the end of the voting period (2 weeks on mainnet) where
   each address can vote multiple times to update its `Option` value (paying the transaction fee each time),
@@ -609,7 +583,7 @@ hippod tx gov submit-proposal \
   --title=<title> \
   --description=<description> \
   --type="Text" \
-  --deposit="1000000uatom" \
+  --deposit="1000000ahp" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -688,10 +662,10 @@ hippod query gov proposer <proposal_id>
 
 #### Increase Deposit
 
-In order for a proposal to be broadcasted to the network, the amount deposited must be above a `minDeposit` value (initial value: `512000000uatom`). If the proposal you previously created didn't meet this requirement, you can still increase the total amount deposited to activate it. Once the minimum deposit is reached, the proposal enters voting period:
+In order for a proposal to be broadcasted to the network, the amount deposited must be above a `minDeposit` value (initial value: `512000000ahp`). If the proposal you previously created didn't meet this requirement, you can still increase the total amount deposited to activate it. Once the minimum deposit is reached, the proposal enters voting period:
 
 ```bash
-hippod tx gov deposit <proposal_id> "10000000uatom" \
+hippod tx gov deposit <proposal_id> "10000000ahp" \
   --from=<name> \
   --chain-id=<chain_id>
 ```
@@ -714,7 +688,7 @@ hippod query gov deposit <proposal_id> <depositor_address>
 
 #### Vote on a Proposal
 
-After a proposal's deposit reaches the `MinDeposit` value, the voting period opens. Bonded `Atom` holders can then cast vote on it:
+After a proposal's deposit reaches the `MinDeposit` value, the voting period opens. Bonded `HP` holders can then cast vote on it:
 
 ```bash
 hippod tx gov vote <proposal_id> <Yes/No/NoWithVeto/Abstain> \
@@ -865,7 +839,7 @@ The first step to create a multisig transaction is to initiate it on behalf
 of the multisig address created above:
 
 ```bash
-hippod tx bank send hippo1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 1000000uatom \
+hippod tx bank send hippo1570v2fq3twt0f0x02vhxpuzc9jc4yl30q2qned 1000000ahp \
   --from=<multisig_address> \
   --generate-only > unsignedTx.json
 ```

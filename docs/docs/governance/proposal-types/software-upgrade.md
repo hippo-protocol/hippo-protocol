@@ -6,16 +6,16 @@ parent:
 
 # Software Upgrade
 
-Software upgrade proposals are submitted to signal that a Cosmos Hub release with new features, bugfixes and various other improvements is available and ready for production deployment.
+Software upgrade proposals are submitted to signal that a Hippo Protocol release with new features, bugfixes and various other improvements is available and ready for production deployment.
 
-Software upgrade proposals should be submitted by the development teams tasked with stewarding the Cosmos Hub development.
+Software upgrade proposals should be submitted by the development teams tasked with stewarding the Hippo Protocol development.
 
 ## Procedure
 
 Use `draft-proposal` command to create a draft proposal and populate it with required information.
 
 ```sh
-✗ gaiad tx gov draft-proposal
+✗ hippod tx gov draft-proposal
 Use the arrow keys to navigate: ↓ ↑ → ←
 ? Select proposal type:
     text
@@ -30,12 +30,13 @@ Enter proposal authors: Stewards
 Enter proposal summary: Upgrade to v15
 Enter proposal details: <v15 upgrade changelog details>
 Enter proposal proposal forum url: /
-Enter proposal vote option context: Vote YES to support running this binary on the Cosmos Hub mainnet.
-Enter proposal deposit: 100001uatom
+Enter proposal vote option context: Vote YES to support running this binary on the Hippo Protocol mainnet.
+Enter proposal deposit: 100001ahp
 Enter msg authority: cosmos10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn
 ```
 
 In your `draft_proposal.json` populate the `height` with your desired upgrade height and populate the `info` field with additional information (must be a valid JSON string):
+
 ```json
 {
   "binaries": {
@@ -52,9 +53,9 @@ In your `draft_proposal.json` populate the `height` with your desired upgrade he
 Upload your `draft_metadata.json` to a distribution platform of your choice. `draft_proposal.json` is used to submit a governance proposal using `submit-proposal`.
 
 ```sh
-gaiad tx gov submit-proposal <path_to_proposal.json>
+hippod tx gov submit-proposal <path_to_proposal.json>
    --from <submitter address> \
-   --chain-id cosmoshub-4 \
+   --chain-id hippo-protocol-1 \
    --gas <max gas allocated> \
    --fees <fees allocated> \
    --node <node address> \
@@ -67,4 +68,3 @@ Software upgrade proposals can be submitted using the [x/upgrade module](https:/
 ## Additional information
 
 Additional instructions with debugging information is available on the [submitting](../submitting.md) page.
-

@@ -4,7 +4,7 @@ import yaml
 import json
 
 # Set chain id of cosmos hub
-chain_id = "cosmoshub-4"
+chain_id = "hippo-protocol-1"
 
 # Set address of node we'll be querying. You can find other nodes at atlas.cosmos.network or https://github.com/cosmos/registry
 node = "http://159.138.10.224:26657"
@@ -85,7 +85,7 @@ params = {
 
 for subspace, keys in params.items():
     for key, value in keys.items(): 
-        query_result = subprocess.check_output(['gaiad query params subspace' + ' ' + str(subspace) + ' ' + str(key) + ' ' + '--node ' + node + ' --chain-id ' + chain_id], shell=True)
+        query_result = subprocess.check_output(['hippod query params subspace' + ' ' + str(subspace) + ' ' + str(key) + ' ' + '--node ' + node + ' --chain-id ' + chain_id], shell=True)
         yaml_result = yaml.safe_load(query_result)['value']
         print(yaml_result)
         params[subspace][key] = json.loads(yaml_result)

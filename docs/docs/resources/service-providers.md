@@ -3,7 +3,7 @@ title: Service Providers
 order: 4
 ---
 
-'Service Providers' are defined as entities that provide services for end-users that involve some form of interaction with the Cosmos Hub. More specifically, this document is focused on interactions with tokens.
+'Service Providers' are defined as entities that provide services for end-users that involve some form of interaction with the Hippo Protocol. More specifically, this document is focused on interactions with tokens.
 
 Service Providers are expected to act as trusted points of contact to the blockchain for their end-users. This Service Providers section does not apply to wallet builders that want to provide Light Client functionalities.
 
@@ -15,7 +15,7 @@ This document describes:
   - [Installation and Configuration](#installation-and-configuration)
 - [Command-Line Interface](#command-line-interface)
   - [Available Commands](#available-commands)
-  - [Remote Access to gaiad](#remote-access-to-gaiad)
+  - [Remote Access to hippod](#remote-access-to-hippod)
   - [Create a Key Pair](#create-a-key-pair)
     - [Check your Account](#check-your-account)
   - [Check your Balance](#check-your-balance)
@@ -25,12 +25,12 @@ This document describes:
 
 ## Connection Options
 
-There are four main technologies to consider to connect to the Cosmos Hub:
+There are four main technologies to consider to connect to the Hippo Protocol:
 
 - Full Nodes: Interact with the blockchain.
 - REST Server: Serves for HTTP calls.
 - REST API: Use available endpoints for the REST Server.
-- GRPC: Connect to the Cosmos Hub using gRPC.
+- GRPC: Connect to the Hippo Protocol using gRPC.
 
 ## Running a Full Node
 
@@ -40,36 +40,36 @@ A Full Node is a network node that syncs up with the state of the blockchain. It
 
 ### Installation and Configuration
 
-This section describes the steps to run and interact with a full node for the Cosmos Hub.
+This section describes the steps to run and interact with a full node for the Hippo Protocol.
 
 First, you need to [install the software](../getting-started/installation).
 
-Consider running your own [Cosmos Hub Full Node](../hub-tutorials/join-mainnet).
+Consider running your own [Hippo Protocol Full Node](../hub-tutorials/join-mainnet).
 
 ## Command-Line Interface
 
-The command-line interface (CLI) is the most powerful tool to access the Cosmos Hub and use gaia.
-To use the CLI, you must install the latest version of `gaia` on your machine.
+The command-line interface (CLI) is the most powerful tool to access the Hippo Protocol and use hippo.
+To use the CLI, you must install the latest version of `hippo` on your machine.
 
-Compare your version with the [latest release version](https://github.com/cosmos/gaia/releases)
+Compare your version with the [latest release version](https://github.com/hippocrat-dao/hippo-protocol.git)
 
 ```bash
-gaiad version --long
+hippod version --long
 ```
 
 ### Available Commands
 
-All available CLI commands are shown when you run the `gaiad` command:
+All available CLI commands are shown when you run the `hippod` command:
 
 ```bash
-gaiad
+hippod
 ```
 
 ```bash
-Stargate Cosmos Hub App
+Stargate Hippo Protocol App
 
 Usage:
-  gaiad [command]
+  hippod [command]
 
 Available Commands:
 
@@ -94,22 +94,22 @@ Available Commands:
   version             Print the application binary version information
 
 Flags:
-  -h, --help                help for gaiad
-      --home string         directory for config and data (default "/Users/tobias/.gaia")
+  -h, --help                help for hippod
+      --home string         directory for config and data (default "/Users/tobias/.hippo")
       --log_format string   The logging format (json|plain) (default "plain")
       --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
       --trace               print out full stack trace on errors
 
-Use "gaiad [command] --help" for more information about a command.
+Use "hippod [command] --help" for more information about a command.
 ```
 
 For each displayed command, you can use the `--help` flag to get further information.
 
 ```bash
-gaiad query --help
+hippod query --help
 Usage:
-  gaiad query [flags]
-  gaiad query [command]
+  hippod query [flags]
+  hippod query [command]
 
 Aliases:
   query, q
@@ -138,32 +138,32 @@ Flags:
   -h, --help              help for query
 
 Global Flags:
-      --home string         directory for config and data (default "/Users/tobias/.gaia")
+      --home string         directory for config and data (default "/Users/tobias/.hippo")
       --log_format string   The logging format (json|plain) (default "plain")
       --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
       --trace               print out full stack trace on errors
 
-Use "gaiad query [command] --help" for more information about a command.
+Use "hippod query [command] --help" for more information about a command.
 ```
 
-### Remote Access to gaiad
+### Remote Access to hippod
 
-When choosing to remote access a Full Node and gaiad, you need a Full Node running and gaia installed on your local machine.
+When choosing to remote access a Full Node and hippod, you need a Full Node running and hippo installed on your local machine.
 
-`gaiad` is the tool that enables you to interact with the node that runs on the Cosmos Hub network, whether you run it yourself or not.
+`hippod` is the tool that enables you to interact with the node that runs on the Hippo Protocol network, whether you run it yourself or not.
 
-To set up `gaiad` on a local machine and connect to an existing full node, use the following command:
+To set up `hippod` on a local machine and connect to an existing full node, use the following command:
 
 ```bash
-gaiad config <flag> <value>
+hippod config <flag> <value>
 ```
 
 First, set up the address of the full node you want to connect to:
 
 ```bash
-gaiad config node <host>:<port
+hippod config node <host>:<port
 
-// example: gaiad config node https://77.87.106.33:26657 (note: this is a placeholder)
+// example: hippod config node https://77.87.106.33:26657 (note: this is a placeholder)
 ```
 
 If you run your own full node locally, use `tcp://localhost:26657` as the address.
@@ -171,7 +171,7 @@ If you run your own full node locally, use `tcp://localhost:26657` as the addres
 Finally, set the `chain-id` of the blockchain you want to interact with:
 
 ```bash
-gaiad config chain-id cosmoshub-4
+hippod config chain-id hippo-protocol-1
 ```
 
 Next, learn to use CLI commands to interact with the full node.
@@ -179,10 +179,10 @@ You can run these commands as remote control or when you are running it on your 
 
 ### Create a Key Pair
 
-The default key is `secp256k1 elliptic curve`. Use the `gaiad keys` command to list the keys and generate a new key.
+The default key is `secp256k1 elliptic curve`. Use the `hippod keys` command to list the keys and generate a new key.
 
 ```bash
-gaiad keys add <your_key_name>
+hippod keys add <your_key_name>
 ```
 
 You will be asked to create a password (at least 8 characters) for this key-pair. This will return the information listed below:
@@ -196,13 +196,13 @@ You will be asked to create a password (at least 8 characters) for this key-pair
 You can see all available keys by typing:
 
 ```bash
-gaiad keys list
+hippod keys list
 ```
 
 Use the `--recover` flag to add a key that imports a mnemonic to your keyring.
 
 ```bash
-gaiad keys add <your_key_name> --recover
+hippod keys add <your_key_name> --recover
 ```
 
 #### Check your Account
@@ -210,7 +210,7 @@ gaiad keys add <your_key_name> --recover
 You can view your account by using the `query account` command.
 
 ```bash
-gaiad query account <YOUR_ADDRESS>
+hippod query account <YOUR_ADDRESS>
 ```
 
 It will display your account type, account number, public key and current account sequence.
@@ -218,7 +218,7 @@ It will display your account type, account number, public key and current accoun
 ```bash
 '@type': /cosmos.auth.v1beta1.BaseAccount
 account_number: "xxxx"
-address: cosmosxxxx
+address: hippoxxxx
 pub_key:
   '@type': /cosmos.crypto.secp256k1.PubKey
   key: xxx
@@ -230,17 +230,17 @@ sequence: "x"
 Query the account balance with the command:
 
 ```bash
-gaiad query bank balances <YOUR_ADDRESS>
+hippod query bank balances <YOUR_ADDRESS>
 ```
 
 The response contains keys `balances` and `pagination`.
 Each `balances` entry contains an `amount` held, connected to a `denom` identifier.
-The typical $ATOM token is identified by the denom `uatom`. Where 1 `uatom` is 0.000001 ATOM.
+The typical $HP token is identified by the denom `ahp`. Where 1 `ahp` is 0.000001 HP.
 
 ```bash
 balances:
 - amount: "12345678"
-  denom: uatom
+  denom: ahp
 pagination:
   next_key: null
   total: "0"
@@ -260,19 +260,19 @@ pagination:
 To send coins using the CLI:
 
 ```bash
-gaiad tx bank send [from_key_or_address] [to_address] [amount] [flags]
+hippod tx bank send [from_key_or_address] [to_address] [amount] [flags]
 ```
 
 Parameters:
 
 - `<from_key_or_address>`: Key name or address of sending account.
 - `<to_address>`: Address of the recipient.
-- `<amount>`: This parameter accepts the format `<value|coinName>`, such as `1000000uatom`.
+- `<amount>`: This parameter accepts the format `<value|coinName>`, such as `1000000ahp`.
 
 Flags:
 
 - `--chain-id`: This flag allows you to specify the id of the chain. There are different ids for different testnet chains and mainnet chains.
-- `--gas-prices`: This flag allows you to specify the gas prices you pay for the transaction. The format is used as `0.0025uatom`
+- `--gas-prices`: This flag allows you to specify the gas prices you pay for the transaction. The format is used as `0.0025ahp`
 
 ## REST API
 
