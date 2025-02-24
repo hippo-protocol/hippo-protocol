@@ -1,0 +1,18 @@
+{
+  "messages":[
+    {
+    "@type": "/cosmos.distribution.v1beta1.MsgCommunityPoolSpend",
+    "authority": "hippo10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn",
+    "recipient": "hippo00af8sd0a9dfansdfoiasf0a9ssd9fa09i99990",
+    "amount": [{
+      "denom": "ahp",
+      "amount": "10000000000"
+    }]
+    }
+  ],
+  "deposit": "100000ahp",
+  "proposer": "hippo12xpdapokdfpsodf32das75sokdaadapsokd1sa",
+  "metadata": "Community Pool Spend Proposal Example",
+  "title": "Grant Proposal: Community Pool Spend",
+  "summary": "summary"
+}
