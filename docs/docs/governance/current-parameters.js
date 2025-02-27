@@ -21,7 +21,7 @@ export const currentParams = {
     governanceProposalLink: "",
   },
   proposals: {
-    numberOfValidatorsProp: "https://www.mintscan.io/cosmos/proposals/797",
+    numberOfValidatorsProp: "https://river.hippoprotocol.ai/hippo-protocol/staking",
   },
   auth: {
     max_memo_characters: "512",

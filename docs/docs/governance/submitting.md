@@ -214,7 +214,7 @@ Use `hippod tx gov --help` to get more info about the CLI options, we will expla
 
 ### Verifying your transaction
 
-After posting your transaction, your command line interface (hippod) will provide you with the transaction's hash, which you can either query using hippod or by searching the transaction hash using [Hippo River](https://www.mintscan.io/cosmos/txs/0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57). The hash should look something like this: `0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57`.
+After posting your transaction, your command line interface (hippod) will provide you with the transaction's hash, which you can either query using hippod or by searching the transaction hash using [Hippo River](hhttps://river.hippoprotocol.ai/hippo-protocol/tx). The hash should look something like this: `0506447AE8C7495DE970736474451CF23536DF8EA837FAF1CF6286565589AB57`.
 
 Alternatively, you can check your Tx status and information using:
 

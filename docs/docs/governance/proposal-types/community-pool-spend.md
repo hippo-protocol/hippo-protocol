@@ -26,7 +26,7 @@ You may directly query the Hippo Protocol for the balance of the Community Pool:
 
 `hippod q distribution community-pool --chain-id hippo-protocol-1 --node <rpc-node-address> `
 
-Alternatively, popular Hippo explorers such as [Hippo River](https://www.mintscan.io/cosmos) display the ongoing Community Pool balance.
+Alternatively, popular Hippo explorers such as [Hippo River](https://river.hippoprotocol.ai/) display the ongoing Community Pool balance.
 
 ### How can funds from the Community Pool be spent?
 

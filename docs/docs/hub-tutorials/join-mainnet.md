@@ -46,7 +46,7 @@ For instructions to join as a validator, please also see the [Validator Guide](.
 
 There are many explorers for the Hippo Protocol. For reference while setting up a node, here are a few recommendations:
 
-- [Hippo River](https://www.mintscan.io)
+- [Hippo River](https://river.hippoprotocol.ai/)
 
 * [Ping.Pub](https://ping.pub/hippo-protocol)
 

@@ -65,43 +65,39 @@ All available CLI commands are shown when you run the `hippod` command:
 hippod
 ```
 
-```bash
-Stargate Hippo Protocol App
+````bash
+Hippo App
 
 Usage:
-  hippod [command]
+hippod [command]
 
 Available Commands:
-
-
-  add-genesis-account Add a genesis account to genesis.json
-  collect-gentxs      Collect genesis txs and output a genesis.json file
-  debug               Tool for helping with debugging your application
-  export              Export state to JSON
-  gentx               Generate a genesis tx carrying a self delegation
-  help                Help about any command
-  init                Initialize private validator, p2p, genesis, and application configuration files
-  keys                Manage your application's keys
-  migrate             Migrate genesis to a specified target version
-  query               Querying subcommands
-  start               Run the full node
-  status              Query remote node for status
-  tendermint          Tendermint subcommands
-  testnet             Initialize files for a simapp testnet
-  tx                  Transactions subcommands
-  unsafe-reset-all    Resets the blockchain database, removes address book files, and resets data/priv_validator_state.json to the genesis state
-  validate-genesis    validates the genesis file at the default location or at the location passed as an arg
-  version             Print the application binary version information
+config Create or query an application CLI configuration file
+debug Tool for helping with debugging your application
+export Export state to JSON
+genesis Application's genesis-related subcommands
+help Help about any command
+init Initialize private validator, p2p, genesis, and application configuration files
+keys Manage your application's keys
+prune Prune app history states by keeping the recent heights and deleting old heights
+query Querying subcommands
+rollback rollback cosmos-sdk and tendermint state by one height
+snapshots Manage local snapshots
+start Run the full node
+status Query remote node for status
+tendermint Tendermint subcommands
+tx Transactions subcommands
+version Print the application binary version information
 
 Flags:
-  -h, --help                help for hippod
-      --home string         directory for config and data (default "/Users/tobias/.hippo")
-      --log_format string   The logging format (json|plain) (default "plain")
-      --log_level string    The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
-      --trace               print out full stack trace on errors
+-h, --help help for hippod
+--home string directory for config and data (default "/home/kek0114/.hippo")
+--log_format string The logging format (json|plain) (default "plain")
+--log_level string The logging level (trace|debug|info|warn|error|fatal|panic) (default "info")
+--log_no_color Disable colored logs
+--trace print out full stack trace on errors
 
-Use "hippod [command] --help" for more information about a command.
-```
+Use "hippod [command] --help" for more information about a command.```
 
 For each displayed command, you can use the `--help` flag to get further information.
 
@@ -144,7 +140,7 @@ Global Flags:
       --trace               print out full stack trace on errors
 
 Use "hippod query [command] --help" for more information about a command.
-```
+````
 
 ### Remote Access to hippod
 

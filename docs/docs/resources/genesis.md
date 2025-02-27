@@ -120,8 +120,10 @@ The `bank` module handles tokens. The only parameter that needs to be defined in
 
 ```json
 "bank": {
-      "send_enabled": false
-    }
+      "params": {
+        "send_enabled": [],
+        "default_send_enabled": true
+      }
 ```
 
 ### Staking

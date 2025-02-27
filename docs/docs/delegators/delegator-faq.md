@@ -17,7 +17,7 @@ For a practical guide on how to become a delegator, click [here](./delegator-gui
 
 <!-- markdown-link-check-disable-next-line -->
 
-In order to choose their validators, delegators have access to a range of information directly in [Hippo River](https://mintscan.io/cosmos/validators) or other Hippo Protocol block explorers.
+In order to choose their validators, delegators have access to a range of information directly in [Hippo River](https://river.hippoprotocol.ai/hippo-protocol/staking) or other Hippo Protocol block explorers.
 
 - **Validator's moniker**: Name of the validator candidate.
 - **Validator's description**: Description provided by the validator operator.
@@ -40,7 +40,7 @@ Being a delegator is not a passive task. Here are the main directives of a deleg
 Validators and delegators earn revenue in exchange for their services. This revenue is given in three forms:
 
 - **Block provisions (HPs):** They are paid in newly created HPs. Block provisions exist to incentivize HP holders to stake. The yearly inflation rate begins with 25% and decreases to 0 as time goes, pursuing sustainable incentive economy only with fees, similar to that of Bitcoin.
-- **Transaction fees (various tokens):** Each transfer on the Hippo Protocol comes with transactions fees. These fees can be paid in any currency that is whitelisted by the Hub's governance. Fees are distributed to bonded HP holders in proportion to their stake. The first whitelisted token at launch is the HP.
+- **Transaction fees (HPs):** Each transfer on the Hippo Protocol comes with transactions fees. These fees can be paid in HPs. Fees are distributed to bonded HP holders in proportion to their stake. The first whitelisted token at launch is the HP.
 
 ## Validator Commission
 
@@ -51,9 +51,9 @@ We consider a validator whose stake (i.e. self-delegated stake + delegated stake
 - 990 HPs in block provisions
 - 10 HPs in transaction fees.
 
-This amounts to a total of 1000 HPs and 100 Photons to be distributed among all staking pools.
+This amounts to a total of 1000 HPs to be distributed among all staking pools.
 
-Our validator's staking pool represents 10% of the total stake, which means the pool obtains 100 HPs and 10 Photons. Now let us look at the internal distribution of revenue:
+Our validator's staking pool represents 10% of the total stake, which means the pool obtains 100 HPs. Now let us look at the internal distribution of revenue:
 
 - Commission = `10% * 80% * 100` HPs = 8 HPs
 - Validator's revenue = `20% * 100` HPs + Commission = 28 HPs
