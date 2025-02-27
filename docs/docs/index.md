@@ -31,7 +31,7 @@ These community-maintained web and mobile wallets allow you to store & transfer 
 
 These block explorers allow you to search, view and analyze Hippo Protocol data&mdash;like blocks, transactions, validators, etc.
 
-- [Hippo River](https://mintscan.io)
+- [Hippo River](https://river.hippoprotocol.ai/)
 - [Ping.Pub](https://ping.pub/hippo-protocol)
 
 ## Hippo Protocol CLI

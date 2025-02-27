@@ -9,7 +9,7 @@ The Hippo Protocol is based on [CometBFT](https://docs.cometbft.com/v0.37/introd
 
 Validator candidates can bond their own HP and have HP ["delegated"](../delegators/delegator-guide-cli.md), or staked, to them by token holders. The Hippo Protocol can have 22 active validators, but over time the number of validators can be changed through governance (`MaxValidators` parameter). Validator voting power is determined by the total number of HP tokens delegated to them. Validators that do not have enough voting power to be in the top 22 are considered inactive. Inactive validators can become active if their staked amount increases so that they fall into the top 22 validators.
 
-Validators and their delegators earn HP as block provisions and tokens as transaction fees through execution of the Tendermint consensus protocol. Note that validators can set a commission percentage on the fees their delegators receive as additional incentive. You can find an overview of all current validators and their voting power on [Hippo River](https://www.mintscan.io/cosmos/validators).
+Validators and their delegators earn HP as block provisions and tokens as transaction fees through execution of the Tendermint consensus protocol. Note that validators can set a commission percentage on the fees their delegators receive as additional incentive. You can find an overview of all current validators and their voting power on [Hippo River](https://river.hippoprotocol.ai/hippo-protocol/staking).
 
 If validators double sign or are offline for an [extended period](./validator-faq.md#what-are-the-slashing-conditions), their staked HP (including HP of users that delegated to them) can be slashed. The penalty depends on the severity of the violation.
 

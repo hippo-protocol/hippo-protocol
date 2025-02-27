@@ -22,7 +22,7 @@ The Hippo Protocol is a public Proof-Of-Stake (PoS) blockchain, meaning that the
 
 Any user in the system can declare their intention to become a validator by sending a `create-validator` transaction to become validator candidates.
 
-The weight (i.e. voting power) of a validator determines whether they are an active validator. The active validator set is limited to [an amount](https://www.mintscan.io/cosmos/validators) that changes over time.
+The weight (i.e. voting power) of a validator determines whether they are an active validator. The active validator set is limited to [an amount](https://river.hippoprotocol.ai/hippo-protocol/staking) that changes over time.
 
 ### What is a full node?
 
@@ -96,7 +96,7 @@ Validator bond is a delegation of HP from a delegator to a validator. Validator 
 
 ### Is there a minimum amount of HP that must be delegated to be an active (bonded) validator?
 
-The minimum is 1 HP. But the network is currently secured by much higher values. You can check the minimum required HP to become part of the active validator set on the [Hippo River validator page](https://www.mintscan.io/hippo/validators).
+The minimum is 1 HP. But the network is currently secured by much higher values. You can check the minimum required HP to become part of the active validator set on the [Hippo River validator page](https://river.hippoprotocol.ai/hippo-protocol/staking).
 
 ### How do delegators choose their validators?
 
