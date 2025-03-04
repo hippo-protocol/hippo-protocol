@@ -184,6 +184,8 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 
 // overrideGenesis overrides some parameters in the genesis doc to the hippo-specific values.
 func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map[string]json.RawMessage) (json.RawMessage, error) {
+	genDoc.ConsensusParams.Block.MaxBytes = consensus.MaxBlockSize // 4MB
+
 	var stakingGenState stakingtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[stakingtypes.ModuleName], &stakingGenState); err != nil {
 		return nil, err

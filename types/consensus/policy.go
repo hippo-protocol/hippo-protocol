@@ -3,6 +3,7 @@ package consensus
 import "time"
 
 const (
+	MaxBlockSize    = 4194304 // 4MB, a single MsgSend Tx counts 200~500 bytes normally.
 	MinGasPrices    = "5000000000000" + DefaultHippoDenom
 	BlockTimeSec    = 6
 	UnbondingPeriod = 60 * 60 * 24 * 7 * 3 * time.Second
