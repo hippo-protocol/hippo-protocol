@@ -6,6 +6,12 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
+// GenesisSupply is the initial supply of tokens at genesis.
+const GenesisSupply int64 = 1_084_734_273
+
+// FirstYearInflatedToken is the amount of tokens to be inflated in the first year.
+const FirstYearInflatedToken int64 = 271_183_568
+
 // InflationCalculationFn defines the function required to calculate inflation rate during
 // BeginBlock. It receives the minter and params stored in the keeper, along with the current
 // bondedRatio and returns the newly calculated inflation rate.
@@ -28,11 +34,8 @@ func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, para
 	//
 	//	inflation <- targetInflatedToken / (targetSupply - (targetInflatedToken * equalizer ))
 
-	genesisSupply := int64(1_084_734_273)
-	firstYearInflatedToken := int64(271_183_568)
-
-	targetSupply := genesisSupply
-	targetInflatedToken := firstYearInflatedToken
+	targetSupply := GenesisSupply
+	targetInflatedToken := FirstYearInflatedToken
 	currentYear := 1 + (ctx.BlockHeight() / int64(params.BlocksPerYear))
 
 	for i := int64(1); i <= currentYear; i++ {
