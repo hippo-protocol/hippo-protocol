@@ -28,12 +28,31 @@ func (app *App) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedAddrs
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState := app.ModuleManager.ExportGenesis(ctx, app.appCodec)
-	appState, err := json.MarshalIndent(genState, "", "  ")
+	// Export all module states
+	allGenState := app.ModuleManager.ExportGenesis(ctx, app.appCodec)
+
+	// Initialize a filtered map
+	filteredGenState := make(map[string]json.RawMessage)
+
+	if len(modulesToExport) == 0 {
+		// No specific modules requested, export all
+		filteredGenState = allGenState
+	} else {
+		// Filter modules based on modulesToExport
+		for _, moduleName := range modulesToExport {
+			if moduleData, exists := allGenState[moduleName]; exists {
+				filteredGenState[moduleName] = moduleData
+			}
+		}
+	}
+
+	// Marshal filtered genesis state
+	appState, err := json.MarshalIndent(filteredGenState, "", "  ")
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
 
+	// Export validators
 	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
 	return servertypes.ExportedApp{
 		AppState:        appState,
