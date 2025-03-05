@@ -18,7 +18,6 @@ import (
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
 
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -228,14 +227,6 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	votingPeriod := consensus.VotingPeriod
 	govGenState.Params.VotingPeriod = &votingPeriod
 	appState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
-
-	var crisisGenState crisistypes.GenesisState
-	if err := cdc.UnmarshalJSON(appState[crisistypes.ModuleName], &crisisGenState); err != nil {
-		return nil, err
-	}
-	constantFee := sdk.TokensFromConsensusPower(consensus.ConstantFee, sdk.DefaultPowerReduction) // 100,000 HP
-	crisisGenState.ConstantFee = sdk.NewCoin(consensus.DefaultHippoDenom, constantFee)            // Spend 1,000,000 HP for invariants check
-	appState[crisistypes.ModuleName] = cdc.MustMarshalJSON(&crisisGenState)
 
 	var slashingGenState slashingtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[slashingtypes.ModuleName], &slashingGenState); err != nil {

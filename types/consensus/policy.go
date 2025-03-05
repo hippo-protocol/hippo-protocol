@@ -23,8 +23,6 @@ const (
 	MinDepositTokens = 50_000
 	MaxDepositPeriod = 60 * 60 * 24 * 14 * time.Second
 	VotingPeriod     = 60 * 60 * 24 * 14 * time.Second
-	// crisis
-	ConstantFee = 100_000
 	// slashing
 	SignedBlocksWindow      = 10_000
 	MinSignedPerWindow      = 75
