@@ -7,7 +7,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
@@ -52,6 +51,7 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	appparams "github.com/hippocrat-dao/hippo-protocol/app/params"
+	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cast"
 )
 
@@ -109,7 +109,7 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 	appKeepers.ScopedTransferKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 
 	// add keepers
-	appKeepers.AccountKeeper = authkeeper.NewAccountKeeper(appCodec, appKeepers.keys[authtypes.StoreKey], authtypes.ProtoBaseAccount, maccPerms, sdk.Bech32MainPrefix, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	appKeepers.AccountKeeper = authkeeper.NewAccountKeeper(appCodec, appKeepers.keys[authtypes.StoreKey], authtypes.ProtoBaseAccount, maccPerms, consensus.AddrPrefix, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	appKeepers.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
