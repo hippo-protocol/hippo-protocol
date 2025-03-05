@@ -6,11 +6,13 @@ import (
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
-// GenesisSupply is the initial supply of tokens at genesis.
-const GenesisSupply int64 = 1_084_734_273
+const (
+	// GenesisSupply is the initial supply of tokens at genesis.
+	GenesisSupply int64 = 1_084_734_273
 
-// FirstYearInflatedToken is the amount of tokens to be inflated in the first year.
-const FirstYearInflatedToken int64 = 271_183_568
+	// FirstYearInflatedToken is the amount of tokens to be inflated in the first year.
+	FirstYearInflatedToken int64 = 271_183_568
+)
 
 // InflationCalculationFn defines the function required to calculate inflation rate during
 // BeginBlock. It receives the minter and params stored in the keeper, along with the current
