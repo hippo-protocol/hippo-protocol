@@ -238,9 +238,11 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	slashingGenState.Params.SlashFractionDowntime = sdk.NewDecWithPrec(consensus.SlashFractionDowntime*100, 4) // 0.01%
 	appState[slashingtypes.ModuleName] = cdc.MustMarshalJSON(&slashingGenState)
 
-	// Override Tendermint consensus params: https://docs.tendermint.com/master/tendermint-core/using-tendermint.html#fields
-	genDoc.ConsensusParams.Evidence.MaxAgeDuration = unbondingPeriod // should correspond with unbondingPeriod for handling Nothing-At-Stake attacks
-	genDoc.ConsensusParams.Evidence.MaxAgeNumBlocks = int64(unbondingPeriod.Seconds()) / blockTimeSec
+	// MaxAgeDuration and MaxAgeNumBlocks values should be longer than unbonding period.
+	// Otherwise it may allow malicious validators to escape penalties.
+	// https://github.com/advisories/GHSA-555p-m4v6-cqxv
+	genDoc.ConsensusParams.Evidence.MaxAgeDuration = consensus.MaxAgeDuration          // 30 days
+	genDoc.ConsensusParams.Evidence.MaxAgeNumBlocks = int64(consensus.MaxAgeNumBlocks) // 30 days
 
 	return tmjson.Marshal(appState)
 }

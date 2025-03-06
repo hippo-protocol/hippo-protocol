@@ -28,4 +28,7 @@ const (
 	MinSignedPerWindow      = 75
 	SlashFractionDoubleSign = 5
 	SlashFractionDowntime   = 0
+	// evidence
+	MaxAgeDuration  = UnbondingPeriod * 30 / 21 // 30 days
+	MaxAgeNumBlocks = BlocksPerYear * 30 / 365  // 30 days
 )
