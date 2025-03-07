@@ -2,6 +2,8 @@
 
 `Hippo Protocol` is an application chain built using the Cosmos SDK for medical purposes.
 
+For detailed guide, please refer to [Hippo Protocol official document](https://docs.hippoprotocol.ai/).
+
 ## Running testnets with `hippod`
 
 If you want to spin up a quick testnet with your friends, you can follow these steps.
@@ -39,7 +41,11 @@ in this testnet.
    You can find `validator_address` by running `$ go run hippod/main.go tendermint show-node-id`. The output will
    be the hex-encoded `validator_address`. The default `port` is 26656.
 
+   To connect with testnet or mainnet, please check [the hub repository](./hub) and [official document](https://docs.hippoprotocol.ai/).
+
 9. Now you can start your nodes: `$ go run hippod/main.go start`.
+
+10. You can also now build binary `$ make build`, and then `$ cd build`, where you can use command line starting with `$ hippod`.
 
 Now you have a hippod testnet that you can use to try out changes to the Cosmos SDK or Tendermint!
 
