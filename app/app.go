@@ -158,8 +158,7 @@ type App struct {
 	sm *module.SimulationManager
 
 	// module configurator
-	configurator     module.Configurator
-	capabilityKeeper *capabilitykeeper.Keeper
+	configurator module.Configurator
 }
 
 func init() {
