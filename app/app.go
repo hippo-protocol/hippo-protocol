@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"path/filepath"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/runtime"
 	runtimeservices "github.com/cosmos/cosmos-sdk/runtime/services"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/cosmos/cosmos-sdk/store/streaming"
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
@@ -83,10 +83,10 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
 	ibctm "github.com/cosmos/ibc-go/v7/modules/light-clients/07-tendermint"
 
-	appparams "github.com/hippocrat-dao/hippo-protocol/app/params"
-
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
+
+	consensustypes "github.com/hippocrat-dao/hippo-protocol/types/consensus"
 )
 
 const Name = "hippo"
@@ -178,6 +178,14 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	// apply custom power reduction for 'a' base denom unit 10^18
+	sdk.DefaultPowerReduction = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(consensustypes.DefaultHippoPrecision), nil))
+
+	err = sdk.RegisterDenom(consensustypes.DefaultHippoDenom, sdk.NewDecWithPrec(1, consensustypes.DefaultHippoPrecision))
+	if err != nil {
+		panic(err)
+	}
 }
 
 // New returns a reference to an initialized Gaia.
@@ -190,7 +198,7 @@ func New(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
-	encodingConfig := makeEncodingConfig()
+	encodingConfig := MakeEncodingConfig()
 
 	appCodec := encodingConfig.Codec
 	legacyAmino := encodingConfig.Amino
@@ -535,13 +543,4 @@ func (app *App) setupUpgradeHandlers() {
 			u.CreateUpgradeHandler(app.ModuleManager, app.configurator, &app.AppKeepersWithKey),
 		)
 	}
-}
-
-func makeEncodingConfig() appparams.EncodingConfig {
-	encodingConfig := appparams.MakeEncodingConfig()
-	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
-	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
-	ModuleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)
-	return encodingConfig
 }
