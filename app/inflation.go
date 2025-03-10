@@ -19,7 +19,7 @@ const (
 // bondedRatio and returns the newly calculated inflation rate.
 // It can be used to specify a custom inflation calculation logic, instead of relying on the
 // default logic provided by the sdk.
-func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio sdk.Dec) sdk.Dec {
+func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio math.LegacyDec) math.LegacyDec {
 	//	targetSupply <- genesisSupply
 	//	targetInflatedToken <- firstYearInflatedToken
 	//	currentYear <- 1 + floor(currentBlockHeight / BlocksPerYear)
