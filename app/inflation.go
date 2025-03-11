@@ -1,6 +1,8 @@
 package app
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -19,7 +21,7 @@ const (
 // bondedRatio and returns the newly calculated inflation rate.
 // It can be used to specify a custom inflation calculation logic, instead of relying on the
 // default logic provided by the sdk.
-func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio math.LegacyDec) math.LegacyDec {
+func CustomInflationCalculationFn(context context.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio math.LegacyDec) math.LegacyDec {
 	//	targetSupply <- genesisSupply
 	//	targetInflatedToken <- firstYearInflatedToken
 	//	currentYear <- 1 + floor(currentBlockHeight / BlocksPerYear)
@@ -38,6 +40,11 @@ func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, para
 
 	targetSupply := GenesisSupply
 	targetInflatedToken := FirstYearInflatedToken
+
+	// sdk.Context is deprecated in v0.50
+	// https://github.com/cosmos/cosmos-sdk/blob/548ca00b11f89145fc112e54e680f6710172bb5a/UPGRADING.md#core-api
+	ctx := sdk.UnwrapSDKContext(context)
+
 	currentYear := 1 + (ctx.BlockHeight() / int64(params.BlocksPerYear))
 
 	for i := int64(1); i <= currentYear; i++ {
