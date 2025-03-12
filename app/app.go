@@ -211,7 +211,7 @@ func New(
 		interfaceRegistry: interfaceRegistry,
 	}
 
-	app.InitKeyAndKeepers(encodingConfig, maccPerms, BlockedAddresses(), appOpts, bApp)
+	app.InitKeyAndKeepers(encodingConfig, maccPerms, BlockedAddresses(), appOpts, bApp, logger)
 
 	// load state streaming if enabled
 	if err := app.RegisterStreamingServices(appOpts, app.GetKVStoreKey()); err != nil {
