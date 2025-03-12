@@ -98,6 +98,12 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 	legacyAmino := encodingConfig.Amino
 	appKeepers.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, appKeepers.keys[paramstypes.StoreKey], appKeepers.tkeys[paramstypes.TStoreKey])
 
+	// From here, We makes keepers.
+	// runtime.NewKVStoreService wrapper should be used for some keepers https://docs.cosmos.network/v0.50/build/migrations/upgrading#module-wiring
+	// e.g. keys[consensusparamtypes.StoreKey] -> runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey])
+	//
+	// Also new parameter runtime.EventService{} added https://github.com/cosmos/cosmos-sdk/pull/15547/files#diff-8d1ca8086ee74e8f0490825ba21e7435be4753922192ff691311483aa3e71a0a
+
 	// set the BaseApp's parameter store
 	appKeepers.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[consensusparamtypes.StoreKey]), authtypes.NewModuleAddress(govtypes.ModuleName).String(), runtime.EventService{})
@@ -153,6 +159,8 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 	appKeepers.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, runtime.NewKVStoreService(appKeepers.keys[upgradetypes.StoreKey]), appCodec, homePath, bApp, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
+	// appKeepers.AccountKeeper.AddressCodec(): https://github.com/cosmos/cosmos-sdk/pull/15825/files#diff-8d1ca8086ee74e8f0490825ba21e7435be4753922192ff691311483aa3e71a0a
+	// runtime.ProvideCometInfoService(): https://github.com/cosmos/cosmos-sdk/pull/15850
 	evidenceKeeper := evidencekeeper.NewKeeper(
 		appCodec, runtime.NewKVStoreService(appKeepers.keys[evidencetypes.StoreKey]), appKeepers.StakingKeeper, appKeepers.SlashingKeeper, appKeepers.AccountKeeper.AddressCodec(), runtime.ProvideCometInfoService(),
 	)
@@ -160,6 +168,8 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 	appKeepers.EvidenceKeeper = *evidenceKeeper
 
 	// Create IBC Keeper
+	// IBC Keepers need new parameter authority, that is authtypes.NewModuleAddress(govtypes.ModuleName).String()
+	// https://ibc.cosmos.network/v8/migrations/v7-to-v8/#authority
 	appKeepers.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, appKeepers.keys[ibcexported.StoreKey], appKeepers.GetSubspace(ibcexported.ModuleName), appKeepers.StakingKeeper, appKeepers.UpgradeKeeper, appKeepers.ScopedIBCKeeper, authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
@@ -186,6 +196,9 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 	// by granting the governance module the right to execute the message.
 	// See: https://docs.cosmos.network/main/modules/gov#proposal-messages
 	govRouter := govv1beta1.NewRouter()
+	// Legacy 3 handler(upgrade, ibc)for govv1beta removed.
+	// https://github.com/cosmos/cosmos-sdk/pull/16845
+	// https://github.com/cosmos/ibc-go/pull/4620/files
 	govRouter.AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(appKeepers.ParamsKeeper))
 
