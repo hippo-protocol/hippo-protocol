@@ -50,7 +50,13 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
 	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome))
 
-	encodingConfig := app.MakeEncodingConfig()
+	encodingConfig := params.EncodingConfig{
+		InterfaceRegistry: hippoApp.InterfaceRegistry(),
+		Codec:             hippoApp.AppCodec(),
+		TxConfig:          hippoApp.TxConfig(),
+		Amino:             hippoApp.LegacyAmino(),
+	}
+
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
@@ -90,7 +96,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig, hippoApp.BasicModuleManager)
+	initRootCmd(rootCmd, encodingConfig.TxConfig, hippoApp.BasicModuleManager)
 	overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        ChainID,
 		flags.FlagKeyringBackend: "test",
@@ -134,7 +140,7 @@ func initCometBFTConfig() *cmbtcfg.Config {
 	return cfg
 }
 
-func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, basicManager module.BasicManager) {
+func initRootCmd(rootCmd *cobra.Command, txConfig client.TxConfig, basicManager module.BasicManager) {
 	cfg := sdk.GetConfig()
 	cfg.Seal()
 
@@ -156,7 +162,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, b
 		// client/rpc.StatusCommand() is now at server.StatusCommand()
 		// https://github.com/cosmos/cosmos-sdk/blob/main/CHANGELOG.md#improvements-12
 		server.StatusCommand(),
-		genesisCommand(encodingConfig, basicManager),
+		genesisCommand(txConfig, basicManager),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
@@ -168,8 +174,8 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
 // genesisCommand builds genesis-related `simd genesis` command. Users may provide application specific commands as a parameter
-func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.BasicManager, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, basicManager, app.DefaultNodeHome)
+func genesisCommand(txConfig client.TxConfig, basicManager module.BasicManager, cmds ...*cobra.Command) *cobra.Command {
+	cmd := genutilcli.Commands(txConfig, basicManager, app.DefaultNodeHome)
 
 	for _, sub_cmd := range cmds {
 		cmd.AddCommand(sub_cmd)
