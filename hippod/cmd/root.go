@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/hippocrat-dao/hippo-protocol/app/params"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/viper"
@@ -28,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
@@ -39,9 +41,13 @@ var ChainID string
 
 // NewRootCmd creates a new root command for simd. It is called once in the
 // main function.
+// reference: https://github.com/cosmos/cosmos-sdk/blob/v0.50.12/simapp/simd/cmd/root.go
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	// Set config for wallet
 	consensus.SetWalletConfig()
+	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
+	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
+	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, nil)
 
 	encodingConfig := app.MakeEncodingConfig()
 	initClientCtx := client.Context{}.
@@ -83,15 +89,26 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		},
 	}
 
-	initRootCmd(rootCmd, encodingConfig)
+	initRootCmd(rootCmd, encodingConfig, hippoApp.BasicModuleManager)
 	overwriteFlagDefaults(rootCmd, map[string]string{
 		flags.FlagChainID:        ChainID,
 		flags.FlagKeyringBackend: "test",
 	})
 
+	// add keyring to autocli opts
+	// reference: https://docs.cosmos.network/v0.50/build/migrations/upgrading#autocli
+	autoCliOpts := hippoApp.AutoCliOpts()
+	autoCliOpts.ClientCtx = initClientCtx
+
+	if err := autoCliOpts.EnhanceRootCommand(rootCmd); err != nil {
+		panic(err)
+	}
+
 	return rootCmd, encodingConfig
 }
 
+// All methods below from command.go of simd
+// https://github.com/cosmos/cosmos-sdk/blob/v0.50.12/simapp/simd/cmd/commands.go
 // initAppConfig returns custom app template and configs.
 func initAppConfig() (string, interface{}) {
 	type CustomAppConfig struct {
@@ -116,9 +133,12 @@ func initCometBFTConfig() *cmbtcfg.Config {
 	return cfg
 }
 
-func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
+func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig, basicManager module.BasicManager) {
+	cfg := sdk.GetConfig()
+	cfg.Seal()
+
 	rootCmd.AddCommand(
-		InitCmd(app.ModuleBasics, app.DefaultNodeHome),
+		InitCmd(basicManager, app.DefaultNodeHome),
 		debug.Cmd(),
 		// confix is used instead of config.Cmd
 		// https://docs.cosmos.network/v0.50/build/migrations/upgrading#config-files
@@ -135,7 +155,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		// client/rpc.StatusCommand() is now at server.StatusCommand()
 		// https://github.com/cosmos/cosmos-sdk/blob/main/CHANGELOG.md#improvements-12
 		server.StatusCommand(),
-		genesisCommand(encodingConfig),
+		genesisCommand(encodingConfig, basicManager),
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
@@ -147,8 +167,8 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 }
 
 // genesisCommand builds genesis-related `simd genesis` command. Users may provide application specific commands as a parameter
-func genesisCommand(encodingConfig params.EncodingConfig, cmds ...*cobra.Command) *cobra.Command {
-	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, app.ModuleBasics, app.DefaultNodeHome)
+func genesisCommand(encodingConfig params.EncodingConfig, basicManager module.BasicManager, cmds ...*cobra.Command) *cobra.Command {
+	cmd := genutilcli.GenesisCoreCommand(encodingConfig.TxConfig, basicManager, app.DefaultNodeHome)
 
 	for _, sub_cmd := range cmds {
 		cmd.AddCommand(sub_cmd)
@@ -167,15 +187,13 @@ func queryCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		rpc.QueryEventForTxCmd(),
-		//authcmd.GetAccountCmd(),
-		rpc.ValidatorCommand(),
-		//rpc.BlockCommand(),
+		rpc.WaitTxCmd(),
+		server.QueryBlockCmd(),
 		authcmd.QueryTxsByEventsCmd(),
+		server.QueryBlocksCmd(),
 		authcmd.QueryTxCmd(),
+		server.QueryBlockResultsCmd(),
 	)
-
-	app.ModuleBasics.AddQueryCommands(cmd)
 
 	return cmd
 }
@@ -198,10 +216,8 @@ func txCommand() *cobra.Command {
 		authcmd.GetBroadcastCommand(),
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
-		//authcmd.GetAuxToFeeCommand(),
+		authcmd.GetSimulateCmd(),
 	)
-
-	app.ModuleBasics.AddTxCommands(cmd)
 
 	return cmd
 }
