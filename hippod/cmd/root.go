@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/snapshot"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
-	"github.com/hippocrat-dao/hippo-protocol/app/params"
+	"github.com/cosmos/ibc-go/v8/testing/simapp/params"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/viper"
 
