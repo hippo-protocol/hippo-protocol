@@ -50,7 +50,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	appparams "github.com/hippocrat-dao/hippo-protocol/app/params"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cast"
 )
@@ -85,7 +84,8 @@ type AppKeepersWithKey struct {
 }
 
 func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
-	encodingConfig appparams.EncodingConfig,
+	appCodec codec.Codec,
+	legacyAmino *codec.LegacyAmino,
 	maccPerms map[string][]string,
 	blockedAddrs map[string]bool,
 	appOpts servertypes.AppOptions,
@@ -94,8 +94,6 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 ) {
 	appKeepers.GenerateKeys()
 
-	appCodec := encodingConfig.Codec
-	legacyAmino := encodingConfig.Amino
 	appKeepers.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, appKeepers.keys[paramstypes.StoreKey], appKeepers.tkeys[paramstypes.TStoreKey])
 
 	// From here, We makes keepers.
@@ -128,7 +126,7 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 	)
 
 	appKeepers.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec, runtime.NewKVStoreService(appKeepers.keys[stakingtypes.StoreKey]), appKeepers.AccountKeeper, appKeepers.BankKeeper, authtypes.NewModuleAddress(govtypes.ModuleName).String(), authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr), authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
+		appCodec, runtime.NewKVStoreService(appKeepers.keys[stakingtypes.StoreKey]), appKeepers.AccountKeeper, appKeepers.BankKeeper, authtypes.NewModuleAddress(govtypes.ModuleName).String(), authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()), authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	)
 	appKeepers.MintKeeper = mintkeeper.NewKeeper(appCodec, runtime.NewKVStoreService(appKeepers.keys[minttypes.StoreKey]), appKeepers.StakingKeeper, appKeepers.AccountKeeper, appKeepers.BankKeeper, authtypes.FeeCollectorName, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 

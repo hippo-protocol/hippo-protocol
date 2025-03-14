@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
@@ -162,9 +163,19 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			}
 
 			genDoc.AppState = appState
-			// v0.50 requires AppGenesisFromFile
-			// https://docs.cosmos.network/v0.50/build/migrations/upgrading#xgenutil
-			appGenesis, err := genttypes.AppGenesisFromFile(genFile)
+
+			// v0.50.12 requires AppGenesis to pass to generate Genesis File
+			// reference: https://github.com/cosmos/cosmos-sdk/blob/v0.50.12/x/genutil/client/cli/init.go#L144-L163
+			appGenesis := &genttypes.AppGenesis{}
+			appGenesis.AppName = version.AppName
+			appGenesis.AppVersion = version.Version
+			appGenesis.ChainID = chainID
+			appGenesis.AppState = appState
+			appGenesis.InitialHeight = initHeight
+			appGenesis.Consensus = &genttypes.ConsensusGenesis{
+				Validators: nil,
+			}
+
 			if err != nil {
 				panic(err)
 			}
