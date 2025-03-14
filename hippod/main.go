@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	rootCmd, _ := cmd.NewRootCmd()
+	rootCmd := cmd.NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
 		server.NewDefaultContext().Logger.Error(err.Error())
 		os.Exit(1)

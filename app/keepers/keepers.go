@@ -50,7 +50,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	appparams "github.com/hippocrat-dao/hippo-protocol/app/params"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cast"
 )
@@ -85,7 +84,8 @@ type AppKeepersWithKey struct {
 }
 
 func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
-	encodingConfig appparams.EncodingConfig,
+	appCodec codec.Codec,
+	legacyAmino *codec.LegacyAmino,
 	maccPerms map[string][]string,
 	blockedAddrs map[string]bool,
 	appOpts servertypes.AppOptions,
@@ -94,8 +94,6 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 ) {
 	appKeepers.GenerateKeys()
 
-	appCodec := encodingConfig.Codec
-	legacyAmino := encodingConfig.Amino
 	appKeepers.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, appKeepers.keys[paramstypes.StoreKey], appKeepers.tkeys[paramstypes.TStoreKey])
 
 	// From here, We makes keepers.
