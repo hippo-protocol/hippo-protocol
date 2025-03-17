@@ -176,9 +176,6 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 				Validators: nil,
 			}
 
-			if err != nil {
-				panic(err)
-			}
 			if err = genutil.ExportGenesisFile(appGenesis, genFile); err != nil {
 				return errors.Wrap(err, "Failed to export genesis file")
 			}
