@@ -1,9 +1,19 @@
 package app
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+)
+
+const (
+	// GenesisSupply is the initial supply of tokens at genesis.
+	GenesisSupply int64 = 1_084_734_273
+
+	// FirstYearInflatedToken is the amount of tokens to be inflated in the first year.
+	FirstYearInflatedToken int64 = 271_183_568
 )
 
 // InflationCalculationFn defines the function required to calculate inflation rate during
@@ -11,7 +21,7 @@ import (
 // bondedRatio and returns the newly calculated inflation rate.
 // It can be used to specify a custom inflation calculation logic, instead of relying on the
 // default logic provided by the sdk.
-func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio sdk.Dec) sdk.Dec {
+func CustomInflationCalculationFn(context context.Context, minter minttypes.Minter, params minttypes.Params, bondedRatio math.LegacyDec) math.LegacyDec {
 	//	targetSupply <- genesisSupply
 	//	targetInflatedToken <- firstYearInflatedToken
 	//	currentYear <- 1 + floor(currentBlockHeight / BlocksPerYear)
@@ -28,11 +38,13 @@ func CustomInflationCalculationFn(ctx sdk.Context, minter minttypes.Minter, para
 	//
 	//	inflation <- targetInflatedToken / (targetSupply - (targetInflatedToken * equalizer ))
 
-	genesisSupply := int64(1_084_734_273)
-	firstYearInflatedToken := int64(271_183_568)
+	targetSupply := GenesisSupply
+	targetInflatedToken := FirstYearInflatedToken
 
-	targetSupply := genesisSupply
-	targetInflatedToken := firstYearInflatedToken
+	// sdk.Context is deprecated in v0.50
+	// https://github.com/cosmos/cosmos-sdk/blob/548ca00b11f89145fc112e54e680f6710172bb5a/UPGRADING.md#core-api
+	ctx := sdk.UnwrapSDKContext(context)
+
 	currentYear := 1 + (ctx.BlockHeight() / int64(params.BlocksPerYear))
 
 	for i := int64(1); i <= currentYear; i++ {
