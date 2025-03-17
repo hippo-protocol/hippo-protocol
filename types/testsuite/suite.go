@@ -1,6 +1,10 @@
 package testsuite
 
 import (
+	"cosmossdk.io/store"
+	storetypes "cosmossdk.io/store/types"
+	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
 	dbm "github.com/cometbft/cometbft-db"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cometbft/cometbft/libs/log"
@@ -8,16 +12,12 @@ import (
 	"github.com/cometbft/cometbft/types/time"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -26,12 +26,12 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
-	ibcexported "github.com/cosmos/ibc-go/v7/modules/core/exported"
-	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/hippocrat-dao/hippo-protocol/app/params"
@@ -146,13 +146,13 @@ func (suite *TestSuite) SetupTest() {
 	homePath := suite.T().TempDir()
 	suite.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keyParams[upgradetypes.StoreKey], appCodec, homePath, NewTestProtocolVersionSetter(), authtypes.NewModuleAddress(govtypes.ModuleName).String())
 	suite.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keyParams[ibcexported.StoreKey], paramsKeeper.Subspace(ibcexported.ModuleName), suite.StakingKeeper, suite.UpgradeKeeper, scopedIBCKeeper,
+		appCodec, keyParams[ibcexported.StoreKey], paramsKeeper.Subspace(ibcexported.ModuleName), suite.StakingKeeper, suite.UpgradeKeeper, scopedIBCKeeper
 	)
 	suite.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec, keyParams[ibctransfertypes.StoreKey], paramsKeeper.Subspace(ibctransfertypes.ModuleName),
 		suite.IBCKeeper.ChannelKeeper,
-		suite.IBCKeeper.ChannelKeeper, &suite.IBCKeeper.PortKeeper,
-		suite.AccountKeeper, suite.BankKeeper, scopedIBCKeeper,
+		suite.IBCKeeper.ChannelKeeper, suite.IBCKeeper.PortKeeper,
+		suite.AccountKeeper, suite.BankKeeper,scopedIBCKeeper,
 	)
 }
 
