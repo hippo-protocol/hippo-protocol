@@ -1,16 +1,18 @@
-package app
+package test
 
 import (
 	"testing"
 
-	"cosmossdk.io/math"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
-	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/stretchr/testify/assert"
 
 	"cosmossdk.io/log"
+	"cosmossdk.io/math"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+
+	"github.com/hippocrat-dao/hippo-protocol/app"
+	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 )
 
 func CalcCustomInflation(sdkCtx types.Context) math.LegacyDec {
@@ -24,11 +26,14 @@ func CalcCustomInflation(sdkCtx types.Context) math.LegacyDec {
 	// In CustomInflationCalculationFn, we do not use the bondedRatio, so we can pass any value
 	bondedRatio := math.LegacyNewDec(1)
 
-	inflation := CustomInflationCalculationFn(sdkCtx, minter, params, bondedRatio)
+	inflation := app.CustomInflationCalculationFn(sdkCtx, minter, params, bondedRatio)
 	return inflation
 }
 
 func TestInflation(t *testing.T) {
+	FirstYearInflatedToken := app.FirstYearInflatedToken
+	GenesisSupply := app.GenesisSupply
+
 	// Tolerance is 0.01% for errors resulting from floating point arithmetic
 	tolerance, _ := math.LegacyNewDecFromStr("0.0001")
 
