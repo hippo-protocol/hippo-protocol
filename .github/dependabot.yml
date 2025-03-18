@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    exclude-patterns:
+      - "/docs/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 0
