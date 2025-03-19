@@ -17,6 +17,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/hippocrat-dao/hippo-protocol/test"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
@@ -82,6 +83,17 @@ func TestInitCmd(t *testing.T) {
 		err := initCmd.Execute()
 		require.NoError(t, err)
 	})
+}
+
+func TestActualInitCmd(t *testing.T) {
+	hippoApp := test.GetApp()
+	cmd := InitCmd(hippoApp.BasicModuleManager, app.DefaultNodeHome)
+
+	require.NotNil(t, cmd)
+	require.Equal(t, cmd.Use, "init [moniker]")
+	require.Equal(t, cmd.Short, "Initialize private validator, p2p, genesis, and application configuration files")
+	require.Equal(t, cmd.Long, `Initialize validators's and node's configuration files.`)
+	require.NotNil(t, cmd.Example)
 }
 
 func TestOverrideGenesis(t *testing.T) {
@@ -172,4 +184,33 @@ func TestFlags(t *testing.T) {
 	require.Equal(t, "recover", FlagRecover)
 	require.Equal(t, "default-denom", FlagDefaultBondDenom)
 	require.Equal(t, "staking-bond-denom", FlagStakingBondDenom)
+}
+
+func TestNewPrintInfo(t *testing.T) {
+	moniker := "moniker"
+	chainID := "chainID"
+	nodeID := "nodeID"
+	genTxsDir := "genTxsDir"
+	appMessage := json.RawMessage(`{"name": "John", "age": 30}`)
+
+	printInfo := newPrintInfo(moniker, chainID, nodeID, genTxsDir, appMessage)
+
+	require.Equal(t, moniker, printInfo.Moniker)
+	require.Equal(t, chainID, printInfo.ChainID)
+	require.Equal(t, nodeID, printInfo.NodeID)
+	require.Equal(t, genTxsDir, printInfo.GenTxsDir)
+	require.Equal(t, appMessage, printInfo.AppMessage)
+}
+
+func TestDisplayInfo(t *testing.T) {
+	moniker := "moniker"
+	chainID := "chainID"
+	nodeID := "nodeID"
+	genTxsDir := "genTxsDir"
+	appMessage := json.RawMessage(`{"name": "John", "age": 30}`)
+
+	printInfo := newPrintInfo(moniker, chainID, nodeID, genTxsDir, appMessage)
+	err := displayInfo(printInfo)
+
+	require.NoError(t, err)
 }
