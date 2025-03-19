@@ -1,4 +1,4 @@
-package test
+package main_test
 
 import (
 	"os/exec"
@@ -6,7 +6,7 @@ import (
 )
 
 func TestMainCommand(t *testing.T) {
-	cmd := exec.Command("go", "run", "-C", "../hippod", ".")
+	cmd := exec.Command("go", "run", ".")
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
