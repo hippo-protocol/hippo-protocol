@@ -24,4 +24,4 @@ jobs:
         run: make build
 
       - name: Test
-        run: go test -coverpkg=./... ./... -v
+        run: go test -coverpkg=./... ./... -v && go test ./... -coverprofile cover.out && go tool cover -func=cover.out
