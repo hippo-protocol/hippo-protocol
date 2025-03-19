@@ -1,4 +1,4 @@
-package test
+package app
 
 import (
 	"testing"
@@ -11,7 +11,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 
-	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 )
 
@@ -26,13 +25,13 @@ func CalcCustomInflation(sdkCtx types.Context) math.LegacyDec {
 	// In CustomInflationCalculationFn, we do not use the bondedRatio, so we can pass any value
 	bondedRatio := math.LegacyNewDec(1)
 
-	inflation := app.CustomInflationCalculationFn(sdkCtx, minter, params, bondedRatio)
+	inflation := CustomInflationCalculationFn(sdkCtx, minter, params, bondedRatio)
 	return inflation
 }
 
 func TestInflation(t *testing.T) {
-	FirstYearInflatedToken := app.FirstYearInflatedToken
-	GenesisSupply := app.GenesisSupply
+	FirstYearInflatedToken := FirstYearInflatedToken
+	GenesisSupply := GenesisSupply
 
 	// Tolerance is 0.01% for errors resulting from floating point arithmetic
 	tolerance, _ := math.LegacyNewDecFromStr("0.0001")
