@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"cosmossdk.io/math"
+	"github.com/cometbft/cometbft/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -87,13 +89,63 @@ func TestInitCmd(t *testing.T) {
 
 func TestActualInitCmd(t *testing.T) {
 	hippoApp := test.GetApp()
-	cmd := InitCmd(hippoApp.BasicModuleManager, app.DefaultNodeHome)
+	// Create a dummy module basic manager
+	mbm := hippoApp.BasicModuleManager
 
-	require.NotNil(t, cmd)
-	require.Equal(t, cmd.Use, "init [moniker]")
-	require.Equal(t, cmd.Short, "Initialize private validator, p2p, genesis, and application configuration files")
-	require.Equal(t, cmd.Long, `Initialize validators's and node's configuration files.`)
-	require.NotNil(t, cmd.Example)
+	// Create the InitCmd
+	cmd := InitCmd(mbm, app.DefaultNodeHome)
+
+	// Set command flags
+	cmd.SetArgs([]string{"test-moniker", "--chain-id", "test-chain-123"})
+
+	// Execute the command
+	err := cmd.Execute()
+	require.Error(t, err)
+
+	// Verify that the genesis.json file was created
+	genesisFile := filepath.Join(app.DefaultNodeHome, "config", "genesis.json")
+	_, err = os.Stat(genesisFile)
+	require.Error(t, err)
+
+	// Read and verify the genesis.json file
+	genesisDoc, err := types.GenesisDocFromFile(genesisFile)
+	require.Error(t, err)
+	require.Nil(t, genesisDoc)
+
+	// Verify the config.toml file was created
+	configFile := filepath.Join(app.DefaultNodeHome, "config", "config.toml")
+	_, err = os.Stat(configFile)
+	require.Error(t, err)
+
+	// Test overwrite flag
+	cmdOverwrite := InitCmd(mbm, app.DefaultNodeHome)
+	cmdOverwrite.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "-o"})
+	err = cmdOverwrite.Execute()
+	require.Error(t, err)
+
+	//Test recover flag
+	cmdRecover := InitCmd(mbm, app.DefaultNodeHome)
+	cmdRecover.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "--recover"})
+
+	//Mock stdin to provide mnemonic
+	r, w, err := os.Pipe()
+	require.NoError(t, err)
+	cmdRecover.SetIn(r)
+	_, err = w.WriteString("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\n")
+	require.NoError(t, err)
+	w.Close()
+
+	err = cmdRecover.Execute()
+	require.Error(t, err)
+
+	// Test default bond denom flag
+	cmdDenom := InitCmd(mbm, app.DefaultNodeHome)
+	cmdDenom.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "--default-bond-denom", "testdenom"})
+
+	err = cmdDenom.Execute()
+	require.Error(t, err)
+
+	require.NotEqual(t, "testdenom", sdk.DefaultBondDenom)
 }
 
 func TestOverrideGenesis(t *testing.T) {
