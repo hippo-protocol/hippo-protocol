@@ -1,4 +1,4 @@
-package main_test
+package main
 
 import (
 	"os/exec"
@@ -12,4 +12,8 @@ func TestMainCommand(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to execute main: %v\nOutput:\n%s", err, string(out))
 	}
+}
+
+func TestMainFunc(t *testing.T) {
+	main()
 }
