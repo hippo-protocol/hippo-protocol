@@ -10,6 +10,8 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/stretchr/testify/assert"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server/config"	
 )
 
 type AppOptionsMap map[string]interface{}
@@ -143,4 +145,32 @@ func TestEndBlocker(t *testing.T) {
 	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
 	res, _ := app.EndBlocker(ctx)
 	assert.NotNil(t, res, "EndBlocker should not return nil")
+}
+
+func TestRegisterNodeService(t *testing.T) {
+	clientCtx := client.Context{}
+	cfg := config.Config{}
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+	app.RegisterNodeService(clientCtx, cfg)
+	assert.NotNil(t, app, "RegisterNodeService should not return nil")
+}
+
+func TestRegisterTendermintService(t *testing.T) {
+	clientCtx := client.Context{}
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+	app.RegisterTendermintService(clientCtx)
+	assert.NotNil(t, app, "RegisterTendermintService should not return nil")
+}
+
+func TestRegisterTxService(t *testing.T) {
+	clientCtx := client.Context{}
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+	app.RegisterTxService(clientCtx)
+	assert.NotNil(t, app, "RegisterTxService should not return nil")
 }
