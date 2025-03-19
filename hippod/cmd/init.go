@@ -174,6 +174,23 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			appGenesis.InitialHeight = initHeight
 			appGenesis.Consensus = &genttypes.ConsensusGenesis{
 				Validators: nil,
+				Params: &types.ConsensusParams{
+					Block: types.BlockParams{
+						MaxBytes: genDoc.ConsensusParams.Block.MaxBytes,
+						MaxGas:   genDoc.ConsensusParams.Block.MaxGas,
+					},
+					Evidence: types.EvidenceParams{
+						MaxAgeNumBlocks: genDoc.ConsensusParams.Evidence.MaxAgeNumBlocks,
+						MaxAgeDuration:  genDoc.ConsensusParams.Evidence.MaxAgeDuration,
+						MaxBytes:        genDoc.ConsensusParams.Evidence.MaxBytes,
+					},
+					Validator: types.ValidatorParams{
+						PubKeyTypes: genDoc.ConsensusParams.Validator.PubKeyTypes,
+					},
+					Version: types.VersionParams{
+						App: genDoc.ConsensusParams.Version.App,
+					},
+				},
 			}
 
 			if err = genutil.ExportGenesisFile(appGenesis, genFile); err != nil {
