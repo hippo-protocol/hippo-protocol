@@ -174,3 +174,11 @@ func TestRegisterTxService(t *testing.T) {
 	app.RegisterTxService(clientCtx)
 	assert.NotNil(t, app, "RegisterTxService should not return nil")
 }
+
+func TestLoadHeight(t *testing.T) {
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+	app.LoadHeight(1)
+	assert.NotNil(t, app, "LoadHeight should not return nil")
+}
