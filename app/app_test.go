@@ -13,7 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	abci "github.com/cometbft/cometbft/abci/types"
-
+	"github.com/cosmos/cosmos-sdk/server/api"
 )
 
 type AppOptionsMap map[string]interface{}
@@ -197,3 +197,22 @@ func TestInitChainer_InvalidJSON(t *testing.T) {
 
 	assert.Panics(t, func() { app.InitChainer(ctx, req) }, "InitChainer should panic with invalid JSON")
 }
+
+func TestRegisterAPIRoutes(t *testing.T) {
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+  
+	
+	clientCtx := client.Context{}               
+	apiServer := api.New(clientCtx, logger, nil)
+	apiConfig := config.APIConfig{}
+  
+	
+	assert.NotNil(t, app, "App should not be nil before calling RegisterAPIRoutes")
+	assert.NotNil(t, apiServer, "API Server should be initialized")
+  
+	app.RegisterAPIRoutes(apiServer, apiConfig)
+  
+	assert.NotNil(t, apiServer.GRPCGatewayRouter, "GRPCGatewayRouter should be initialized after RegisterAPIRoutes")
+  }
