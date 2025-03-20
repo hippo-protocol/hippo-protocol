@@ -11,7 +11,9 @@ import (
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/stretchr/testify/assert"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/server/config"	
+	"github.com/cosmos/cosmos-sdk/server/config"
+	abci "github.com/cometbft/cometbft/abci/types"
+
 )
 
 type AppOptionsMap map[string]interface{}
@@ -181,4 +183,17 @@ func TestLoadHeight(t *testing.T) {
 	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
 	app.LoadHeight(1)
 	assert.NotNil(t, app, "LoadHeight should not return nil")
+}
+
+func TestInitChainer_InvalidJSON(t *testing.T) {
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+	ctx := app.NewContext(true)
+
+	req := &abci.RequestInitChain{
+		AppStateBytes: []byte("invalid json"),
+	}
+
+	assert.Panics(t, func() { app.InitChainer(ctx, req) }, "InitChainer should panic with invalid JSON")
 }
