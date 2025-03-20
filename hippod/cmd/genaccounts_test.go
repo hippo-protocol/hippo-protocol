@@ -6,9 +6,30 @@ import (
 	"path/filepath"
 	"testing"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cometbft/cometbft/types"
 	"github.com/stretchr/testify/require"
 )
+
+func createMinimalGenesisFile(t *testing.T, home string) {
+	configDir := filepath.Join(home, "config")
+	require.NoError(t, os.MkdirAll(configDir, 0755))
+
+	genesisFile := filepath.Join(configDir, "genesis.json")
+
+	genesisState := map[string]json.RawMessage{
+		"auth": json.RawMessage(`{"accounts": []}`),
+		"bank": json.RawMessage(`{"balances": [], "supply": "0stake"}`),
+	}
+
+	genDoc := map[string]interface{}{
+		"chain_id":  "test-chain",
+		"app_state": genesisState,
+	}
+	genDocBytes, err := json.MarshalIndent(genDoc, "", "  ")
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(genesisFile, genDocBytes, 0644))
+}
 
 func TestAddGenesisAccountCmd(t *testing.T) {
 	// Create a temporary directory for the node home
@@ -54,4 +75,23 @@ func TestAddGenesisAccountCmd(t *testing.T) {
 	err = cmdKey.Execute()
 	require.Error(t, err) //Test keyring functionality requires more setup.
 
+}
+
+func TestAddGenesisAccountCmd_InvalidVestingParameters(t *testing.T) {
+	home := t.TempDir()
+	createMinimalGenesisFile(t, home)
+
+	addr := sdk.AccAddress([]byte{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}).String()
+	coins := "100stake"
+	vestingAmt := "50stake"
+
+	cmdInstance := AddGenesisAccountCmd(home)
+	cmdInstance.SetArgs([]string{
+		addr, coins,
+		"--home", home,
+		"--vesting-amount", vestingAmt,
+	})
+	err := cmdInstance.Execute()
+	require.Error(t, err, "Invalid vesting parameters should return error")
+	require.Contains(t, err.Error(), "invalid vesting parameters")
 }
