@@ -11,6 +11,7 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cometbft/cometbft/types"
 	cmttypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -265,4 +266,43 @@ func TestDisplayInfo(t *testing.T) {
 	err := displayInfo(printInfo)
 
 	require.NoError(t, err)
+}
+
+func TestFailingOverrideGenesis(t *testing.T) {
+	getParam := func(key string) (codec.JSONCodec, *cmttypes.GenesisDoc, map[string]json.RawMessage) {
+		hippoApp := test.GetApp()
+		appGenState := hippoApp.DefaultGenesis()
+		appCodec := hippoApp.AppCodec()
+
+		genDoc := &cmttypes.GenesisDoc{}
+		genDoc.ChainID = chainID
+		genDoc.Validators = nil
+		genDoc.InitialHeight = 0
+		genDoc.ConsensusParams = &cmttypes.ConsensusParams{
+			Block:     cmttypes.DefaultBlockParams(),
+			Evidence:  cmttypes.DefaultEvidenceParams(),
+			Validator: cmttypes.DefaultValidatorParams(),
+			Version:   cmttypes.DefaultVersionParams(),
+		}
+
+		delete(appGenState, key)
+
+		return appCodec, genDoc, appGenState
+	}
+
+	_, err := overrideGenesis(getParam("staking"))
+	require.Error(t, err)
+
+	_, err = overrideGenesis(getParam("mint"))
+	require.Error(t, err)
+
+	_, err = overrideGenesis(getParam("distribution"))
+	require.Error(t, err)
+
+	_, err = overrideGenesis(getParam("gov"))
+	require.Error(t, err)
+
+	_, err = overrideGenesis(getParam("slashing"))
+	require.Error(t, err)
+
 }
