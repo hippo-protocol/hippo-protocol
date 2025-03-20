@@ -306,3 +306,16 @@ func TestFailingOverrideGenesis(t *testing.T) {
 	require.Error(t, err)
 
 }
+
+func TestFailingDisplayInfo(t *testing.T) {
+	moniker := ""
+	chainID := ""
+	nodeID := ""
+	genTxsDir := ""
+	appMessage := json.RawMessage("")
+
+	printInfo := newPrintInfo(moniker, chainID, nodeID, genTxsDir, appMessage)
+	err := displayInfo(printInfo)
+
+	require.Error(t, err)
+}
