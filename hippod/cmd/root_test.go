@@ -90,7 +90,7 @@ func TestNewApp(t *testing.T) {
 			server.FlagHaltTime:        uint64(0),
 			server.FlagInterBlockCache: true,
 			server.FlagIndexEvents:     []string{"tx.height", "tx.hash"},
-			server.FlagIAVLCacheSize:   781250, // size of the iavl cache
+			server.FlagIAVLCacheSize:   781250, // size of the IAVL cache
 		},
 	}
 
