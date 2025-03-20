@@ -42,8 +42,15 @@ func TestInitAppConfig(t *testing.T) {
 }
 
 func TestAppExport(t *testing.T) {
-	exportedApp, err := appExport(log.NewNopLogger(), dbm.NewMemDB(), nil, 0, true, nil, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome), nil)
+	exportedApp, err := appExport(log.NewNopLogger(), dbm.NewMemDB(), nil, 0, true, nil, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome), nil)	
+	require.Error(t, err)
+	require.NotNil(t, exportedApp)
 
+	exportedApp, err = appExport(log.NewNopLogger(), dbm.NewMemDB(), nil, 0, true, nil, simtestutil.NewAppOptionsWithFlagHome(""), nil)	
+	require.Error(t, err)
+	require.NotNil(t, exportedApp)
+
+	exportedApp, err = appExport(log.NewNopLogger(), dbm.NewMemDB(), nil, -1, true, nil, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome), nil)
 	require.Error(t, err)
 	require.NotNil(t, exportedApp)
 }
