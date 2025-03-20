@@ -18,3 +18,14 @@ func TestPrepForZeroHeightGenesis_NotNil(t *testing.T) {
     app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	assert.NotPanics(t, func() { app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs) }, "prepForZeroHeightGenesis should not panic")
 }
+
+func TestExportAppStateAndValidators_NotPanics(t *testing.T) {
+	db := dbm.NewMemDB()
+	logger := log.NewTestLogger(t)
+	app := New(logger, db, nil, true, NewAppOptionsWithFlagHome(t.TempDir()))
+	ctx := app.NewContextLegacy(true, cmtproto.Header{Height: app.LastBlockHeight()})
+	genesisState := app.DefaultGenesis()
+	app.ModuleManager.InitGenesis(ctx, app.AppCodec(), genesisState)
+
+	assert.NotPanics(t, func() { app.ExportAppStateAndValidators(true, []string{}, []string{}) }, "ExportAppStateAndValidators should not panic")
+}
