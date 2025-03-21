@@ -27,6 +27,7 @@ For instructions to join as a validator, please also see the [Validator Guide](.
     - [Initialize Chain](#initialize-chain)
     - [Genesis File](#genesis-file)
     - [Seeds & Peers](#seeds--peers)
+    - [Configure Seed Node](#configure-seed-node)
     - [Gas & Fees](#gas--fees)
     - [Pruning of State](#pruning-of-state)
     - [REST API](#rest-api)
@@ -76,10 +77,10 @@ Make sure to walk through the basic setup and configuration. Operators will need
 
 ### Initialize Chain
 
-Choose a custom moniker for the node and initialize. By default, the `init` command creates the `~/.hippo` directory with subfolders `config` and `data`. In the `/config` directory, the most important files for configuration are `app.toml` and `config.toml`.
+Choose a custom moniker(e.g. hippo) for the node and initialize. By default, the `init` command creates the `~/.hippo` directory with subfolders `config` and `data`. In the `/config` directory, the most important files for configuration are `app.toml` and `config.toml`.
 
 ```bash
-hippod init <custom-moniker>
+hippod init <custom-moniker> --chain-id hippo-protocol-1
 ```
 
 > **Note**: Monikers can contain only ASCII characters. Using Unicode characters is not supported and renders the node unreachable.
@@ -101,6 +102,8 @@ You can check [Hippo Protocol Hub](https://github.com/hippocrat-dao/hippo-protoc
 
 Upon startup the node will need to connect to peers. If there are specific nodes a node operator is interested in setting as seeds or as persistent peers, this can be configured in `~/.hippo/config/config.toml`
 
+You can see persistent_peers information at [hub](https://github.com/hippocrat-dao/hippo-protocol/tree/main/hub)
+
 ```sh
 # Comma separated list of seed nodes to connect to
 seeds = "<seed node id 1>@<seed node address 1>:26656,<seed node id 2>@<seed node address 2>:26656"
@@ -108,6 +111,45 @@ seeds = "<seed node id 1>@<seed node address 1>:26656,<seed node id 2>@<seed nod
 # Comma separated list of nodes to keep persistent connections to
 persistent_peers = "<node id 1>@<node address 1>:26656,<node id 2>@<node address 2>:26656"
 ```
+
+### Configure Seed Node
+
+In above section, there was seeds to connect with. This section describes how you can find your seed string for another node to connect.
+
+You can check your node-id by using below command
+
+```sh
+go run hippod/main.go tendermint show-node-id
+```
+
+It will give you a value similar to
+
+```sh
+abcd1234567890
+```
+
+You should also modify `[rpc]` section
+
+```sh
+laddr = "tcp://127.0.0.1:26657" -> "tcp://0.0.0.0:26657"
+
+cors_allowed_origins = [""] -> ["*"]
+```
+
+Using the node-id from previous step and the Elastic IP address of your EC2 instance, construct a seed node string in the following format:
+
+```sh
+"{node-id}@{elastic IP address}:26656"
+// example: 06d733d8d6a1863e7aa3014547f9ccabc68cb87b@18.143.254.69:26656
+```
+
+You can check your RPC works well by using below command.
+
+```bash
+curl http://18.143.254.69:26657
+```
+
+Now your seed node string can be added to another node.
 
 ### Gas & Fees
 

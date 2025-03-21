@@ -21,7 +21,27 @@ If you want to become a validator for the Hub's `mainnet`, you should learn more
 
 The following instructions assume you have already [set up a full-node](../hub-tutorials/join-mainnet.md) and are synchronised to the latest blockheight.
 
+## Initialize Chain
+
+First, Initialize the chain. You can skip this section if you already followed [set up a full-node](../hub-tutorials/join-mainnet.md)
+
+```bash
+go run hippod/main.go init hippo --chain-id hippo-protocol-1
+```
+
+You should set the genesis file and peers. You can see them in [hub](https://github.com/hippocrat-dao/hippo-protocol/tree/main/hub).
+
 ## Create Your Validator
+
+Before Creating your Validator, you should change `addr_book_strict` and `pex` to `false` in your `config.toml`
+
+```toml
+# Set true for strict address routability rules
+# Set false for private or local networks
+addr_book_strict = false
+# Set true to enable the peer-exchange reactor
+pex = false
+```
 
 Your `hippovalconspub` can be used to create a new validator by staking tokens. You can find your validator pubkey by running:
 
@@ -29,23 +49,35 @@ Your `hippovalconspub` can be used to create a new validator by staking tokens. 
 hippod tendermint show-validator
 ```
 
-To create your validator, just use the following command:
+To create your validator, generate `validator.json` file and use the following command:
 
 :::warning
 Don't use more `ahp` than you have!
 :::
 
 ```bash
-hippod tx staking create-validator \
-  --amount=1000000000000000000ahp \
-  --pubkey=$(hippod tendermint show-validator) \
-  --moniker="choose a moniker" \
-  --chain-id=<chain_id> \
-  --commission-rate="0.10" \
-  --commission-max-rate="0.20" \
-  --commission-max-change-rate="0.01" \
-  --fees=1000000000000000000ahp \
+hippod tx staking create-validator /path/to/validator.json \
   --from=<key_name>
+  --chain-id=hippo-protocol-1 \
+  --fees 1000000000000000000ahp \
+```
+
+where `validator.json` contains:
+
+```json
+{
+  "pubkey": {
+    "@type": "/cosmos.crypto.ed25519.PubKey",
+    "key": "BnbwFpeONLqvWqJb3qaUbL5aoIcW3fSuAp9nT3z5f20="
+  },
+  "amount": "1000000000000000000ahp",
+  "moniker": "my-moniker",
+  "details": "description of your validator",
+  "commission-rate": "0.10",
+  "commission-max-rate": "0.20",
+  "commission-max-change-rate": "0.01",
+  "min-self-delegation": "1"
+}
 ```
 
 :::tip
@@ -53,6 +85,14 @@ When specifying commission parameters, the `commission-max-change-rate` is used 
 :::
 
 It's possible that you won't have enough HP to be part of the active set of validators in the beginning. Users are able to delegate to inactive validators (those outside of the active set) using the [Keplr web app](https://wallet.keplr.app/#/hippo-protocol/stake?tab=inactive-validators). You can confirm that you are in the validator set by using a third party explorer like [Hippo River](https://river.hippoprotocol.ai/hippo-protocol/staking).
+
+Now you can run your validator
+
+```bash
+make build
+cd build
+./hippod run start
+```
 
 ## Edit Validator Description
 
