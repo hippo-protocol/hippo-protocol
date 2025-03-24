@@ -16,7 +16,8 @@ in this testnet.
 2. `$ go run hippod/main.go init hippo --chain-id hippo-protocol-testnet-1`. This will initialize a new working directory
    at the default location `~/.hippod`. You need to provide a "moniker" and a "chain id". These
    two names are "hippo" and "hippo-protocol-testnet-1" here. If you want to overwrite just genesis file(not including gentx), add `--overwrite` flag.
-3. `$ go run hippod/main.go keys add alice`. This command will create a new key named alice, using the file backend for secure local key storage.
+3. `$ go run hippod/main.go keys add alice --keyring-backend file`. This command will create a new key named alice, using the file backend for secure local  
+   key storage.
    Make sure to save the output, especially the generated address, as you will need it later during configuration or transactions.
 4. `$ go run hippod/main.go genesis add-genesis-account alice 1084734273380000000000000000ahp`, where `key_name` is the same key name as
    before; and `1084734273380000000000000000ahp` is `amount`.
