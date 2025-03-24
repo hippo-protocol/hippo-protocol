@@ -23,5 +23,32 @@ jobs:
       - name: Build
         run: make build
 
+  test-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
       - name: Test
-        run: go test -coverpkg=./... ./... -v && go test ./... -coverprofile cover.out && go tool cover -func=cover.out
+        run: |
+          go test -coverpkg=./... ./... -v && go test ./... -coverprofile=cover.out && go tool cover -func=cover.out
+
+          coverage=$(go tool cover -func=cover.out | awk '/total:/ {print $3}' | sed 's/%//' | awk '{print $1}')
+          threshold=80
+
+          if [[ -z "$coverage" ]]; then
+          echo "Error:Could not extract coverage percentage."
+          exit 1
+          fi
+
+          if (( $(echo "$coverage" ) < $threshold )); then
+          echo "Error:Coverage is below threshold ($coverage% < $threshold%)"
+          exit 1
+
+          else
+          echo "Coverage is $coverage%, which meets the threshold ($threshold%)"
+          fi
