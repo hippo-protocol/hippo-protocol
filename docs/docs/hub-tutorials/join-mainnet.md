@@ -125,7 +125,7 @@ go run hippod/main.go tendermint show-node-id
 It will give you a value similar to
 
 ```sh
-abcd1234567890
+37f504c80d271e4272570d5a8ecc250e1d7d9479
 ```
 
 You should also modify `[rpc]` section
@@ -135,6 +135,10 @@ laddr = "tcp://127.0.0.1:26657" -> "tcp://0.0.0.0:26657"
 
 cors_allowed_origins = [""] -> ["*"]
 ```
+
+:::warning
+Please note that allowing all policy like above `cors_allowed_origins` should be used with attention and only for test purpose.
+:::
 
 Using the node-id from previous step and the Elastic IP address of your EC2 instance, construct a seed node string in the following format:
 

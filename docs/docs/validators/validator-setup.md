@@ -40,6 +40,7 @@ Before Creating your Validator, you should change `addr_book_strict` and `pex` t
 # Set false for private or local networks
 addr_book_strict = false
 # Set true to enable the peer-exchange reactor
+# Set false to disable the peer-exchange reactor
 pex = false
 ```
 
