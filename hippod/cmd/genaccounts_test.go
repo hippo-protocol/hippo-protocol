@@ -1,14 +1,15 @@
-package cmd
+package cmd_test
 
 import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cometbft/cometbft/types"
 	"github.com/stretchr/testify/require"
+
+	"github.com/hippocrat-dao/hippo-protocol/hippod/cmd"
 )
 
 func createMinimalGenesisFile(t *testing.T, home string) {
@@ -16,7 +17,6 @@ func createMinimalGenesisFile(t *testing.T, home string) {
 	require.NoError(t, os.MkdirAll(configDir, 0755))
 
 	genesisFile := filepath.Join(configDir, "genesis.json")
-
 	genesisState := map[string]json.RawMessage{
 		"auth": json.RawMessage(`{"accounts": []}`),
 		"bank": json.RawMessage(`{"balances": [], "supply": "0stake"}`),
@@ -31,67 +31,76 @@ func createMinimalGenesisFile(t *testing.T, home string) {
 	require.NoError(t, os.WriteFile(genesisFile, genDocBytes, 0644))
 }
 
-func TestAddGenesisAccountCmd(t *testing.T) {
-	// Create a temporary directory for the node home
-	tempDir, err := os.MkdirTemp("", "hippo-test-home")
-	require.NoError(t, err)
-	defer os.RemoveAll(tempDir)
-
-	// Create a dummy genesis file
-	genesisFile := filepath.Join(tempDir, "config", "genesis.json")
-	genesisDoc := &types.GenesisDoc{}
-
-	//marshal the genesis doc
-	genDocBytes, err := json.Marshal(genesisDoc)
-	require.NoError(t, err)
-
-	err = os.WriteFile(genesisFile, genDocBytes, 0644)
-	require.Error(t, err)
-
-	// Create the AddGenesisAccountCmd
-	cmd := AddGenesisAccountCmd(tempDir)
-
-	// Set command flags and args
-	addr := "cosmos1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-	coins := "100stake,50token"
-	cmd.SetArgs([]string{addr, coins, "--home", tempDir})
-
-	// Execute the command
-	err = cmd.Execute()
-	require.Error(t, err)
-
-	// Test with key name
-	cmdKey := AddGenesisAccountCmd(tempDir)
-	cmdKey.SetArgs([]string{"testkey", coins, "--home", tempDir, "--keyring-backend", "test"})
-
-	//Mock stdin for keyring input
-	r, w, err := os.Pipe()
-	require.NoError(t, err)
-	cmdKey.SetIn(r)
-	_, err = w.WriteString("testpassword\n")
-	require.NoError(t, err)
-	w.Close()
-
-	err = cmdKey.Execute()
-	require.Error(t, err) //Test keyring functionality requires more setup.
-
-}
-
-func TestAddGenesisAccountCmd_InvalidVestingParameters(t *testing.T) {
+func TestAddGenesisAccountCmd_FullCoverage(t *testing.T) {
 	home := t.TempDir()
 	createMinimalGenesisFile(t, home)
 
-	addr := sdk.AccAddress([]byte{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}).String()
-	coins := "100stake"
-	vestingAmt := "50stake"
+	tests := []struct {
+		name        string
+		args        []string
+		expectErr   bool
+		errContains string
+	}{
+		{
+			name:      "Invalid coins",
+			args:      []string{"cosmos1xx", "invalidcoin", "--home", home},
+			expectErr: true,
+		},
+		{
+			name:        "Vesting amount > total",
+			args:        []string{"cosmos1xx", "50stake", "--home", home, "--vesting-amount", "100stake", "--vesting-end-time", "10000"},
+			expectErr:   true,
+			errContains: "vesting amount cannot be greater",
+		},
+		{
+			name: "Continuous vesting",
+			args: []string{"cosmos1abc", "100stake", "--home", home, "--vesting-amount", "50stake", "--vesting-start-time", "1000", "--vesting-end-time", "2000"},
+		},
+		{
+			name: "Delayed vesting",
+			args: []string{"cosmos1def", "100stake", "--home", home, "--vesting-amount", "50stake", "--vesting-end-time", "3000"},
+		},
+		{
+			name:        "Missing vesting params",
+			args:        []string{"cosmos1vest", "100stake", "--home", home, "--vesting-amount", "50stake"},
+			expectErr:   true,
+			errContains: "invalid vesting parameters",
+		},
+		{
+			name: "Successful account",
+			args: []string{"cosmos1success", "100stake", "--home", home},
+		},
+		{
+			name: "Append to existing account",
+			args: []string{"cosmos1success", "50stake", "--home", home, "--append"},
+		},
+		{
+			name:        "Duplicate without append",
+			args:        []string{"cosmos1success", "50stake", "--home", home},
+			expectErr:   true,
+			errContains: "cannot add account at existing address",
+		},
+		{
+			name:        "Invalid vesting coins",
+			args:        []string{"cosmos1failvest", "100stake", "--home", home, "--vesting-amount", "badcoin"},
+			expectErr:   true,
+			errContains: "failed to parse vesting amount",
+		},
+	}
 
-	cmdInstance := AddGenesisAccountCmd(home)
-	cmdInstance.SetArgs([]string{
-		addr, coins,
-		"--home", home,
-		"--vesting-amount", vestingAmt,
-	})
-	err := cmdInstance.Execute()
-	require.Error(t, err, "Invalid vesting parameters should return error")
-	require.Contains(t, err.Error(), "invalid vesting parameters")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := cmd.AddGenesisAccountCmd(home)
+			cmd.SetArgs(tt.args)
+			err := cmd.Execute()
+			if tt.expectErr {
+				require.Error(t, err)
+				if tt.errContains != "" {
+					require.Contains(t, err.Error(), tt.errContains)
+				}
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
