@@ -5,17 +5,20 @@ import (
 
 	"cosmossdk.io/log"
 
+	store "cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/x/tx/signing"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/server"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/stretchr/testify/require"
-
-	store "cosmossdk.io/store"
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 )
 
 // helper function to generate dummy keys
@@ -42,7 +45,20 @@ func generateTestStoreKeys() (map[string]*storetypes.KVStoreKey, map[string]*sto
 
 func TestInitKeyAndKeepers(t *testing.T) {
 	consensus.SetWalletConfig()
-	appCodec := codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
+
+	interfaceRegistry, _ := codectypes.NewInterfaceRegistryWithOptions(codectypes.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32AccountAddrPrefix(),
+			},
+			ValidatorAddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
+			},
+		},
+	})
+
+	appCodec := codec.NewProtoCodec(interfaceRegistry)
 	legacyAmino := codec.NewLegacyAmino()
 
 	maccPerms := map[string][]string{
