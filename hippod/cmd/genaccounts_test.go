@@ -95,7 +95,7 @@ func injectClientCtx(cmd *cobra.Command, home string) {
 	cmd.SetContext(context.WithValue(context.Background(), client.ClientContextKey, &clientCtx))
 }
 
-func TestAddGenesisAccountCmd_Cases(t *testing.T) {
+func TestAddGenesisAccountCmd(t *testing.T) {
 	home := t.TempDir()
 	srvCtx := server.NewDefaultContext()
 	srvCtx.Config.RootDir = home
