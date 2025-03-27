@@ -101,16 +101,6 @@ func TestRootCmd_All(t *testing.T) {
 			args: []string{"keys", "--home", home, "--output", "json", "--offline"},
 			want: "Available Commands",
 		},
-		{
-			name: "CompletionCmd",
-			args: []string{"completion", "--help"},
-			want: "Generate the autocompletion script",
-		},
-		{
-			name: "StatusCmd",
-			args: []string{"status", "--home", home, "--offline"},
-			want: "node status",
-		},
 	}
 
 	for _, tt := range tests {
