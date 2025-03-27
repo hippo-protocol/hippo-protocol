@@ -8,19 +8,21 @@ import (
 	"testing"
 
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log"
+	"cosmossdk.io/x/tx/signing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 )
 
@@ -42,9 +44,18 @@ func (m AppOptionsMap) Get(key string) interface{} {
 }
 
 func makeTestEncodingConfig() codec.Codec {
-	interfaceRegistry := types.NewInterfaceRegistry()
-	authtypes.RegisterInterfaces(interfaceRegistry)
-	sdk.RegisterInterfaces(interfaceRegistry)
+	interfaceRegistry, _ := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32AccountAddrPrefix(),
+			},
+			ValidatorAddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
+			},
+		},
+	})
+
 	return codec.NewProtoCodec(interfaceRegistry)
 }
 
