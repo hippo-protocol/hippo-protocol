@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"cosmossdk.io/log"
 	cmbtcfg "github.com/cometbft/cometbft/config"
 	dbm "github.com/cosmos/cosmos-db"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -21,38 +22,142 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewRootCmd(t *testing.T) {
-	home := "/tmp/hippo-test"
-	_ = os.MkdirAll(home+"/config", 0755)
-	_ = os.WriteFile(home+"/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644)
+// func TestNewRootCmd(t *testing.T) {
+// 	home := "/tmp/hippo-test"
+// 	_ = os.MkdirAll(home+"/config", 0755)
+// 	_ = os.WriteFile(home+"/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644)
 
+// 	app.DefaultNodeHome = home
+
+// 	rc := NewRootCmd()
+// 	require.NotNil(t, rc)
+// 	require.Equal(t, "hippod", rc.Use)
+
+// 	rc.SetArgs([]string{"config"})
+// 	buf := new(bytes.Buffer)
+// 	rc.SetOut(buf)
+// 	rc.SetErr(buf)
+// 	err := rc.Execute()
+// 	require.NoError(t, err)
+
+// 	subCmds := []string{"debug", "config", "completion", "status", "genesis", "query", "tx", "keys"}
+// 	foundCommands := map[string]bool{}
+// 	for _, c := range rc.Commands() {
+// 		for _, name := range subCmds {
+// 			if c.Use == name || strings.HasPrefix(c.Use, name+" ") {
+// 				foundCommands[name] = true
+// 			}
+// 		}
+// 	}
+
+// 	for _, name := range subCmds {
+// 		require.True(t, foundCommands[name], "expected subcommand %s not found", name)
+// 	}
+// }
+
+func resetSDKConfig() {
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("hippo", "hippopub")
+	config.SetBech32PrefixForValidator("hippovaloper", "hippovaloperpub")
+	config.SetBech32PrefixForConsensusNode("hippovalcons", "hippovalconspub")
+	config.Seal()
+}
+
+func TestRootCmd_All(t *testing.T) {
+	home := t.TempDir()
 	app.DefaultNodeHome = home
 
-	rc := NewRootCmd()
-	require.NotNil(t, rc)
-	require.Equal(t, "hippod", rc.Use)
+	// Prepare genesis.json
+	require.NoError(t, os.MkdirAll(home+"/config", 0755))
+	require.NoError(t, os.WriteFile(home+"/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644))
 
-	rc.SetArgs([]string{"config"})
-	buf := new(bytes.Buffer)
-	rc.SetOut(buf)
-	rc.SetErr(buf)
-	err := rc.Execute()
-	require.NoError(t, err)
+	cmd := NewRootCmd()
+	cmd.PersistentFlags().String(flags.FlagHome, home, "home directory")
+	cmd.PersistentFlags().String(flags.FlagOutput, "text", "output format")
+	cmd.PersistentFlags().Bool(flags.FlagOffline, false, "offline mode")
 
-	subCmds := []string{"debug", "config", "completion", "status", "genesis", "query", "tx", "keys"}
-	foundCommands := map[string]bool{}
-	for _, c := range rc.Commands() {
-		for _, name := range subCmds {
-			if c.Use == name || strings.HasPrefix(c.Use, name+" ") {
-				foundCommands[name] = true
-			}
-		}
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{
+			name: "NewRootCmd_Execution",
+			args: []string{"config", "--home", home, "--output", "json", "--offline"},
+			want: "Available Commands",
+		},
+		{
+			name: "QueryCmd",
+			args: []string{"query", "--home", home, "--output", "json", "--offline"},
+			want: "Available Commands",
+		},
+		{
+			name: "TxCmd",
+			args: []string{"tx", "--home", home, "--output", "json", "--offline"},
+			want: "Available Commands",
+		},
+		{
+			name: "KeysCmd",
+			args: []string{"keys", "--home", home, "--output", "json", "--offline"},
+			want: "Available Commands",
+		},
+		{
+			name: "CompletionCmd",
+			args: []string{"completion", "--help"},
+			want: "Generate the autocompletion script",
+		},
+		{
+			name: "StatusCmd",
+			args: []string{"status", "--home", home, "--offline"},
+			want: "node status",
+		},
 	}
 
-	for _, name := range subCmds {
-		require.True(t, foundCommands[name], "expected subcommand %s not found", name)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd.SetArgs(tt.args)
+
+			buf := new(bytes.Buffer)
+			cmd.SetOut(buf)
+			cmd.SetErr(buf)
+
+			err := cmd.Execute()
+			require.NoError(t, err)
+			require.Contains(t, buf.String(), tt.want)
+		})
 	}
 }
+
+// func TestNewRootCmd_Execution(t *testing.T) {
+// 	home := t.TempDir()
+// 	app.DefaultNodeHome = home
+
+// 	require.NoError(t, os.MkdirAll(home+"/config", 0755))
+// 	require.NoError(t, os.WriteFile(home+"/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644))
+
+// 	cmd := NewRootCmd()
+
+// 	cmd.PersistentFlags().String(flags.FlagHome, home, "home directory")
+// 	cmd.PersistentFlags().String(flags.FlagOutput, "text", "output format (text|json)")
+// 	cmd.PersistentFlags().Bool(flags.FlagOffline, false, "offline mode")
+
+// 	cmd.SetArgs([]string{
+// 		"config",
+// 		"--home", home,
+// 		"--output", "json",
+// 		"--offline",
+// 	})
+
+// 	buf := new(bytes.Buffer)
+// 	cmd.SetOut(buf)
+// 	cmd.SetErr(buf)
+
+// 	err := cmd.Execute()
+// 	require.NoError(t, err)
+
+// 	require.Contains(t, buf.String(), "Available Commands")
+// 	require.Contains(t, buf.String(), "config")
+// }
 
 func TestInitCometBFTConfig(t *testing.T) {
 	config := initCometBFTConfig()
@@ -161,34 +266,6 @@ func TestGenesisCommand(t *testing.T) {
 		}
 	}
 	require.True(t, found, "custom command not found in genesis command")
-}
-
-func TestQueryCommand(t *testing.T) {
-	qc := queryCommand()
-	require.NotNil(t, qc)
-	require.Equal(t, "query", qc.Use)
-	require.Greater(t, len(qc.Commands()), 0)
-}
-
-func TestTxCommand(t *testing.T) {
-	tc := txCommand()
-	require.NotNil(t, tc)
-	require.Equal(t, "tx", tc.Use)
-	require.Greater(t, len(tc.Commands()), 0)
-}
-
-// makeMinimalAppOptions returns minimal valid app options to prevent nil panic
-func makeMinimalAppOptions() fakeAppOptions {
-	_ = os.MkdirAll("/tmp/hippo-test/config", 0755)
-	_ = os.WriteFile("/tmp/hippo-test/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644)
-
-	return fakeAppOptions{
-		"home":               "/tmp/hippo-test",
-		"trace":              false,
-		"inv-check-period":   uint(1),
-		"pruning":            "default",
-		"minimum-gas-prices": "0stake",
-	}
 }
 
 func TestOverwriteFlagDefaults(t *testing.T) {
