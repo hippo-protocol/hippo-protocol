@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -9,22 +10,36 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	"github.com/cometbft/cometbft/types"
+	"cosmossdk.io/x/tx/signing"
 	cmttypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+	"github.com/cosmos/cosmos-sdk/x/distribution"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	"github.com/cosmos/cosmos-sdk/x/mint"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
+	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/hippocrat-dao/hippo-protocol/app"
+	"github.com/cosmos/cosmos-sdk/codec/address"
+	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/hippocrat-dao/hippo-protocol/test"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
+
+	"github.com/cosmos/gogoproto/proto"
 )
 
 var homeDir string
@@ -64,89 +79,92 @@ func cleanupTestEnvironment(t *testing.T, configPath string) {
 	require.NoError(t, err)
 }
 
-func TestInitCmd(t *testing.T) {
-	configPath := "./test_home/config"
-	setupTestEnvironment(t, configPath)
-	defer cleanupTestEnvironment(t, configPath)
-
-	t.Run("Test_valid_init_command", func(t *testing.T) {
-		initCmd.SetArgs([]string{"--home", "./test_home", "--chain-id", "test-chain"})
-		err := initCmd.Execute()
-		require.NoError(t, err)
+func makeTestEncodingConfig() codec.Codec {
+	interfaceRegistry, _ := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
+		ProtoFiles: proto.HybridResolver,
+		SigningOptions: signing.Options{
+			AddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32AccountAddrPrefix(),
+			},
+			ValidatorAddressCodec: address.Bech32Codec{
+				Bech32Prefix: sdk.GetConfig().GetBech32ValidatorAddrPrefix(),
+			},
+		},
 	})
 
-	t.Run("Test_invalid_mnemonic", func(t *testing.T) {
-		initCmd.SetArgs([]string{"--home", "./test_home", "--mnemonic", "invalid"})
-		err := initCmd.Execute()
-		require.Error(t, err)
-	})
-
-	t.Run("Test_custom_denom", func(t *testing.T) {
-		initCmd.SetArgs([]string{"--home", "./test_home", "--default-denom", "custom-denom"})
-		err := initCmd.Execute()
-		require.NoError(t, err)
-	})
+	return codec.NewProtoCodec(interfaceRegistry)
 }
 
-func TestActualInitCmd(t *testing.T) {
-	hippoApp := test.GetApp()
-	// Create a dummy module basic manager
-	mbm := hippoApp.BasicModuleManager
+func TestInitCmd(t *testing.T) {
+	home := t.TempDir()
+	defaultNodeHome := home
+	viper.Set("home", home)
 
-	// Create the InitCmd
-	cmd := InitCmd(mbm, app.DefaultNodeHome)
+	basicManager := module.NewBasicManager(
+		auth.AppModuleBasic{},
+		bank.AppModuleBasic{},
+		staking.AppModuleBasic{},
+		mint.AppModuleBasic{},
+		gov.AppModuleBasic{},
+		slashing.AppModuleBasic{},
+		distribution.AppModuleBasic{},
+	)
 
-	// Set command flags
-	cmd.SetArgs([]string{"test-moniker", "--chain-id", "test-chain-123"})
+	command := InitCmd(basicManager, defaultNodeHome)
+	command.SetArgs([]string{"hippo-moniker", "--home", home, "--overwrite"})
 
-	// Execute the command
-	err := cmd.Execute()
-	require.Error(t, err)
+	configPath := filepath.Join(home, "config")
+	require.NoError(t, os.MkdirAll(configPath, 0755))
 
-	// Verify that the genesis.json file was created
-	genesisFile := filepath.Join(app.DefaultNodeHome, "config", "genesis.json")
-	_, err = os.Stat(genesisFile)
-	require.Error(t, err)
+	srvCtx := server.NewDefaultContext()
+	srvCtx.Config.RootDir = home
+	clientCtx := client.Context{}.WithHomeDir(home).WithCodec(makeTestEncodingConfig())
 
-	// Read and verify the genesis.json file
-	genesisDoc, err := types.GenesisDocFromFile(genesisFile)
-	require.Error(t, err)
-	require.Nil(t, genesisDoc)
+	command.SetContext(context.WithValue(
+		context.WithValue(context.Background(), server.ServerContextKey, srvCtx),
+		client.ClientContextKey, &clientCtx,
+	))
 
-	// Verify the config.toml file was created
-	configFile := filepath.Join(app.DefaultNodeHome, "config", "config.toml")
-	_, err = os.Stat(configFile)
-	require.Error(t, err)
+	require.NoError(t, command.Execute())
 
-	// Test overwrite flag
-	cmdOverwrite := InitCmd(mbm, app.DefaultNodeHome)
-	cmdOverwrite.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "-o"})
-	err = cmdOverwrite.Execute()
-	require.Error(t, err)
+	expectedFiles := []string{
+		"genesis.json",
+		"node_key.json",
+		"priv_validator_key.json",
+	}
 
-	//Test recover flag
-	cmdRecover := InitCmd(mbm, app.DefaultNodeHome)
-	cmdRecover.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "--recover"})
+	for _, f := range expectedFiles {
+		_, err := os.Stat(filepath.Join(configPath, f))
+		require.NoError(t, err, "%s should exist", f)
+	}
+}
 
-	//Mock stdin to provide mnemonic
+func TestInitCmd_RecoverMnemonic_Invalid(t *testing.T) {
+	home := t.TempDir()
+	defaultNodeHome := home
+	basicManager := module.NewBasicManager()
+
+	command := InitCmd(basicManager, defaultNodeHome)
+	command.SetArgs([]string{"hippo-moniker", "--home", home, "--recover"})
+
 	r, w, err := os.Pipe()
 	require.NoError(t, err)
-	cmdRecover.SetIn(r)
-	_, err = w.WriteString("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\n")
+	command.SetIn(r)
+	_, err = w.WriteString("invalid mnemonic phrase\n")
 	require.NoError(t, err)
 	w.Close()
 
-	err = cmdRecover.Execute()
+	srvCtx := server.NewDefaultContext()
+	srvCtx.Config.RootDir = home
+	clientCtx := client.Context{}.WithHomeDir(home).WithCodec(makeTestEncodingConfig())
+	command.SetContext(context.WithValue(
+		context.WithValue(context.Background(), server.ServerContextKey, srvCtx),
+		client.ClientContextKey, &clientCtx,
+	))
+
+	err = command.Execute()
 	require.Error(t, err)
-
-	// Test default bond denom flag
-	cmdDenom := InitCmd(mbm, app.DefaultNodeHome)
-	cmdDenom.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "--default-bond-denom", "testdenom"})
-
-	err = cmdDenom.Execute()
-	require.Error(t, err)
-
-	require.NotEqual(t, "testdenom", sdk.DefaultBondDenom)
+	require.Contains(t, err.Error(), "invalid mnemonic")
 }
 
 func TestOverrideGenesis(t *testing.T) {
