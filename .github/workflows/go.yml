@@ -47,7 +47,7 @@ jobs:
           exit 1
           fi
 
-          if (( $(echo "$coverage" ) < $threshold )); then
+          if (( $(echo $(printf "%.0f" "$coverage") ) < $threshold )); then
           echo "Error:Coverage is below threshold ($coverage% < $threshold%)"
           exit 1
 
