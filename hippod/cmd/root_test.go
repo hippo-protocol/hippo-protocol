@@ -1,18 +1,20 @@
 package cmd
 
 import (
+	"bytes"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 
+	dbm "github.com/cosmos/cosmos-db"
+	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 
 	"cosmossdk.io/log"
 
-	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,6 +23,23 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 )
+
+type fakeAppOptions map[string]interface{}
+
+type AppOptionsMap map[string]interface{}
+
+func (f fakeAppOptions) Get(key string) interface{} {
+	return f[key]
+}
+
+func (m AppOptionsMap) Get(key string) interface{} {
+	v, ok := m[key]
+	if !ok {
+		return interface{}(nil)
+	}
+
+	return v
+}
 
 func makeTestEncodingConfig() codec.Codec {
 	interfaceRegistry := types.NewInterfaceRegistry()
@@ -45,9 +64,22 @@ func TestInitAppConfig(t *testing.T) {
 }
 
 func TestNewRootCmd(t *testing.T) {
+	home := "/tmp/hippo-test"
+	_ = os.MkdirAll(home+"/config", 0755)
+	_ = os.WriteFile(home+"/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644)
+
+	app.DefaultNodeHome = home
+
 	rc := NewRootCmd()
 	require.NotNil(t, rc)
 	require.Equal(t, "hippod", rc.Use)
+
+	rc.SetArgs([]string{"config"})
+	buf := new(bytes.Buffer)
+	rc.SetOut(buf)
+	rc.SetErr(buf)
+	err := rc.Execute()
+	require.NoError(t, err)
 
 	subCmds := []string{"debug", "config", "completion", "status", "genesis", "query", "tx", "keys"}
 	foundCommands := map[string]bool{}
@@ -131,26 +163,6 @@ func makeMinimalAppOptions() fakeAppOptions {
 	}
 }
 
-func TestAppExport_InvalidHome(t *testing.T) {
-	_, err := appExport(log.NewNopLogger(), nil, nil, -1, true, nil, fakeAppOptions{"home": nil}, nil)
-	require.Error(t, err)
-	require.Equal(t, "application home not set", err.Error())
-}
-
-func TestAppExport_InvalidViper(t *testing.T) {
-	_, err := appExport(log.NewNopLogger(), nil, nil, -1, true, nil, fakeAppOptions{"home": "home"}, nil)
-	require.Error(t, err)
-	require.Equal(t, "appOpts is not viper.Viper", err.Error())
-}
-
-// Helper to mock servertypes.AppOptions
-
-type fakeAppOptions map[string]interface{}
-
-func (f fakeAppOptions) Get(key string) interface{} {
-	return f[key]
-}
-
 func TestOverwriteFlagDefaults(t *testing.T) {
 	cmd := &cobra.Command{Use: "test"}
 	child := &cobra.Command{Use: "child"}
@@ -167,4 +179,16 @@ func TestOverwriteFlagDefaults(t *testing.T) {
 			"keyring-backend": "test",
 		})
 	})
+}
+
+func TestAppExport_InvalidHome(t *testing.T) {
+	_, err := appExport(log.NewNopLogger(), nil, nil, -1, true, nil, fakeAppOptions{"home": nil}, nil)
+	require.Error(t, err)
+	require.Equal(t, "application home not set", err.Error())
+}
+
+func TestAppExport_InvalidViper(t *testing.T) {
+	_, err := appExport(log.NewNopLogger(), nil, nil, -1, true, nil, fakeAppOptions{"home": "home"}, nil)
+	require.Error(t, err)
+	require.Equal(t, "appOpts is not viper.Viper", err.Error())
 }
