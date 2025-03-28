@@ -59,16 +59,27 @@ func testQuery(t *testing.T, tests []Test) {
 	}
 }
 
-// setup delegator & validator address using file keyring backend for other tests
-func TestKeyring(t *testing.T) {
+func TestMain(m *testing.M) {
 	delegator_address, err := getDelegatorAddress()
-	assert.NoError(t, err, "delegator address should be retrieved")
-
+	if err != nil {
+		os.Exit(1)
+	}
 	validator_address, err := getValidatorAddress()
-	assert.NoError(t, err, "validator address should be retrieved")
+	if err != nil {
+		os.Exit(1)
+	}
 
-	t.Setenv(key_delegator_address, delegator_address)
-	t.Setenv(key_validator_address, validator_address)
+	// setup delegator & validator address using file keyring backend for other tests
+	os.Setenv(key_delegator_address, delegator_address)
+	os.Setenv(key_validator_address, validator_address)
+
+	exitCode := m.Run() // Running Tests
+
+	// cleanup environment variables
+	os.Unsetenv(key_delegator_address)
+	os.Unsetenv(key_validator_address)
+
+	os.Exit(exitCode)
 }
 
 func TestAuth(t *testing.T) {
