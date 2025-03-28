@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -190,6 +191,12 @@ func TestTx(t *testing.T) {
 	// send hp from delegator_address to target_address
 	testTx(t, []Test{{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
 
+	// delegate to validator_address
+	testTx(t, []Test{{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
+
+	// sometimes the results are not updated immediately, so wait for a new block
+	time.Sleep(6 * time.Second)
+
 	// check target_address balance
 	cmd := exec.Command("go", "run", path, "query", "bank", "balances", target_address)
 	out, err := cmd.CombinedOutput()
@@ -198,9 +205,6 @@ func TestTx(t *testing.T) {
 	match := re.FindStringSubmatch(string(out))
 	assert.Condition(t, func() bool { return len(match) > 1 }, "balance should be in the output")
 	assert.Greater(t, match[1], "0", "balance should be greater than 0 after receiving hp")
-
-	// delegate to validator_address
-	testTx(t, []Test{{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
 
 	// check delegation amount
 	cmd = exec.Command("go", "run", path, "query", "staking", "delegation", delegator_address, validator_address)
