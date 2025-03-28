@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -16,6 +17,8 @@ type Test struct {
 	errorMsg string
 }
 
+const key_delegator_address = "HIPPO_DELEGATOR_ADDRESS"
+const key_validator_address = "HIPPO_VALIDATOR_ADDRESS"
 const target_address = "hippo1mj5e9kpths3x5qsxarax9c50dadumyj8rqxq95" // any bech32 hippo address that is tx target(used for sending, ...etc)
 const passphrase = "password"                                         // used when sending tx
 
@@ -56,6 +59,18 @@ func testQuery(t *testing.T, tests []Test) {
 	}
 }
 
+// setup delegator & validator address using file keyring backend for other tests
+func TestKeyring(t *testing.T) {
+	delegator_address, err := getDelegatorAddress()
+	assert.NoError(t, err, "delegator address should be retrieved")
+
+	validator_address, err := getValidatorAddress()
+	assert.NoError(t, err, "validator address should be retrieved")
+
+	t.Setenv(key_delegator_address, delegator_address)
+	t.Setenv(key_validator_address, validator_address)
+}
+
 func TestAuth(t *testing.T) {
 	tests := []Test{
 		{command: []string{"query", "auth", "accounts"}, expect: "accounts:", errorMsg: "all accounts should be in the output"},
@@ -66,7 +81,7 @@ func TestAuth(t *testing.T) {
 }
 
 func TestBank(t *testing.T) {
-	delegator_address, _ := getDelegatorAddress()
+	delegator_address := os.Getenv(key_delegator_address)
 	tests := []Test{
 		{command: []string{"query", "bank", "balances", delegator_address}, expect: "balances", errorMsg: "balances should be in the output"},
 		// {command: []string{"query", "bank", "denom-metadata", "ahp"}, expect: "ahp", errorMsg: "metadata should be in the output"}, // Fail, currently metadata do not exists
@@ -77,7 +92,7 @@ func TestBank(t *testing.T) {
 }
 
 func TestDistribution(t *testing.T) {
-	delegator_address, _ := getDelegatorAddress()
+	delegator_address := os.Getenv(key_delegator_address)
 	tests := []Test{
 		{command: []string{"query", "distribution", "community-pool"}, expect: "ahp", errorMsg: "community pool balance should be in the output"},
 		{command: []string{"query", "distribution", "params"}, expect: "community_tax", errorMsg: "community_tax should be in the distribution params"},
@@ -106,7 +121,7 @@ func TestMint(t *testing.T) {
 }
 
 func TestStaking(t *testing.T) {
-	delegator_address, _ := getDelegatorAddress()
+	delegator_address := os.Getenv(key_delegator_address)
 	tests := []Test{
 		{command: []string{"query", "staking", "delegations", delegator_address}, expect: "delegator_address", errorMsg: "delegations made by address should be in the output"},
 		{command: []string{"query", "staking", "validators"}, expect: "hippovaloper", errorMsg: "validator address should be in the output"},
@@ -127,8 +142,9 @@ func TestUpgrade(t *testing.T) {
 }
 
 func TestTx(t *testing.T) {
-	delegator_address, _ := getDelegatorAddress()
-	validator_address, _ := getValidatorAddress()
+	delegator_address := os.Getenv(key_delegator_address)
+	validator_address := os.Getenv(key_validator_address)
+
 	tests := []Test{
 		{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"},
 		{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"},
