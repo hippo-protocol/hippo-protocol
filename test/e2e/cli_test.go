@@ -130,8 +130,8 @@ func TestTx(t *testing.T) {
 	delegator_address, _ := getDelegatorAddress()
 	validator_address, _ := getValidatorAddress()
 	tests := []Test{
-		{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y"}, expect: "txhash", errorMsg: "txhash should be in the output"},
-		{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y"}, expect: "txhash", errorMsg: "txhash should be in the output"},
+		{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"},
+		{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"},
 	}
 
 	for _, test := range tests {
