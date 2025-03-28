@@ -59,6 +59,37 @@ func testQuery(t *testing.T, tests []Test) {
 	}
 }
 
+func testTx(t *testing.T, tests []Test) {
+	for _, test := range tests {
+		cmd := exec.Command("go", append([]string{"run", path}, test.command...)...)
+
+		// Create a pipe for stdin.
+		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			t.Fatalf("Failed to create stdin pipe: %v", err)
+		}
+
+		// Write the input to stdin.
+		_, err = stdin.Write([]byte(passphrase))
+		if err != nil {
+			t.Fatalf("Failed to write to stdin: %v", err)
+		}
+
+		// Close stdin to signal EOF.
+		err = stdin.Close()
+		if err != nil {
+			t.Fatalf("Failed to close stdin: %v", err)
+		}
+
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatalf("Command failed: %v, output: %s", err, out)
+		}
+		assert.NoError(t, err, "Sending Tx should work")
+		assert.Contains(t, string(out), test.expect, test.errorMsg)
+	}
+}
+
 func TestMain(m *testing.M) {
 	delegator_address, err := getDelegatorAddress()
 	if err != nil {
@@ -156,38 +187,27 @@ func TestTx(t *testing.T) {
 	delegator_address := os.Getenv(key_delegator_address)
 	validator_address := os.Getenv(key_validator_address)
 
-	tests := []Test{
-		{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"},
-		{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"},
-	}
+	// send hp from delegator_address to target_address
+	testTx(t, []Test{{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
 
-	for _, test := range tests {
-		cmd := exec.Command("go", append([]string{"run", path}, test.command...)...)
+	// check target_address balance
+	cmd := exec.Command("go", "run", path, "query", "bank", "balances", target_address)
+	out, err := cmd.CombinedOutput()
+	assert.NoError(t, err, "balance should be queried correctly")
+	re := regexp.MustCompile(`amount:\s*"(\d+)"\s*denom: ahp`)
+	match := re.FindStringSubmatch(string(out))
+	assert.Condition(t, func() bool { return len(match) > 1 }, "balance should be in the output")
+	assert.Greater(t, match[1], "0", "balance should be greater than 0 after receiving hp")
 
-		// Create a pipe for stdin.
-		stdin, err := cmd.StdinPipe()
-		if err != nil {
-			t.Fatalf("Failed to create stdin pipe: %v", err)
-		}
+	// delegate to validator_address
+	testTx(t, []Test{{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
 
-		// Write the input to stdin.
-		_, err = stdin.Write([]byte(passphrase))
-		if err != nil {
-			t.Fatalf("Failed to write to stdin: %v", err)
-		}
-
-		// Close stdin to signal EOF.
-		err = stdin.Close()
-		if err != nil {
-			t.Fatalf("Failed to close stdin: %v", err)
-		}
-
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Fatalf("Command failed: %v, output: %s", err, out)
-		}
-		assert.NoError(t, err, "Sending Tx should work")
-		assert.Contains(t, string(out), test.expect, test.errorMsg)
-	}
-
+	// check delegation amount
+	cmd = exec.Command("go", "run", path, "query", "staking", "delegation", delegator_address, validator_address)
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "delegation should be queried correctly")
+	re = regexp.MustCompile(`amount:\s*"(\d+)"\s*denom: ahp`)
+	match = re.FindStringSubmatch(string(out))
+	assert.Condition(t, func() bool { return len(match) > 1 }, "delegation amount should be in the output")
+	assert.Greater(t, match[1], "1000000000000000000", "delegation amount should be greater than initial deposit after staking")
 }
