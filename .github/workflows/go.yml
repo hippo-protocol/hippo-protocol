@@ -54,3 +54,36 @@ jobs:
           else
           echo "Coverage is $coverage%, which meets the threshold ($threshold%)"
           fi
+
+  e2e-genesis-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Genesis Node Start
+        run: |
+          go run hippod/main.go init hippo --chain-id hippo-protocol-testnet-1
+          echo -e "password\npassword" | go run hippod/main.go keys add alice --keyring-backend file
+          echo -e "password" | go run hippod/main.go genesis add-genesis-account alice 1084734273380000000000000000ahp --keyring-backend file
+          echo -e "password" | go run hippod/main.go genesis gentx alice 1000000000000000000ahp --chain-id hippo-protocol-testnet-1 --keyring-backend file
+          go run hippod/main.go genesis collect-gentxs
+          go run hippod/main.go start &
+          while ! nc -z localhost 26657; do # Or your node's RPC port
+            echo "Waiting for node to start..."
+            sleep 1
+          done
+          echo "Node started."
+
+      - name: Run Command Test # Ensure all the commands pass.
+        run: |
+          go test ./test/e2e -v
+
+      - name: Cleanup - Stop Node
+        if: always() # Ensure cleanup runs even if tests fail.
+        run: |
+          pkill -f "go run hippod/main.go start"
