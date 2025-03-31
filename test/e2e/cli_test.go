@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"os/exec"
 	"regexp"
@@ -51,6 +52,13 @@ func getValidatorAddress() (string, error) {
 	}
 }
 
+// Our token amounts exceed int64 range, so convert string to big.Int and compare
+func compareAmount(amount1 string, amount2 string) int {
+	bn1, _ := new(big.Int).SetString(amount1, 10)
+	bn2, _ := new(big.Int).SetString(amount2, 10)
+	return bn1.Cmp(bn2)
+}
+
 func testQuery(t *testing.T, tests []Test) {
 	for _, test := range tests {
 		cmd := exec.Command("go", append([]string{"run", path}, test.command...)...)
@@ -60,35 +68,35 @@ func testQuery(t *testing.T, tests []Test) {
 	}
 }
 
-func testTx(t *testing.T, tests []Test) {
-	for _, test := range tests {
-		cmd := exec.Command("go", append([]string{"run", path}, test.command...)...)
+func testTx(t *testing.T, command []string) string {
+	cmd := exec.Command("go", append([]string{"run", path}, command...)...)
 
-		// Create a pipe for stdin.
-		stdin, err := cmd.StdinPipe()
-		if err != nil {
-			t.Fatalf("Failed to create stdin pipe: %v", err)
-		}
-
-		// Write the input to stdin.
-		_, err = stdin.Write([]byte(passphrase))
-		if err != nil {
-			t.Fatalf("Failed to write to stdin: %v", err)
-		}
-
-		// Close stdin to signal EOF.
-		err = stdin.Close()
-		if err != nil {
-			t.Fatalf("Failed to close stdin: %v", err)
-		}
-
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Fatalf("Command failed: %v, output: %s", err, out)
-		}
-		assert.NoError(t, err, "Sending Tx should work")
-		assert.Contains(t, string(out), test.expect, test.errorMsg)
+	// Create a pipe for stdin.
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatalf("Failed to create stdin pipe: %v", err)
 	}
+
+	// Write the input to stdin.
+	_, err = stdin.Write([]byte(passphrase))
+	if err != nil {
+		t.Fatalf("Failed to write to stdin: %v", err)
+	}
+
+	// Close stdin to signal EOF.
+	err = stdin.Close()
+	if err != nil {
+		t.Fatalf("Failed to close stdin: %v", err)
+	}
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("Command failed: %v, output: %s", err, out)
+	}
+	assert.NoError(t, err, "Sending Tx should work")
+	assert.Contains(t, string(out), "txhash", "txhash should be in the output")
+
+	return string(out)
 }
 
 func TestMain(m *testing.M) {
@@ -136,10 +144,13 @@ func TestBank(t *testing.T) {
 
 func TestDistribution(t *testing.T) {
 	delegator_address := os.Getenv(key_delegator_address)
+	validator_address := os.Getenv(key_validator_address)
+
 	tests := []Test{
 		{command: []string{"query", "distribution", "community-pool"}, expect: "ahp", errorMsg: "community pool balance should be in the output"},
 		{command: []string{"query", "distribution", "params"}, expect: "community_tax", errorMsg: "community_tax should be in the distribution params"},
 		{command: []string{"query", "distribution", "rewards", delegator_address}, expect: "reward:", errorMsg: "delegator rewards should be in the output"},
+		{command: []string{"query", "distribution", "commission", validator_address}, expect: "commission:", errorMsg: "validator commission should be in the output"},
 	}
 
 	testQuery(t, tests)
@@ -168,7 +179,7 @@ func TestStaking(t *testing.T) {
 	tests := []Test{
 		{command: []string{"query", "staking", "delegations", delegator_address}, expect: "delegator_address", errorMsg: "delegations made by address should be in the output"},
 		{command: []string{"query", "staking", "validators"}, expect: "hippovaloper", errorMsg: "validator address should be in the output"},
-		{command: []string{"query", "staking", "historical-info", "10"}, expect: "header", errorMsg: "staking history in specific block height should be printed correctly"},
+		{command: []string{"query", "staking", "historical-info", "1"}, expect: "header", errorMsg: "staking history in specific block height should be printed correctly"},
 		{command: []string{"query", "staking", "params"}, expect: "min_commission_rate:", errorMsg: "min_commission_rate should be inside staking params"},
 	}
 
@@ -184,15 +195,11 @@ func TestUpgrade(t *testing.T) {
 	testQuery(t, tests)
 }
 
-func TestTx(t *testing.T) {
+func TestSending(t *testing.T) {
 	delegator_address := os.Getenv(key_delegator_address)
-	validator_address := os.Getenv(key_validator_address)
 
 	// send hp from delegator_address to target_address
-	testTx(t, []Test{{command: []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
-
-	// delegate to validator_address
-	testTx(t, []Test{{command: []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"}, expect: "txhash", errorMsg: "txhash should be in the output"}})
+	testTx(t, []string{"tx", "bank", "send", delegator_address, target_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
 	// sometimes the results are not updated immediately, so wait for a new block
 	time.Sleep(6 * time.Second)
@@ -205,13 +212,71 @@ func TestTx(t *testing.T) {
 	match := re.FindStringSubmatch(string(out))
 	assert.Condition(t, func() bool { return len(match) > 1 }, "balance should be in the output")
 	assert.Greater(t, match[1], "0", "balance should be greater than 0 after receiving hp")
+}
 
-	// check delegation amount
+func TestStakingTx(t *testing.T) {
+	delegator_address := os.Getenv(key_delegator_address)
+	validator_address := os.Getenv(key_validator_address)
+
+	// Delegate tokens to the validator
+	testTx(t, []string{"tx", "staking", "delegate", validator_address, "1000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"})
+
+	// Wait for a new block to ensure state updates
+	time.Sleep(6 * time.Second)
+
+	// Check delegation amount
+	cmd := exec.Command("go", "run", path, "query", "staking", "delegation", delegator_address, validator_address)
+	out, err := cmd.CombinedOutput()
+	assert.NoError(t, err, "delegation should be queried correctly")
+	re := regexp.MustCompile(`amount:\s*"(\d+)"\s*denom: ahp`)
+	match := re.FindStringSubmatch(string(out))
+	assert.Condition(t, func() bool { return len(match) > 1 }, "delegation amount should be in the output")
+	assert.Condition(t, func() bool {
+		return compareAmount(match[1], "1000000000000000000") > 0
+	}, "delegation amount should be greater than initial deposit after delegation")
+	delegationAmount := match[1]
+
+	// Check balance
+	cmd = exec.Command("go", "run", path, "query", "bank", "balances", delegator_address)
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "balance should be queried correctly")
+	re = regexp.MustCompile(`amount:\s*"(\d+)"\s*denom: ahp`)
+	match = re.FindStringSubmatch(string(out))
+	assert.Condition(t, func() bool { return len(match) > 1 }, "balance should be in the output")
+	balance := match[1]
+
+	// Delegate more tokens to the validator
+	testTx(t, []string{"tx", "staking", "delegate", validator_address, "500000000000000000000ahp", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"})
+
+	// Wait for a new block to ensure state updates
+	time.Sleep(6 * time.Second)
+
+	// Compare delegation amount and balance after delegating more tokens
+	cmd = exec.Command("go", "run", path, "query", "bank", "balances", delegator_address)
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "balance should be queried correctly")
+	re = regexp.MustCompile(`amount:\s*"(\d+)"\s*denom: ahp`)
+	match = re.FindStringSubmatch(string(out))
+	assert.Condition(t, func() bool { return len(match) > 1 }, "balance should be in the output")
+	assert.Condition(t, func() bool {
+		return compareAmount(match[1], balance) < 0
+	}, "balance should be decreased after delegation")
+
 	cmd = exec.Command("go", "run", path, "query", "staking", "delegation", delegator_address, validator_address)
 	out, err = cmd.CombinedOutput()
 	assert.NoError(t, err, "delegation should be queried correctly")
 	re = regexp.MustCompile(`amount:\s*"(\d+)"\s*denom: ahp`)
 	match = re.FindStringSubmatch(string(out))
 	assert.Condition(t, func() bool { return len(match) > 1 }, "delegation amount should be in the output")
-	assert.Greater(t, match[1], "1000000000000000000", "delegation amount should be greater than initial deposit after staking")
+	assert.Condition(t, func() bool {
+		return compareAmount(match[1], delegationAmount) > 0
+	}, "delegation amount should increase after delegating more tokens")
+	delegationAmount = match[1]
+
+	// Delegation reward should be accumulated
+	cmd = exec.Command("go", "run", path, "query", "distribution", "rewards", delegator_address)
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "rewards should be queried correctly")
+	assert.Contains(t, string(out), validator_address, "rewards from validator_address should be in the output")
+	assert.Contains(t, string(out), "reward:", "rewards from delegating should be in the output")
 }
