@@ -280,3 +280,28 @@ func TestStakingTx(t *testing.T) {
 	assert.Contains(t, string(out), validator_address, "rewards from validator_address should be in the output")
 	assert.Contains(t, string(out), "reward:", "rewards from delegating should be in the output")
 }
+
+func TestValidator(t *testing.T) {
+	delegator_address := os.Getenv(key_delegator_address)
+
+	// default value of moniker and min_self_delegation
+	cmd := exec.Command("go", "run", path, "query", "staking", "validators")
+	out, err := cmd.CombinedOutput()
+	assert.NoError(t, err, "validator should be queried correctly")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), "moniker: hippo") }, "moniker should be hippo")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), `min_self_delegation: "1"`) }, "min_self_delegation should be 1")
+
+	// edit validator
+	testTx(t, []string{"tx", "staking", "edit-validator", "--new-moniker=newnewHippo", "--min-self-delegation=5", "--fees=1000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "-y", "--keyring-backend=file"})
+
+	// Wait for a new block to ensure state updates
+	time.Sleep(6 * time.Second)
+
+	// changed value of moniker and min_self_delegation
+	cmd = exec.Command("go", "run", path, "query", "staking", "validators")
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "validator should be queried correctly")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), "moniker: newnewHippo") }, "moniker should be changed")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), `min_self_delegation: "5"`) }, "min_self_delegation should be changed")
+
+}
