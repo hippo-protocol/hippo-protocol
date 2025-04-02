@@ -14,14 +14,15 @@ in this testnet.
 1. If you've run `hippod` before, you may need to reset your genesis file(including gentx) and database before starting a new
    testnet. You can do with the following command: `$ rm -rf .hippo` from your
    Home(or User) directory. If you want to reset only database, just do `$ go run hippod/main.go tendermint unsafe-reset-all` in root dir.
-2. `$ go run hippod/main.go init hippo --chain-id hippo-protocol-testnet-1`. This will initialize a new working directory
+2. `$ go run hippod/main.go init hippo --chain-id hippo-protocol-1`. This will initialize a new working directory
    at the default location `~/.hippod`. You need to provide a "moniker" and a "chain id". These
-   two names are "hippo" and "hippo-protocol-testnet-1" here. If you want to overwrite just genesis file(not including gentx), add `--overwrite` flag.
-3. `$ go run hippod/main.go keys add alice --keyring-backend file`. This command will create a new key named alice, using the file backend for secure local key storage.
+   two names are "hippo" and "hippo-protocol-1" here. If you want to overwrite just genesis file(not including gentx), add `--overwrite` flag.
+3. `$ go run hippod/main.go keys add alice --keyring-backend file`. This command will create a new key named alice, using the file backend for secure local  
+   key storage.
    Make sure to save the output, especially the generated address, as you will need it later during configuration or transactions.
 4. `$ go run hippod/main.go genesis add-genesis-account alice 1084734273380000000000000000ahp --keyring-backend file`, where `key_name` is the same key name as
    before; and `1084734273380000000000000000ahp` is `amount`.
-5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahp --chain-id hippo-protocol-testnet-1 --keyring-backend file`. This will create the genesis
+5. `$ go run hippod/main.go genesis gentx alice 1000000000000000000ahp --chain-id hippo-protocol-1 --keyring-backend file`. This will create the genesis
    transaction for your new chain. Here `amount` should be at least `1000000000000000000ahp`. If you
    provide too much or too little, you will encounter an error when starting your node.
 6. Now, one person needs to create the genesis file `genesis.json` using the genesis transactions
@@ -41,6 +42,8 @@ in this testnet.
 
    You can find `validator_address` by running `$ go run hippod/main.go tendermint show-node-id`. The output will
    be the hex-encoded `validator_address`. The default `port` is 26656.
+
+   To connect with testnet or mainnet, please check [the hub repository](./hub) and [official document](https://docs.hippoprotocol.ai/).
 
 9. Now you can start your nodes: `$ go run hippod/main.go start`.
 
