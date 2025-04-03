@@ -5,7 +5,7 @@ sidebar_position: 2
 
 This guide will explain how to install the `hippod` binary and run the cli. With this binary installed on a server, you can participate on the mainnet as either a [Full Node](../hub-tutorials/join-mainnet.md) or a [Validator](../validators/validator-setup.md).
 
-## Running testnets with `hippod`
+## Running a quick testnets with `hippod`
 
 If you want to spin up a quick testnet with your friends, you can follow these steps.
 Unless otherwise noted, every step must be done by everyone who wants to participate
@@ -42,8 +42,6 @@ in this testnet.
 
    You can find `validator_address` by running `$ go run hippod/main.go tendermint show-node-id`. The output will
    be the hex-encoded `validator_address`. The default `port` is 26656.
-
-   To connect with testnet or mainnet, please check [the hub repository](./hub) and [official document](https://docs.hippoprotocol.ai/).
 
 9. Now you can start your nodes: `$ go run hippod/main.go start`.
 
