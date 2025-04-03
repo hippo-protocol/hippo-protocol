@@ -1,6 +1,6 @@
 # Hippo Protocol
 
-<img src="./logo/hippo-protocol.jpg" />
+<img src="./logo/hippo-protocol.jpg" width = 700 />
 
 `Hippo Protocol` is an application chain built using the Cosmos SDK for Healthcare Data Protocol.
 
