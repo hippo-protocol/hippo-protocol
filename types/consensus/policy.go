@@ -20,10 +20,11 @@ const (
 	// distr
 	CommunityTax = 92
 	// gov
-	MinDepositTokens    = 50_000
-	ExpeditedMinDeposit = 100_000
-	MaxDepositPeriod    = 60 * 60 * 24 * 14 * time.Second
-	VotingPeriod        = 60 * 60 * 24 * 14 * time.Second
+	MinDepositTokens      = 50_000
+	ExpeditedMinDeposit   = 100_000
+	MaxDepositPeriod      = 60 * 60 * 24 * 14 * time.Second
+	VotingPeriod          = 60 * 60 * 24 * 14 * time.Second
+	ExpeditedVotingPeriod = 60 * 60 * 24 * 7 * time.Second
 	// slashing
 	SignedBlocksWindow      = 10_000
 	MinSignedPerWindow      = 75

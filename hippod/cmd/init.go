@@ -284,6 +284,8 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	govGenState.Params.MaxDepositPeriod = &maxDepositPeriod
 	votingPeriod := consensus.VotingPeriod
 	govGenState.Params.VotingPeriod = &votingPeriod
+	expeditedVotingPeriod := consensus.ExpeditedVotingPeriod
+	govGenState.Params.ExpeditedVotingPeriod = &expeditedVotingPeriod
 	appState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
 	var slashingGenState slashingtypes.GenesisState
