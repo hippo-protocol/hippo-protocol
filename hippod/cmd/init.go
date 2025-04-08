@@ -24,6 +24,7 @@ import (
 	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -218,6 +219,29 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	genDoc.ConsensusParams.Block.MaxBytes = consensus.MaxBlockSize // 4MB
 	genDoc.ConsensusParams.Block.MaxGas = consensus.MaxBlockGas    // 100 milion
 
+	var bankGenState banktypes.GenesisState
+	if err := cdc.UnmarshalJSON(appState[banktypes.ModuleName], &bankGenState); err != nil {
+		return nil, err
+	}
+
+	hpMetadata := banktypes.Metadata{
+		Name:        "Hippo", // Often the full name
+		Symbol:      "HP",    // The commonly used ticker symbol
+		Description: "The native staking token of the Hippo Protocol.",
+		DenomUnits: []*banktypes.DenomUnit{ // Note: DenomUnits is a slice of *pointers* to DenomUnit
+			{
+				Denom:    "ahp", // base unit
+				Exponent: 0,
+			},
+		},
+		Base:    "ahp", // The base denomination (exponent 0)
+		Display: "ahp", // The denomination users typically see
+	}
+
+	bankGenState.DenomMetadata = append(bankGenState.DenomMetadata, hpMetadata)
+
+	appState[banktypes.ModuleName] = cdc.MustMarshalJSON(&bankGenState)
+
 	var stakingGenState stakingtypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[stakingtypes.ModuleName], &stakingGenState); err != nil {
 		return nil, err
@@ -254,10 +278,14 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	}
 	minDepositTokens := sdk.TokensFromConsensusPower(consensus.MinDepositTokens, sdk.DefaultPowerReduction) // 50,000 HP
 	govGenState.Params.MinDeposit = sdk.Coins{sdk.NewCoin(consensus.DefaultHippoDenom, minDepositTokens)}
+	expeditedMinDepositTokens := sdk.TokensFromConsensusPower(consensus.ExpeditedMinDeposit, sdk.DefaultPowerReduction) // 100,000 HP
+	govGenState.Params.ExpeditedMinDeposit = sdk.Coins{sdk.NewCoin(consensus.DefaultHippoDenom, expeditedMinDepositTokens)}
 	maxDepositPeriod := consensus.MaxDepositPeriod // 14 days
 	govGenState.Params.MaxDepositPeriod = &maxDepositPeriod
 	votingPeriod := consensus.VotingPeriod
 	govGenState.Params.VotingPeriod = &votingPeriod
+	expeditedVotingPeriod := consensus.ExpeditedVotingPeriod
+	govGenState.Params.ExpeditedVotingPeriod = &expeditedVotingPeriod
 	appState[govtypes.ModuleName] = cdc.MustMarshalJSON(&govGenState)
 
 	var slashingGenState slashingtypes.GenesisState
