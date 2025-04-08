@@ -95,6 +95,7 @@ import (
 )
 
 const Name = "hippo"
+const Version = "v1.0.0"
 
 var (
 	// DefaultNodeHome default home directories for the application daemon

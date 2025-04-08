@@ -14,7 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/go-bip39"
 	"github.com/pkg/errors"
@@ -38,6 +37,7 @@ import (
 	"github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
 )
@@ -168,8 +168,8 @@ func InitCmd(mbm module.BasicManager, defaultNodeHome string) *cobra.Command {
 			// v0.50.12 requires AppGenesis to pass to generate Genesis File
 			// reference: https://github.com/cosmos/cosmos-sdk/blob/v0.50.12/x/genutil/client/cli/init.go#L144-L163
 			appGenesis := &genttypes.AppGenesis{}
-			appGenesis.AppName = version.AppName
-			appGenesis.AppVersion = version.Version
+			appGenesis.AppName = app.Name
+			appGenesis.AppVersion = app.Version
 			appGenesis.ChainID = chainID
 			appGenesis.AppState = appState
 			appGenesis.InitialHeight = initHeight
