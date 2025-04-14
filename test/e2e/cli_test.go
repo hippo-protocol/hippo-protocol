@@ -1,10 +1,12 @@
 package test
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -304,4 +306,35 @@ func TestValidator(t *testing.T) {
 	assert.Condition(t, func() bool { return strings.Contains(string(out), "moniker: newnewHippo") }, "moniker should be changed")
 	assert.Condition(t, func() bool { return strings.Contains(string(out), `min_self_delegation: "5"`) }, "min_self_delegation should be changed")
 
+}
+
+func TestProposal(t *testing.T) {
+	delegator_address := os.Getenv(key_delegator_address)
+
+	content := map[string]interface{}{
+		"metadata":  "ipfs://CID",
+		"deposit":   "1000000000000000000000ahp",
+		"title":     "test proposal title",
+		"summary":   "summary",
+		"expedited": false,
+	}
+	jsonData, err := json.MarshalIndent(content, "", "  ")
+	assert.NoError(t, err, "Failed to marshal JSON")
+
+	tempDir := t.TempDir()
+
+	filePath := filepath.Join(tempDir, "draft_proposal.json")
+
+	err = os.WriteFile(filePath, jsonData, 0644)
+	assert.NoError(t, err, "Failed to write JSON to file")
+
+	testTx(t, []string{"tx", "gov", "submit-proposal", filePath, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+
+	// Wait for a new block to ensure state updates
+	time.Sleep(6 * time.Second)
+
+	cmd := exec.Command("go", "run", path, "query", "gov", "proposals")
+	out, err := cmd.CombinedOutput()
+	assert.NoError(t, err, "Proposals should be queried correctly")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), "title: test proposal title") }, "proposal title should be in the output")
 }
