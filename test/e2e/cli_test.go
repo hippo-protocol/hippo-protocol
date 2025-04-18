@@ -337,4 +337,33 @@ func TestProposal(t *testing.T) {
 	out, err := cmd.CombinedOutput()
 	assert.NoError(t, err, "Proposals should be queried correctly")
 	assert.Condition(t, func() bool { return strings.Contains(string(out), "title: test proposal title") }, "proposal title should be in the output")
+
+}
+
+func TestCommission(t *testing.T) {
+	delegator_address := os.Getenv(key_delegator_address)
+	validator_address := os.Getenv(key_validator_address)
+
+	cmd := exec.Command("go", "run", path, "query", "distribution", "commission", validator_address)
+	out, err := cmd.CombinedOutput()
+	assert.NoError(t, err, "validator commission should be queried correctly")
+
+	re := regexp.MustCompile(`-\s*(\d+).*\d*ahp`)
+	match := re.FindStringSubmatch(string(out))
+
+	assert.Condition(t, func() bool { return len(match) > 1 }, "commission should be in the output")
+	commission := match[1]
+
+	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+
+	time.Sleep(6 * time.Second)
+
+	cmd = exec.Command("go", "run", path, "query", "distribution", "commission", validator_address)
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "validator commission should be queried correctly")
+	match = re.FindStringSubmatch(string(out))
+
+	assert.Condition(t, func() bool {
+		return compareAmount(match[1], commission) < 0
+	}, "commimssion should be decreased after withdraw commission")
 }
