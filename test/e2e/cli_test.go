@@ -337,7 +337,20 @@ func TestProposal(t *testing.T) {
 	out, err := cmd.CombinedOutput()
 	assert.NoError(t, err, "Proposals should be queried correctly")
 	assert.Condition(t, func() bool { return strings.Contains(string(out), "title: test proposal title") }, "proposal title should be in the output")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), "PROPOSAL_STATUS_DEPOSIT_PERIOD") }, "proposal should be in deposit period")
 
+	// deposit
+	testTx(t, []string{"tx", "gov", "deposit", "1", "100000000000000000000000000ahp", fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+
+	time.Sleep(6 * time.Second)
+
+	cmd = exec.Command("go", "run", path, "query", "gov", "proposals")
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "Proposals should be queried correctly")
+	assert.Condition(t, func() bool { return strings.Contains(string(out), "PROPOSAL_STATUS_VOTING_PERIOD") }, "proposal should be in vote period")
+
+	// vote
+	testTx(t, []string{"tx", "gov", "vote", "1", "yes", fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 }
 
 func TestCommission(t *testing.T) {
