@@ -48,7 +48,6 @@ func TestApi(t *testing.T) {
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			t.Fatalf("Error reading response body: %v", err)
-			return
 		}
 		assert.Equal(t, http.StatusOK, response.StatusCode, fmt.Sprintf("Expected status code 200, got %d", response.StatusCode))
 		assert.Contains(t, string(body), test.expect, fmt.Sprintf("Expected %s in response", test.expect))
