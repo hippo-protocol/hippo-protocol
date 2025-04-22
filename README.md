@@ -24,6 +24,6 @@ Please follow ["Running a Validator"](https://docs.hippoprotocol.ai/main/validat
 
 ## Security
 
-The released versions of this repo is publicly audited by [Oak Security](https://github.com/oak-security/audit-reports/tree/main/Hippo%20Protocol).
+The released versions of this repo are publicly audited by [Oak Security](https://github.com/oak-security/audit-reports/tree/main/Hippo%20Protocol).
 
 If you find out any security issue, please don't hesitate to contact us or open the issue if not critical.
