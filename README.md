@@ -21,3 +21,9 @@ Please follow ["Join the Hippo Protocol Mainnet"](https://docs.hippoprotocol.ai/
 ## Running a Validator
 
 Please follow ["Running a Validator"](https://docs.hippoprotocol.ai/main/validators/validator-setup) section of our official docs.
+
+## Security
+
+The released versions of this repo are publicly audited by [Oak Security](https://github.com/oak-security/audit-reports/tree/main/Hippo%20Protocol).
+
+If you find out any security issue, please don't hesitate to contact us or open the issue if not critical.
