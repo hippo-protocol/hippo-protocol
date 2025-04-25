@@ -196,3 +196,22 @@ proto-update-deps:
 	$(DOCKER) run --rm -v $(CURDIR)/proto:/workspace --workdir /workspace $(protoImageName) buf mod update
 
 .PHONY: proto-all proto-gen proto-swagger-gen proto-format proto-lint proto-check-breaking proto-update-deps
+
+
+REQUIRE_GO_VERSION = 1.23
+TM_VERSION := v0.38.17
+GORELEASER_IMAGE := ghcr.io/goreleaser/goreleaser-cross:v$(REQUIRE_GO_VERSION)
+COSMWASM_VERSION := v2.2.3
+
+ci-release:
+	docker run \
+		--rm \
+		-e CGO_ENABLED=1 \
+		-e TM_VERSION=$(TM_VERSION) \
+		-e COSMWASM_VERSION=$(COSMWASM_VERSION) \
+		-v `pwd`:/go/src/hippod \
+		-w /go/src/hippod \
+		$(GORELEASER_IMAGE) \
+		build --snapshot \
+		--timeout=90m \
+		--clean
