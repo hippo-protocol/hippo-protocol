@@ -29,7 +29,6 @@ builds:
     flags:
       - -mod=readonly
       - -trimpath
-    mod_timestamp: "{{ .CommitTimestamp }}"
     tags:
       - netgo
       - ledger
@@ -95,11 +94,10 @@ builds:
     flags:
       - -mod=readonly
       - -trimpath
-    mod_timestamp: "{{ .CommitTimestamp }}"
     tags:
       - netgo
       - ledger
-      - static_wasm # TODO check
+      - static_wasm
     ldflags:
       - -s -w
       - -linkmode=external
@@ -112,33 +110,23 @@ builds:
       - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,static_wasm
       - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.TM_VERSION }}
 
-# universal_binaries:
-#   - id: hippod-linux-universal
-#     ids:
-#       - hippod-linux-amd64
-# - hippod-linux-arm64
-# replace: false
-# - id: hippod-darwin-universal
-#   ids:
-#     - hippod-darwin-amd64
-#     - hippod-darwin-arm64
-#   replace: false
-
 archives:
   - formats: binary
     name_template: "{{ .Binary }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-    # ids:
-    #   - hippod-linux-amd64
+    builds:
+      - hippod-linux-amd64
+      - hippod-linux-arm64
+      - hippod-darwin-amd64
     wrap_in_directory: false
     files:
       - none*
 
+checksum:
+  name_template: SHA256SUMS-v{{.Version}}.txt
+  algorithm: sha256
+
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
+  disable: true
 
 release:
   prerelease: true
