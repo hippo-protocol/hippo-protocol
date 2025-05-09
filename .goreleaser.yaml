@@ -1,0 +1,133 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+project_name: hippod
+
+env:
+  - CGO_ENABLED=1
+
+builds:
+  - id: hippod-linux-amd64
+    main: ./hippod
+    binary: hippod
+    hooks:
+      pre:
+        - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvm_muslc.x86_64.a -O /lib/libwasmvm_muslc.x86_64.a
+    builder: go
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CC=x86_64-linux-gnu-gcc
+    flags:
+      - -mod=readonly
+      - -trimpath
+    tags:
+      - netgo
+      - ledger
+    ldflags:
+      - -s -w
+      - -linkmode=external
+      - -extldflags "-L/usr/lib -lwasmvm_muslc.x86_64 -Wl,-z,muldefs -static -z noexecstack"
+      - -X main.commit={{.Commit}}
+      - -X main.date={{ .CommitDate }}
+      - -X github.com/cosmos/cosmos-sdk/version.Name=hippo-protocol
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=hippod
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger
+      - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.TM_VERSION }}
+
+  - id: hippod-linux-arm64
+    main: ./hippod
+    binary: hippod
+    hooks:
+      pre:
+        - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvm_muslc.aarch64.a -O /lib/libwasmvm_muslc.aarch64.a
+    builder: go
+    goos:
+      - linux
+    goarch:
+      - arm64
+    env:
+      - CC=aarch64-linux-gnu-gcc
+    flags:
+      - -mod=readonly
+      - -trimpath
+    tags:
+      - netgo
+      - ledger
+    ldflags:
+      - -s -w
+      - -linkmode=external
+      - -extldflags "-L/lib -lwasmvm_muslc.aarch64 -Wl,-z,muldefs -static -z noexecstack"
+      - -X main.commit={{.Commit}}
+      - -X main.date={{ .CommitDate }}
+      - -X github.com/cosmos/cosmos-sdk/version.Name=hippo-protocol
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=hippod
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger
+      - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.TM_VERSION }}
+
+  - id: hippod-darwin-amd64
+    main: ./hippod
+    binary: hippod
+    hooks:
+      pre:
+        - wget https://github.com/CosmWasm/wasmvm/releases/download/{{ .Env.COSMWASM_VERSION }}/libwasmvmstatic_darwin.a -O /lib/libwasmvmstatic_darwin.a
+    builder: go
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    env:
+      - CC=o64-clang
+      - CGO_LDFLAGS=-L/lib
+    flags:
+      - -mod=readonly
+      - -trimpath
+    tags:
+      - netgo
+      - ledger
+      - static_wasm
+    ldflags:
+      - -s -w
+      - -linkmode=external
+      - -X main.commit={{.Commit}}
+      - -X main.date={{ .CommitDate }}
+      - -X github.com/cosmos/cosmos-sdk/version.Name=hippo-protocol
+      - -X github.com/cosmos/cosmos-sdk/version.AppName=hippod
+      - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
+      - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
+      - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger,static_wasm
+      - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.TM_VERSION }}
+
+archives:
+  - formats: binary
+    name_template: "{{ .Binary }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    builds:
+      - hippod-linux-amd64
+      - hippod-linux-arm64
+      - hippod-darwin-amd64
+    wrap_in_directory: false
+    files:
+      - none*
+
+checksum:
+  name_template: SHA256SUMS-v{{.Version}}.txt
+  algorithm: sha256
+
+changelog:
+  disable: true
+
+release:
+  prerelease: true
+  name_template: "v{{.Version}}"
