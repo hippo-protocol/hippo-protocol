@@ -58,7 +58,7 @@ pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
 }
 #[wasm_bindgen]
 pub fn decrypt(data: EncryptedData, privkey: String) -> String {
-    // Alice: one-off pubkeyr to caculate shared secret.
+    // Alice: one-off pubkey to calculate shared secret.
     let encrypt_from_pubkey = secp256k1::PublicKey::from_str(&data.pubkey_from()).unwrap();
     // Bob: the one who's able to decrypt the data with privkey.
     let privkey_to_decrypt = secp256k1::SecretKey::from_str(&privkey).unwrap();
