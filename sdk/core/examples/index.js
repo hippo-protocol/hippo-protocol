@@ -20,7 +20,7 @@ try {
   console.log("did:", did.id);
 } catch (e) {
   if (e.code === "MODULE_NOT_FOUND") {
-    console.log("You shoulde build the sdk using wasm-pack");
+    console.log("You should build the sdk using wasm-pack");
   } else {
     console.error(e);
   }
