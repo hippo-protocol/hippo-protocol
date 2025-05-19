@@ -4,7 +4,7 @@ try {
     encrypt,
     decrypt,
     key_to_did,
-  } = require("../pkg/core");
+  } = require("../../pkg/core");
 
   const keyPair = create_keypair();
   console.log(keyPair.privkey, keyPair.pubkey);
