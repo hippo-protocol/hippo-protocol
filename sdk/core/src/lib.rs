@@ -1,3 +1,4 @@
+#[cfg(test)]
 mod tests;
 mod types;
 use std::str::FromStr;
