@@ -32,6 +32,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/hippocrat-dao/hippo-protocol/app/keepers"
 	"github.com/hippocrat-dao/hippo-protocol/app/upgrades"
+	v_1_0_1 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_1"
 
 	"cosmossdk.io/x/evidence"
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -119,7 +120,7 @@ var (
 	_ runtime.AppI            = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 
-	Upgrades = []upgrades.Upgrade{}
+	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade}
 )
 
 // App extends an ABCI application, but with most of its parameters exported.
