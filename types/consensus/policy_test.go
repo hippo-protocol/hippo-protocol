@@ -14,7 +14,7 @@ func TestConsensusPolicyConstants(t *testing.T) {
 	require.Equal(t, 100000000, consensus.MaxBlockGas, "MaxBlockGas should be 100 million")
 
 	// Check minimum gas price
-	expectedMinGasPrices := "5000000000000" + consensus.DefaultHippoDenom
+	expectedMinGasPrices := "500000000000" + consensus.DefaultHippoDenom
 	require.Equal(t, expectedMinGasPrices, consensus.MinGasPrices, "MinGasPrices calculated incorrectly")
 
 	// Check block time parameters
