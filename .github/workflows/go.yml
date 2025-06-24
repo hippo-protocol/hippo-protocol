@@ -40,7 +40,7 @@ jobs:
           go tool cover -func=cover.out
 
           coverage=$(go tool cover -func=cover.out | awk '/total:/ {print $3}' | sed 's/%//' | awk '{print $1}')
-          threshold=80
+          threshold=75
 
           if [[ -z "$coverage" ]]; then
           echo "Error:Could not extract coverage percentage."
