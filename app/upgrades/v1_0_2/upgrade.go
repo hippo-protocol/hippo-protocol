@@ -40,7 +40,7 @@ func CreateUpgradeHandler(
 				},
 			},
 			Base:    "ahp",
-			Display: "ahp",
+			Display: "hp",
 			Name:    "Hippo",
 			Symbol:  "HP",
 			URI:     "",
