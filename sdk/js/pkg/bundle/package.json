@@ -1,0 +1,17 @@
+{
+  "name": "hippo-sdk",
+  "type": "module",
+  "version": "1.0.0",
+  "files": [
+    "core_bg.wasm",
+    "core.js",
+    "core_bg.js",
+    "core.d.ts"
+  ],
+  "main": "core.js",
+  "types": "core.d.ts",
+  "sideEffects": [
+    "./core.js",
+    "./snippets/*"
+  ]
+}

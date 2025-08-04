@@ -1,0 +1,24 @@
+{
+  "name": "hippo-sdk",
+  "version": "1.0.0",
+  "main": "./node/core.js",
+  "module": "./bundle/core.js",
+  "files": [
+    "bundle",
+    "node"
+  ],
+  "exports": {
+    ".": {
+      "node": {
+        "types": "./node/core.d.ts",
+        "default": "./node/core.js"
+      },
+      "browser": {
+        "types": "./bundle/core.d.ts",
+        "default": "./bundle/core.js"
+      },
+      "default": "./bundle/core.js"
+    }
+  },
+  "types": "./bundle/core.d.ts"
+}
