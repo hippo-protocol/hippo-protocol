@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "dependencies": {
     "hippo-sdk": "file:../../pkg/hippo-sdk-1.0.0.tgz"
   }
