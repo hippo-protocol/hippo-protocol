@@ -4,6 +4,8 @@
 
 ```bash
 npm install
+# Install wasm-pack built npm package
+npm install ../../pkg/hippo-sdk-1.0.0.tgz
 ```
 
 ## Build latest SDK(optional)

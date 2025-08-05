@@ -1,28 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./App.css";
-import init, { create_keypair, KeyPair } from "./assets/pkg/core.js";
+import { create_keypair, KeyPair } from "hippo-sdk";
 
 function App() {
   const [keypair, setKeypair] = useState<KeyPair[]>([]);
-  const [initialized, setInitialized] = useState(false);
 
   const createKeypair = async () => {
     const generated = create_keypair();
     setKeypair([...keypair, generated]);
   };
 
-  useEffect(() => {
-    init().then(() => {
-      setInitialized(true);
-    });
-  });
 
   return (
     <>
-      <script src="pkg/core.js" />
       <h1>Hippo SDK Example</h1>
       <div className="card">
-        <button onClick={createKeypair} disabled={!initialized}>
+        <button onClick={createKeypair}>
           Create Keypair
         </button>
         <div>
