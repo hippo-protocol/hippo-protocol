@@ -15,6 +15,18 @@ impl KeyPair {
         KeyPair { pubkey, privkey }
     }
 
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> KeyPair {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
+
     #[wasm_bindgen(getter)]
     pub fn pubkey(&self) -> String {
         self.pubkey.clone()
@@ -48,6 +60,16 @@ impl Did {
     pub fn new(id: String) -> Self {
         Did { id }
     }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> Did {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
     #[wasm_bindgen(getter)]
     pub fn id(&self) -> String {
         self.id.clone()
@@ -77,6 +99,16 @@ impl EncryptedData {
             data,
             nonce,
         }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> EncryptedData {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
     }
     #[wasm_bindgen(getter)]
     pub fn pubkey_from(&self) -> String {
@@ -132,6 +164,16 @@ impl Tx {
             fee,
             data,
         }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> Tx {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
     }
     #[wasm_bindgen(getter)]
     pub fn coin(&self) -> String {
