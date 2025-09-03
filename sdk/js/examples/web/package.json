@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "hippo-sdk": "file:../../pkg/hippo-sdk-1.0.0.tgz",
+    "hippo-sdk": "1.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
