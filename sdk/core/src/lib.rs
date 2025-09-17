@@ -7,13 +7,19 @@ use aes_gcm::{
     aead::{Aead, AeadCore, OsRng as AesRng},
     Aes256Gcm, Key, KeyInit, Nonce,
 };
-use secp256k1_zkp::ecdsa::Signature;
-use secp256k1_zkp::hashes::{sha256, Hash};
-use secp256k1_zkp::rand::rngs::OsRng as Secp256k1Rng;
-use secp256k1_zkp::{ecdh, Message, PublicKey, Secp256k1, SecretKey};
+use secp256k1_zkp::{
+    ecdh, verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey,
+    Secp256k1, SecretKey,
+};
+use secp256k1_zkp::{ecdsa::Signature, Tweak};
+use secp256k1_zkp::{
+    hashes::{sha256, Hash},
+    Tag,
+};
+use secp256k1_zkp::{rand::rngs::OsRng as Secp256k1Rng, ZERO_TWEAK};
 use wasm_bindgen::prelude::*;
 
-use types::{Did, EncryptedData, KeyPair};
+use types::{Commitment, Did, EncryptedData, KeyPair};
 
 #[wasm_bindgen]
 pub fn create_keypair() -> KeyPair {
@@ -116,4 +122,55 @@ pub fn ecdh(privkey: String, pubkey: String) -> String {
     // Only Alice and Bob can know the secret, which is used as a key to sign or encrypt data(or any other).
     let shared_secret = ecdh::SharedSecret::new(&bob, &alice);
     shared_secret.display_secret().to_string()
+}
+// Pederson commitment is building block for zkp.
+// commitment is additively homomorphic.
+// blinding_factor must be kept as secret, to prevent the confidentiality of the committed value.
+// Tag is for domain(or purpose) separation.
+#[wasm_bindgen]
+pub fn pedersen_commit(value: u64, tag: String) -> Commitment {
+    let secp = Secp256k1::new();
+    let blinding_factor = Tweak::new(&mut Secp256k1Rng);
+    let tag = Tag::from(sha256::Hash::hash(tag.as_bytes()).to_byte_array());
+    Commitment::new(
+        PedersenCommitment::new(
+            &secp,
+            value,
+            blinding_factor,
+            // Blinded Generator is used in MimbleWimble for
+            // 1. Unlinkability: G' unique to a specific transaction, any commitments using it not linked to commitments from other transactions.
+            // 2. Proof of Ownership: the sum of all blinding factors in a transaction must equal a public key.
+            // Original pedersen: C=v⋅G+r⋅H
+            // Blinded Generator pedersen: C=v⋅G'+r⋅H (where G' = G+g⋅H, g is distinct blinding factor).
+            // Here, not using Blinded Generator as we only care the confidentiality of value.
+            Generator::new_unblinded(&secp, tag),
+        )
+        .to_string(),
+        blinding_factor.to_string(),
+    )
+}
+// Perderson verify by revealing value.
+#[wasm_bindgen]
+pub fn pedersen_verify(commitment: Commitment, value: u64, tag: String) -> bool {
+    let secp = Secp256k1::new();
+    let blinding_factor =
+        Tweak::from_str(&commitment.secret_blinding_factor()).expect("Wrong blinding factor");
+    let tag = Tag::from(sha256::Hash::hash(tag.as_bytes()).to_byte_array());
+
+    verify_commitments_sum_to_equal(
+        &secp,
+        &vec![PedersenCommitment::new(
+            &secp,
+            value,
+            blinding_factor,
+            // Blinded Generator is used in MimbleWimble for
+            // 1. Unlinkability: G' unique to a specific transaction, any commitments using it not linked to commitments from other transactions.
+            // 2. Proof of Ownership: the sum of all blinding factors in a transaction must equal a public key
+            // Original pedersen: C=v⋅G+r⋅H
+            // Blinded Generator pedersen: C=v⋅G'+r⋅H (where G' = G+g⋅H, g is distinct blinding factor)
+            // Here, not using Blinded Generator as we only care the confidentiality of value
+            Generator::new_unblinded(&secp, tag),
+        )],
+        &vec![PedersenCommitment::from_str(&commitment.commitment()).expect("Wrong commitment")],
+    )
 }

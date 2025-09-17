@@ -224,3 +224,47 @@ impl Tx {
         self.data = data;
     }
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[wasm_bindgen]
+pub struct Commitment {
+    commitment: String,
+    secret_blinding_factor: String,
+}
+
+#[wasm_bindgen]
+impl Commitment {
+    #[wasm_bindgen(constructor)]
+    pub fn new(commitment: String, secret_blinding_factor: String) -> Self {
+        Commitment {
+            commitment,
+            secret_blinding_factor,
+        }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> Commitment {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn commitment(&self) -> String {
+        self.commitment.clone()
+    }
+    #[wasm_bindgen(setter)]
+    pub fn set_commitment(&mut self, commitment: String) {
+        self.commitment = commitment;
+    }
+    #[wasm_bindgen(getter)]
+    pub fn secret_blinding_factor(&self) -> String {
+        self.secret_blinding_factor.clone()
+    }
+    #[wasm_bindgen(setter)]
+    pub fn set_secret_blinding_factor(&mut self, secret_blinding_factor: String) {
+        self.secret_blinding_factor = secret_blinding_factor;
+    }
+}
