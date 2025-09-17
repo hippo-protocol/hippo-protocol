@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod tests {
-    use crate::{create_keypair, decrypt, did_to_key, encrypt, key_to_did, sign, verify};
+    use crate::{
+        create_keypair, decrypt, did_to_key, encrypt, key_to_did, pedersen_commit, pedersen_verify,
+        sign, verify,
+    };
 
     #[test]
     fn test_enc_dec() {
@@ -36,5 +39,21 @@ mod tests {
         let is_verified = verify(data, sig, key_pair.pubkey());
         // then
         assert!(is_verified);
+    }
+
+    #[test]
+    fn test_pedersen_commit() {
+        // given
+        let tag = String::from("hippo");
+        let value = 100_u64;
+        let wrong_tag = String::from("wrong hippo");
+        let wrong_value = 0_u64;
+        // when
+        let commitment = pedersen_commit(value, tag.clone());
+        let is_verified = pedersen_verify(commitment.clone(), value, tag);
+        let is_not_verified = pedersen_verify(commitment, wrong_value, wrong_tag);
+        // then
+        assert!(is_verified);
+        assert!(!is_not_verified);
     }
 }
