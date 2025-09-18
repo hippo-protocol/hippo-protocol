@@ -7,13 +7,19 @@ use aes_gcm::{
     aead::{Aead, AeadCore, OsRng as AesRng},
     Aes256Gcm, Key, KeyInit, Nonce,
 };
-use secp256k1::hashes::{hex::FromHex, sha256, Hash};
-use secp256k1::rand::rngs::OsRng as Secp256k1Rng;
-use secp256k1::{ecdh, Message, PublicKey, Secp256k1, SecretKey};
-use secp256k1::{ecdsa::Signature, hashes::hex::DisplayHex};
+use secp256k1_zkp::{
+    ecdh, verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey,
+    Secp256k1, SecretKey,
+};
+use secp256k1_zkp::{ecdsa::Signature, Tweak};
+use secp256k1_zkp::{
+    hashes::{sha256, Hash},
+    Tag,
+};
+use secp256k1_zkp::{rand::rngs::OsRng as Secp256k1Rng, ZERO_TWEAK};
 use wasm_bindgen::prelude::*;
 
-use types::{Did, EncryptedData, KeyPair};
+use types::{Commitment, Did, EncryptedData, KeyPair};
 
 #[wasm_bindgen]
 pub fn create_keypair() -> KeyPair {
@@ -41,7 +47,7 @@ pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
     // Alice: one-off key pair to caculate shared secret.
     let (secret_key, public_key) = secp.generate_keypair(&mut Secp256k1Rng);
     // Bob: param pubkey is the one who's able to decrypt the data.
-    let encrypt_to_pubkey = secp256k1::PublicKey::from_str(&pubkey).unwrap();
+    let encrypt_to_pubkey = secp256k1_zkp::PublicKey::from_str(&pubkey).unwrap();
     // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
     let shared_secret = ecdh::SharedSecret::new(&encrypt_to_pubkey, &secret_key).secret_bytes();
 
@@ -54,16 +60,16 @@ pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
     EncryptedData::new(
         public_key.to_string(),
         pubkey,
-        ciphertext.to_lower_hex_string(),
-        nonce.to_lower_hex_string(),
+        hex::encode(&ciphertext),
+        hex::encode(&nonce),
     )
 }
 #[wasm_bindgen]
 pub fn decrypt(data: EncryptedData, privkey: String) -> String {
     // Alice: one-off pubkey to calculate shared secret.
-    let encrypt_from_pubkey = secp256k1::PublicKey::from_str(&data.pubkey_from()).unwrap();
+    let encrypt_from_pubkey = secp256k1_zkp::PublicKey::from_str(&data.pubkey_from()).unwrap();
     // Bob: the one who's able to decrypt the data with privkey.
-    let privkey_to_decrypt = secp256k1::SecretKey::from_str(&privkey).unwrap();
+    let privkey_to_decrypt = secp256k1_zkp::SecretKey::from_str(&privkey).unwrap();
     // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
     let shared_secret =
         ecdh::SharedSecret::new(&encrypt_from_pubkey, &privkey_to_decrypt).secret_bytes();
@@ -72,10 +78,10 @@ pub fn decrypt(data: EncryptedData, privkey: String) -> String {
     let aes_key = Key::<Aes256Gcm>::from_slice(&shared_secret);
     let cipher = Aes256Gcm::new(&aes_key);
     // Nonce hex to bytes
-    let nonce_bytes = Vec::from_hex(&data.nonce()).unwrap();
+    let nonce_bytes = hex::decode(&data.nonce()).unwrap();
     let nonce = Nonce::from_slice(&nonce_bytes);
     // Data hex to bytes
-    let data_bytes = Vec::from_hex(&data.data()).unwrap();
+    let data_bytes = hex::decode(&data.data()).unwrap();
     let decrypted_data = cipher.decrypt(&nonce, data_bytes.as_slice()).unwrap();
 
     String::from_utf8(decrypted_data).unwrap()
@@ -110,10 +116,61 @@ pub fn sha256(data: String) -> String {
 #[wasm_bindgen]
 pub fn ecdh(privkey: String, pubkey: String) -> String {
     // Alice: param privkey is the one who's able to decrypt the data.
-    let alice = secp256k1::SecretKey::from_str(&privkey).unwrap();
+    let alice = secp256k1_zkp::SecretKey::from_str(&privkey).unwrap();
     // Bob: param pubkey is the one who's able to decrypt the data.
-    let bob = secp256k1::PublicKey::from_str(&pubkey).unwrap();
+    let bob = secp256k1_zkp::PublicKey::from_str(&pubkey).unwrap();
     // Only Alice and Bob can know the secret, which is used as a key to sign or encrypt data(or any other).
     let shared_secret = ecdh::SharedSecret::new(&bob, &alice);
     shared_secret.display_secret().to_string()
+}
+// Pederson commitment is building block for zkp.
+// commitment is additively homomorphic.
+// blinding_factor must be kept as secret, to prevent the confidentiality of the committed value.
+// Tag is for domain(or purpose) separation.
+#[wasm_bindgen]
+pub fn pedersen_commit(value: u64, tag: String) -> Commitment {
+    let secp = Secp256k1::new();
+    let blinding_factor = Tweak::new(&mut Secp256k1Rng);
+    let tag = Tag::from(sha256::Hash::hash(tag.as_bytes()).to_byte_array());
+    Commitment::new(
+        PedersenCommitment::new(
+            &secp,
+            value,
+            blinding_factor,
+            // Blinded Generator is used in MimbleWimble for
+            // 1. Unlinkability: G' unique to a specific transaction, any commitments using it not linked to commitments from other transactions.
+            // 2. Proof of Ownership: the sum of all blinding factors in a transaction must equal a public key.
+            // Original pedersen: C=v⋅G+r⋅H
+            // Blinded Generator pedersen: C=v⋅G'+r⋅H (where G' = G+g⋅H, g is distinct blinding factor).
+            // Here, not using Blinded Generator as we only care the confidentiality of value.
+            Generator::new_unblinded(&secp, tag),
+        )
+        .to_string(),
+        blinding_factor.to_string(),
+    )
+}
+// Perderson verify by revealing value.
+#[wasm_bindgen]
+pub fn pedersen_verify(commitment: Commitment, value: u64, tag: String) -> bool {
+    let secp = Secp256k1::new();
+    let blinding_factor =
+        Tweak::from_str(&commitment.secret_blinding_factor()).expect("Wrong blinding factor");
+    let tag = Tag::from(sha256::Hash::hash(tag.as_bytes()).to_byte_array());
+
+    verify_commitments_sum_to_equal(
+        &secp,
+        &vec![PedersenCommitment::new(
+            &secp,
+            value,
+            blinding_factor,
+            // Blinded Generator is used in MimbleWimble for
+            // 1. Unlinkability: G' unique to a specific transaction, any commitments using it not linked to commitments from other transactions.
+            // 2. Proof of Ownership: the sum of all blinding factors in a transaction must equal a public key
+            // Original pedersen: C=v⋅G+r⋅H
+            // Blinded Generator pedersen: C=v⋅G'+r⋅H (where G' = G+g⋅H, g is distinct blinding factor)
+            // Here, not using Blinded Generator as we only care the confidentiality of value
+            Generator::new_unblinded(&secp, tag),
+        )],
+        &vec![PedersenCommitment::from_str(&commitment.commitment()).expect("Wrong commitment")],
+    )
 }
