@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        create_keypair, decrypt, did_to_key, encrypt, key_to_did, pedersen_commit, pedersen_verify,
+        create_keypair, decrypt, did_to_key, encrypt, key_to_did, pedersen_commit, pedersen_reveal,
         sign, types::Commitment, verify,
     };
 
@@ -51,9 +51,9 @@ mod tests {
         // when
         let commitment = pedersen_commit(value, tag.clone());
         let commitment_same_value = pedersen_commit(value, tag.clone());
-        let is_verified = pedersen_verify(commitment.clone(), value, tag.clone());
-        let wrong_value_and_tag = pedersen_verify(commitment.clone(), wrong_value, wrong_tag);
-        let wrong_blinding_factor_with_same_value = pedersen_verify(
+        let is_verified = pedersen_reveal(commitment.clone(), value, tag.clone());
+        let wrong_value_and_tag = pedersen_reveal(commitment.clone(), wrong_value, wrong_tag);
+        let wrong_blinding_factor_with_same_value = pedersen_reveal(
             Commitment::new(
                 commitment_same_value.commitment(),
                 // Value is same but blinding factor is different.
@@ -62,7 +62,7 @@ mod tests {
             value,
             tag.clone(),
         );
-        let wrong_commitment_with_correct_blinding_factor = pedersen_verify(
+        let wrong_commitment_with_correct_blinding_factor = pedersen_reveal(
             Commitment::new(
                 // Even if the value is same, blinding factor makes the commitment different.
                 commitment.commitment(),

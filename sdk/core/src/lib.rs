@@ -151,7 +151,7 @@ pub fn pedersen_commit(value: u64, tag: String) -> Commitment {
 }
 // Perderson verify by revealing value.
 #[wasm_bindgen]
-pub fn pedersen_verify(commitment: Commitment, value: u64, tag: String) -> bool {
+pub fn pedersen_reveal(commitment: Commitment, value: u64, tag: String) -> bool {
     let secp = Secp256k1::new();
     let blinding_factor =
         Tweak::from_str(&commitment.secret_blinding_factor()).expect("Wrong blinding factor");
