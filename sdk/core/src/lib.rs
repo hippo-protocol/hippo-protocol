@@ -8,8 +8,8 @@ use aes_gcm::{
     Aes256Gcm, Key, KeyInit, Nonce,
 };
 use secp256k1_zkp::{
-    ecdh, verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey,
-    Secp256k1, SecretKey,
+    ecdh, rand::thread_rng, verify_commitments_sum_to_equal, Generator, Message,
+    PedersenCommitment, PublicKey, RangeProof, Secp256k1, SecretKey,
 };
 use secp256k1_zkp::{ecdsa::Signature, Tweak};
 use secp256k1_zkp::{
@@ -24,7 +24,7 @@ use types::{Commitment, Did, EncryptedData, KeyPair};
 #[wasm_bindgen]
 pub fn create_keypair() -> KeyPair {
     let secp = Secp256k1::new();
-    let (secret_key, public_key) = secp.generate_keypair(&mut Secp256k1Rng);
+    let (secret_key, public_key) = secp.generate_keypair(&mut thread_rng());
     KeyPair::new(
         public_key.to_string(),
         secret_key.display_secret().to_string(),
@@ -45,7 +45,7 @@ pub fn did_to_key(did: Did) -> String {
 pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
     let secp = Secp256k1::new();
     // Alice: one-off key pair to caculate shared secret.
-    let (secret_key, public_key) = secp.generate_keypair(&mut Secp256k1Rng);
+    let (secret_key, public_key) = secp.generate_keypair(&mut thread_rng());
     // Bob: param pubkey is the one who's able to decrypt the data.
     let encrypt_to_pubkey = secp256k1_zkp::PublicKey::from_str(&pubkey).unwrap();
     // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
@@ -130,7 +130,7 @@ pub fn ecdh(privkey: String, pubkey: String) -> String {
 #[wasm_bindgen]
 pub fn pedersen_commit(value: u64, tag: String) -> Commitment {
     let secp = Secp256k1::new();
-    let blinding_factor = Tweak::new(&mut Secp256k1Rng);
+    let blinding_factor = Tweak::new(&mut thread_rng());
     let tag = Tag::from(sha256::Hash::hash(tag.as_bytes()).to_byte_array());
     Commitment::new(
         PedersenCommitment::new(
