@@ -2,7 +2,7 @@
 mod tests {
     use crate::{
         create_keypair, decrypt, did_to_key, encrypt, key_to_did, pedersen_commit, pedersen_verify,
-        sign, verify,
+        sign, types::Commitment, verify,
     };
 
     #[test]
@@ -50,10 +50,31 @@ mod tests {
         let wrong_value = 0_u64;
         // when
         let commitment = pedersen_commit(value, tag.clone());
-        let is_verified = pedersen_verify(commitment.clone(), value, tag);
-        let is_not_verified = pedersen_verify(commitment, wrong_value, wrong_tag);
+        let commitment_same_value = pedersen_commit(value, tag.clone());
+        let is_verified = pedersen_verify(commitment.clone(), value, tag.clone());
+        let wrong_value_and_tag = pedersen_verify(commitment.clone(), wrong_value, wrong_tag);
+        let wrong_blinding_factor_with_same_value = pedersen_verify(
+            Commitment::new(
+                commitment_same_value.commitment(),
+                // Value is same but blinding factor is different.
+                commitment.secret_blinding_factor(),
+            ),
+            value,
+            tag.clone(),
+        );
+        let wrong_commitment_with_correct_blinding_factor = pedersen_verify(
+            Commitment::new(
+                // Even if the value is same, blinding factor makes the commitment different.
+                commitment.commitment(),
+                commitment_same_value.secret_blinding_factor(), // Blinding factor is correct.
+            ),
+            value,
+            tag,
+        );
         // then
         assert!(is_verified);
-        assert!(!is_not_verified);
+        assert!(!wrong_value_and_tag);
+        assert!(!wrong_blinding_factor_with_same_value);
+        assert!(!wrong_commitment_with_correct_blinding_factor)
     }
 }
