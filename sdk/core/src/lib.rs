@@ -8,15 +8,14 @@ use aes_gcm::{
     Aes256Gcm, Key, KeyInit, Nonce,
 };
 use secp256k1_zkp::{
-    ecdh, verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey,
-    Secp256k1, SecretKey,
+    ecdh, rand::rngs::OsRng as Secp256k1Rng, verify_commitments_sum_to_equal, Generator, Message,
+    PedersenCommitment, PublicKey, Secp256k1, SecretKey,
 };
 use secp256k1_zkp::{ecdsa::Signature, Tweak};
 use secp256k1_zkp::{
     hashes::{sha256, Hash},
     Tag,
 };
-use secp256k1_zkp::{rand::rngs::OsRng as Secp256k1Rng, ZERO_TWEAK};
 use wasm_bindgen::prelude::*;
 
 use types::{Commitment, Did, EncryptedData, KeyPair};
@@ -151,7 +150,7 @@ pub fn pedersen_commit(value: u64, tag: String) -> Commitment {
 }
 // Perderson verify by revealing value.
 #[wasm_bindgen]
-pub fn pedersen_verify(commitment: Commitment, value: u64, tag: String) -> bool {
+pub fn pedersen_reveal(commitment: Commitment, value: u64, tag: String) -> bool {
     let secp = Secp256k1::new();
     let blinding_factor =
         Tweak::from_str(&commitment.secret_blinding_factor()).expect("Wrong blinding factor");
