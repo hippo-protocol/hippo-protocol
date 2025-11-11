@@ -130,6 +130,39 @@ impl EncryptedData {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[wasm_bindgen]
+pub struct AesEncryptedData {
+    data: String,
+    nonce: String,
+}
+
+#[wasm_bindgen]
+impl AesEncryptedData {
+    #[wasm_bindgen(constructor)]
+    pub fn new(data: String, nonce: String) -> Self {
+        AesEncryptedData { data, nonce }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> AesEncryptedData {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn data(&self) -> String {
+        self.data.clone()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn nonce(&self) -> String {
+        self.nonce.clone()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[wasm_bindgen]
 pub struct Tx {
     /// coin name(e.g. HP).
     coin: String,
