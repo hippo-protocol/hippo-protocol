@@ -8,8 +8,10 @@ use aes_gcm::{
     Aes256Gcm, Key, KeyInit, Nonce,
 };
 use secp256k1_zkp::{
-    ecdh, rand::rngs::OsRng as Secp256k1Rng, verify_commitments_sum_to_equal, Generator, Message,
-    PedersenCommitment, PublicKey, Secp256k1, SecretKey,
+    ecdh,
+    rand::{self, rngs::OsRng as Secp256k1Rng},
+    verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey, Secp256k1,
+    SecretKey,
 };
 use secp256k1_zkp::{ecdsa::Signature, Tweak};
 use secp256k1_zkp::{
@@ -18,7 +20,7 @@ use secp256k1_zkp::{
 };
 use wasm_bindgen::prelude::*;
 
-use types::{Commitment, Did, EncryptedData, KeyPair};
+use types::{AesEncryptedData, Commitment, Did, EncryptedData, KeyPair};
 
 #[wasm_bindgen]
 pub fn create_keypair() -> KeyPair {
@@ -50,19 +52,16 @@ pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
     // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
     let shared_secret = ecdh::SharedSecret::new(&encrypt_to_pubkey, &secret_key).secret_bytes();
 
-    // Secret key just fit into AES key
-    let aes_key = Key::<Aes256Gcm>::from_slice(&shared_secret);
-    let cipher = Aes256Gcm::new(&aes_key);
-    // Nonce must be random and non-reusable value
-    let nonce = Aes256Gcm::generate_nonce(&mut AesRng); // 96-bits; unique per message
-    let ciphertext = cipher.encrypt(&nonce, data.as_bytes()).unwrap();
+    let aes_encrypted_data = encrypt_aes(data, hex::encode(&shared_secret));
+
     EncryptedData::new(
         public_key.to_string(),
         pubkey,
-        hex::encode(&ciphertext),
-        hex::encode(&nonce),
+        aes_encrypted_data.data(),
+        aes_encrypted_data.nonce(),
     )
 }
+
 #[wasm_bindgen]
 pub fn decrypt(data: EncryptedData, privkey: String) -> String {
     // Alice: one-off pubkey to calculate shared secret.
@@ -73,15 +72,35 @@ pub fn decrypt(data: EncryptedData, privkey: String) -> String {
     let shared_secret =
         ecdh::SharedSecret::new(&encrypt_from_pubkey, &privkey_to_decrypt).secret_bytes();
 
+    decrypt_aes(
+        AesEncryptedData::new(data.data(), data.nonce()),
+        hex::encode(&shared_secret),
+    )
+}
+
+#[wasm_bindgen]
+pub fn encrypt_aes(data: String, key: String) -> AesEncryptedData {
     // Secret key just fit into AES key
-    let aes_key = Key::<Aes256Gcm>::from_slice(&shared_secret);
+    let hex_key = hex::decode(key).expect("Key is malformed.");
+    let aes_key = Key::<Aes256Gcm>::from_slice(&hex_key);
     let cipher = Aes256Gcm::new(&aes_key);
+    // Nonce must be random and non-reusable value
+    let nonce = Aes256Gcm::generate_nonce(&mut AesRng); // 96-bits; unique per message
+    let ciphertext = cipher.encrypt(&nonce, data.as_bytes()).unwrap();
+    AesEncryptedData::new(hex::encode(&ciphertext), hex::encode(&nonce))
+}
+#[wasm_bindgen]
+pub fn decrypt_aes(data: AesEncryptedData, key: String) -> String {
+    // Secret key just fit into AES key
+    let hex_key = hex::decode(key).expect("Key is malformed.");
+    let aes_key = Key::<Aes256Gcm>::from_slice(&hex_key);
+    let decipher = Aes256Gcm::new(&aes_key);
     // Nonce hex to bytes
     let nonce_bytes = hex::decode(&data.nonce()).unwrap();
     let nonce = Nonce::from_slice(&nonce_bytes);
     // Data hex to bytes
     let data_bytes = hex::decode(&data.data()).unwrap();
-    let decrypted_data = cipher.decrypt(&nonce, data_bytes.as_slice()).unwrap();
+    let decrypted_data = decipher.decrypt(&nonce, data_bytes.as_slice()).unwrap();
 
     String::from_utf8(decrypted_data).unwrap()
 }
