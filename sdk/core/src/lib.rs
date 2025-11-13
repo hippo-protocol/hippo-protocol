@@ -9,7 +9,7 @@ use aes_gcm::{
 };
 use secp256k1_zkp::{
     ecdh,
-    rand::{self, rngs::OsRng as Secp256k1Rng},
+    rand::{rngs::OsRng as Secp256k1Rng},
     verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey, Secp256k1,
     SecretKey,
 };
