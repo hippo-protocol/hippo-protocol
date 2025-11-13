@@ -20,7 +20,9 @@ use secp256k1_zkp::{
 };
 use wasm_bindgen::prelude::*;
 
-use types::{AesEncryptedData, Commitment, Did, EncryptedData, KeyPair};
+use types::{AesEncryptedData, Commitment, Did, EncodingType, EncryptedData, KeyPair};
+
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 
 #[wasm_bindgen]
 pub fn create_keypair() -> KeyPair {
@@ -43,7 +45,7 @@ pub fn did_to_key(did: Did) -> String {
 }
 
 #[wasm_bindgen]
-pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
+pub fn encrypt(data: String, pubkey: String, encoding_type: EncodingType) -> EncryptedData {
     let secp = Secp256k1::new();
     // Alice: one-off key pair to caculate shared secret.
     let (secret_key, public_key) = secp.generate_keypair(&mut Secp256k1Rng);
@@ -52,7 +54,7 @@ pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
     // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
     let shared_secret = ecdh::SharedSecret::new(&encrypt_to_pubkey, &secret_key).secret_bytes();
 
-    let aes_encrypted_data = encrypt_aes(data, hex::encode(&shared_secret));
+    let aes_encrypted_data = encrypt_aes(data, hex::encode(&shared_secret), encoding_type);
 
     EncryptedData::new(
         public_key.to_string(),
@@ -63,7 +65,7 @@ pub fn encrypt(data: String, pubkey: String) -> EncryptedData {
 }
 
 #[wasm_bindgen]
-pub fn decrypt(data: EncryptedData, privkey: String) -> String {
+pub fn decrypt(data: EncryptedData, privkey: String, encoding_type: EncodingType) -> String {
     // Alice: one-off pubkey to calculate shared secret.
     let encrypt_from_pubkey = secp256k1_zkp::PublicKey::from_str(&data.pubkey_from()).unwrap();
     // Bob: the one who's able to decrypt the data with privkey.
@@ -75,22 +77,28 @@ pub fn decrypt(data: EncryptedData, privkey: String) -> String {
     decrypt_aes(
         AesEncryptedData::new(data.data(), data.nonce()),
         hex::encode(&shared_secret),
+        encoding_type,
     )
 }
 
 #[wasm_bindgen]
-pub fn encrypt_aes(data: String, key: String) -> AesEncryptedData {
+pub fn encrypt_aes(data: String, key: String, encoding_type: EncodingType) -> AesEncryptedData {
     // Secret key just fit into AES key
     let hex_key = hex::decode(key).expect("Key is malformed.");
     let aes_key = Key::<Aes256Gcm>::from_slice(&hex_key);
     let cipher = Aes256Gcm::new(&aes_key);
     // Nonce must be random and non-reusable value
     let nonce = Aes256Gcm::generate_nonce(&mut AesRng); // 96-bits; unique per message
-    let ciphertext = cipher.encrypt(&nonce, data.as_bytes()).unwrap();
+    let data_bytes = match encoding_type {
+        EncodingType::UTF8 => data.as_bytes(),
+        EncodingType::HEX => &hex::decode(data).expect("Wrong hex format data"),
+        EncodingType::BASE64 => &STANDARD.decode(data).expect("Wrong base64 format data"),
+    };
+    let ciphertext = cipher.encrypt(&nonce, data_bytes).unwrap();
     AesEncryptedData::new(hex::encode(&ciphertext), hex::encode(&nonce))
 }
 #[wasm_bindgen]
-pub fn decrypt_aes(data: AesEncryptedData, key: String) -> String {
+pub fn decrypt_aes(data: AesEncryptedData, key: String, encoding_type: EncodingType) -> String {
     // Secret key just fit into AES key
     let hex_key = hex::decode(key).expect("Key is malformed.");
     let aes_key = Key::<Aes256Gcm>::from_slice(&hex_key);
@@ -102,7 +110,11 @@ pub fn decrypt_aes(data: AesEncryptedData, key: String) -> String {
     let data_bytes = hex::decode(&data.data()).unwrap();
     let decrypted_data = decipher.decrypt(&nonce, data_bytes.as_slice()).unwrap();
 
-    String::from_utf8(decrypted_data).unwrap()
+    return match encoding_type {
+        EncodingType::UTF8 => String::from_utf8(decrypted_data).expect("Wrong utf8 format data"),
+        EncodingType::HEX => hex::encode(decrypted_data),
+        EncodingType::BASE64 => STANDARD.encode(decrypted_data),
+    };
 }
 
 #[wasm_bindgen]

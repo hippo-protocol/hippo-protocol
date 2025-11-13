@@ -301,3 +301,11 @@ impl Commitment {
         self.secret_blinding_factor = secret_blinding_factor;
     }
 }
+
+#[derive(Serialize, Deserialize, Copy, Debug, Clone)]
+#[wasm_bindgen]
+pub enum EncodingType {
+    UTF8,
+    HEX,
+    BASE64,
+}

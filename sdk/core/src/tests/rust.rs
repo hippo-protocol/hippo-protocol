@@ -2,19 +2,30 @@
 mod tests {
     use crate::{
         create_keypair, decrypt, did_to_key, encrypt, key_to_did, pedersen_commit, pedersen_reveal,
-        sign, types::Commitment, verify,
+        sign,
+        types::{Commitment, EncodingType},
+        verify,
     };
+    use base64::{engine::general_purpose::STANDARD, Engine as _};
 
     #[test]
     fn test_enc_dec() {
         // given
-        let data = String::from("datag허ㅜㅏ니ㅜ2#@_!##ㅏ!~2ㅡ₩ㅡ1    ㅁAl;;A;;:{}()[]");
+        let utf8_data = String::from("datag허ㅜㅏ니ㅜ2#@_!##ㅏ!~2ㅡ₩ㅡ1    ㅁAl;;A;;:{}()[]");
+        let hex_data = hex::encode(utf8_data.clone());
+        let base64_data = STANDARD.encode(utf8_data.clone());
         let alice = create_keypair();
         // when
-        let enc_data = encrypt(data.clone(), alice.pubkey());
-        let dec_data = decrypt(enc_data, alice.privkey());
+        let utf8_enc_data = encrypt(utf8_data.clone(), alice.pubkey(), EncodingType::UTF8);
+        let utf8_dec_data = decrypt(utf8_enc_data, alice.privkey(), EncodingType::UTF8);
+        let hex_enc_data = encrypt(hex_data.clone(), alice.pubkey(), EncodingType::UTF8);
+        let hex_dec_data = decrypt(hex_enc_data, alice.privkey(), EncodingType::UTF8);
+        let base64_enc_data = encrypt(base64_data.clone(), alice.pubkey(), EncodingType::UTF8);
+        let base64_dec_data = decrypt(base64_enc_data, alice.privkey(), EncodingType::UTF8);
         // then
-        assert_eq!(data, dec_data);
+        assert_eq!(utf8_data, utf8_dec_data);
+        assert_eq!(hex_data, hex_dec_data);
+        assert_eq!(base64_data, base64_dec_data);
     }
 
     #[test]

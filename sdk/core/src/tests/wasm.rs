@@ -1,13 +1,15 @@
 use wasm_bindgen_test::*;
 
+use crate::types::EncodingType;
+
 #[wasm_bindgen_test]
 fn encrypt_decrypt() {
     use crate::{decrypt, encrypt};
     let message = String::from("Hello, world!");
     let alice = crate::create_keypair();
-    let encrypted_message = encrypt(message.clone(), alice.pubkey());
+    let encrypted_message = encrypt(message.clone(), alice.pubkey(), EncodingType::UTF8);
     assert_ne!(message, encrypted_message.data());
-    let decrypted_message = decrypt(encrypted_message, alice.privkey());
+    let decrypted_message = decrypt(encrypted_message, alice.privkey(), EncodingType::UTF8);
     assert_eq!(message, decrypted_message);
 }
 
