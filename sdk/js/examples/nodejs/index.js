@@ -3,10 +3,10 @@ import {
   encrypt,
   decrypt,
   key_to_did,
-} from 'hippo-sdk';
+  EncodingType,
+} from "hippo-sdk";
 
 try {
-
   const keyPair = create_keypair();
   console.log(keyPair.privkey, keyPair.pubkey);
 
@@ -14,7 +14,11 @@ try {
   console.log(
     "encrypt and decrypt a message: ",
     message,
-    decrypt(encrypt(message, keyPair.pubkey), keyPair.privkey)
+    decrypt(
+      encrypt(message, keyPair.pubkey, EncodingType.UTF8),
+      keyPair.privkey,
+      EncodingType.UTF8
+    )
   );
 
   const did = key_to_did(keyPair.pubkey);
