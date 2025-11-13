@@ -175,11 +175,109 @@ function debugString(val) {
     return className;
 }
 /**
- * @returns {KeyPair}
+ * @param {string} data
+ * @returns {string}
  */
-export function create_keypair() {
-    const ret = wasm.create_keypair();
-    return KeyPair.__wrap(ret);
+export function sha256(data) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.sha256(ptr0, len0);
+        deferred2_0 = ret[0];
+        deferred2_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+}
+/**
+ * @param {Commitment} commitment
+ * @param {bigint} value
+ * @param {string} tag
+ * @returns {boolean}
+ */
+export function pedersen_reveal(commitment, value, tag) {
+    _assertClass(commitment, Commitment);
+    var ptr0 = commitment.__destroy_into_raw();
+    const ptr1 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.pedersen_reveal(ptr0, value, ptr1, len1);
+    return ret !== 0;
+}
+
+/**
+ * @param {string} data
+ * @param {string} sig
+ * @param {string} pubkey
+ * @returns {boolean}
+ */
+export function verify(data, sig, pubkey) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(sig, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.verify(ptr0, len0, ptr1, len1, ptr2, len2);
+    return ret !== 0;
+}
+
+/**
+ * @param {bigint} value
+ * @param {string} tag
+ * @returns {Commitment}
+ */
+export function pedersen_commit(value, tag) {
+    const ptr0 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.pedersen_commit(value, ptr0, len0);
+    return Commitment.__wrap(ret);
+}
+
+/**
+ * @param {string} data
+ * @param {string} key
+ * @param {EncodingType} encoding_type
+ * @returns {AesEncryptedData}
+ */
+export function encrypt_aes(data, key, encoding_type) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt_aes(ptr0, len0, ptr1, len1, encoding_type);
+    return AesEncryptedData.__wrap(ret);
+}
+
+/**
+ * @param {EncryptedData} data
+ * @param {string} privkey
+ * @param {EncodingType} encoding_type
+ * @returns {string}
+ */
+export function decrypt(data, privkey, encoding_type) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        _assertClass(data, EncryptedData);
+        var ptr0 = data.__destroy_into_raw();
+        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decrypt(ptr0, ptr1, len1, encoding_type);
+        deferred3_0 = ret[0];
+        deferred3_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
 }
 
 /**
@@ -193,11 +291,43 @@ export function key_to_did(pubkey) {
     return Did.__wrap(ret);
 }
 
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
+/**
+ * @param {string} data
+ * @param {string} pubkey
+ * @param {EncodingType} encoding_type
+ * @returns {EncryptedData}
+ */
+export function encrypt(data, pubkey, encoding_type) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt(ptr0, len0, ptr1, len1, encoding_type);
+    return EncryptedData.__wrap(ret);
+}
+
+/**
+ * @param {string} privkey
+ * @param {string} pubkey
+ * @returns {string}
+ */
+export function ecdh(privkey, pubkey) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.ecdh(ptr0, len0, ptr1, len1);
+        deferred3_0 = ret[0];
+        deferred3_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
 }
+
 /**
  * @param {Did} did
  * @returns {string}
@@ -218,39 +348,11 @@ export function did_to_key(did) {
 }
 
 /**
- * @param {string} data
- * @param {string} pubkey
- * @returns {EncryptedData}
+ * @returns {KeyPair}
  */
-export function encrypt(data, pubkey) {
-    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.encrypt(ptr0, len0, ptr1, len1);
-    return EncryptedData.__wrap(ret);
-}
-
-/**
- * @param {EncryptedData} data
- * @param {string} privkey
- * @returns {string}
- */
-export function decrypt(data, privkey) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        _assertClass(data, EncryptedData);
-        var ptr0 = data.__destroy_into_raw();
-        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decrypt(ptr0, ptr1, len1);
-        deferred3_0 = ret[0];
-        deferred3_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
-    }
+export function create_keypair() {
+    const ret = wasm.create_keypair();
+    return KeyPair.__wrap(ret);
 }
 
 /**
@@ -276,60 +378,222 @@ export function sign(data, privkey) {
 }
 
 /**
- * @param {string} data
- * @param {string} sig
- * @param {string} pubkey
- * @returns {boolean}
- */
-export function verify(data, sig, pubkey) {
-    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(sig, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ptr2 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len2 = WASM_VECTOR_LEN;
-    const ret = wasm.verify(ptr0, len0, ptr1, len1, ptr2, len2);
-    return ret !== 0;
-}
-
-/**
- * @param {string} data
+ * @param {AesEncryptedData} data
+ * @param {string} key
+ * @param {EncodingType} encoding_type
  * @returns {string}
  */
-export function sha256(data) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.sha256(ptr0, len0);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * @param {string} privkey
- * @param {string} pubkey
- * @returns {string}
- */
-export function ecdh(privkey, pubkey) {
+export function decrypt_aes(data, key, encoding_type) {
     let deferred3_0;
     let deferred3_1;
     try {
-        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        _assertClass(data, AesEncryptedData);
+        var ptr0 = data.__destroy_into_raw();
+        const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.ecdh(ptr0, len0, ptr1, len1);
+        const ret = wasm.decrypt_aes(ptr0, ptr1, len1, encoding_type);
         deferred3_0 = ret[0];
         deferred3_1 = ret[1];
         return getStringFromWasm0(ret[0], ret[1]);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+
+/**
+ * @enum {0 | 1 | 2}
+ */
+export const EncodingType = Object.freeze({
+    UTF8: 0, "0": "UTF8",
+    HEX: 1, "1": "HEX",
+    BASE64: 2, "2": "BASE64",
+});
+
+const AesEncryptedDataFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_aesencrypteddata_free(ptr >>> 0, 1));
+
+export class AesEncryptedData {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(AesEncryptedData.prototype);
+        obj.__wbg_ptr = ptr;
+        AesEncryptedDataFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        AesEncryptedDataFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_aesencrypteddata_free(ptr, 0);
+    }
+    /**
+     * @param {any} object
+     * @returns {AesEncryptedData}
+     */
+    static from_object(object) {
+        const ret = wasm.aesencrypteddata_from_object(object);
+        return AesEncryptedData.__wrap(ret);
+    }
+    /**
+     * @param {string} data
+     * @param {string} nonce
+     */
+    constructor(data, nonce) {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(nonce, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.aesencrypteddata_new(ptr0, len0, ptr1, len1);
+        this.__wbg_ptr = ret >>> 0;
+        AesEncryptedDataFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {string}
+     */
+    get data() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.aesencrypteddata_data(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get nonce() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.aesencrypteddata_nonce(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.aesencrypteddata_to_object(this.__wbg_ptr);
+        return ret;
+    }
+}
+
+const CommitmentFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_commitment_free(ptr >>> 0, 1));
+
+export class Commitment {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Commitment.prototype);
+        obj.__wbg_ptr = ptr;
+        CommitmentFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        CommitmentFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_commitment_free(ptr, 0);
+    }
+    /**
+     * @returns {string}
+     */
+    get commitment() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.commitment_commitment(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {any} object
+     * @returns {Commitment}
+     */
+    static from_object(object) {
+        const ret = wasm.commitment_from_object(object);
+        return Commitment.__wrap(ret);
+    }
+    /**
+     * @param {string} commitment
+     */
+    set commitment(commitment) {
+        const ptr0 = passStringToWasm0(commitment, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.commitment_set_commitment(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @returns {string}
+     */
+    get secret_blinding_factor() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.commitment_secret_blinding_factor(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {string} secret_blinding_factor
+     */
+    set secret_blinding_factor(secret_blinding_factor) {
+        const ptr0 = passStringToWasm0(secret_blinding_factor, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.commitment_set_secret_blinding_factor(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} commitment
+     * @param {string} secret_blinding_factor
+     */
+    constructor(commitment, secret_blinding_factor) {
+        const ptr0 = passStringToWasm0(commitment, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(secret_blinding_factor, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.aesencrypteddata_new(ptr0, len0, ptr1, len1);
+        this.__wbg_ptr = ret >>> 0;
+        CommitmentFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.commitment_to_object(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -359,24 +623,6 @@ export class Did {
         wasm.__wbg_did_free(ptr, 0);
     }
     /**
-     * @param {string} id
-     */
-    constructor(id) {
-        const ptr0 = passStringToWasm0(id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.did_new(ptr0, len0);
-        this.__wbg_ptr = ret >>> 0;
-        DidFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {any}
-     */
-    to_object() {
-        const ret = wasm.did_to_object(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @param {any} object
      * @returns {Did}
      */
@@ -402,10 +648,28 @@ export class Did {
     /**
      * @param {string} id
      */
+    constructor(id) {
+        const ptr0 = passStringToWasm0(id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.did_new(ptr0, len0);
+        this.__wbg_ptr = ret >>> 0;
+        DidFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @param {string} id
+     */
     set id(id) {
         const ptr0 = passStringToWasm0(id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.did_set_id(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.did_to_object(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -435,33 +699,6 @@ export class EncryptedData {
         wasm.__wbg_encrypteddata_free(ptr, 0);
     }
     /**
-     * @param {string} pubkey_from
-     * @param {string} pubkey_to
-     * @param {string} data
-     * @param {string} nonce
-     */
-    constructor(pubkey_from, pubkey_to, data, nonce) {
-        const ptr0 = passStringToWasm0(pubkey_from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(pubkey_to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ptr2 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len2 = WASM_VECTOR_LEN;
-        const ptr3 = passStringToWasm0(nonce, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len3 = WASM_VECTOR_LEN;
-        const ret = wasm.encrypteddata_new(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
-        this.__wbg_ptr = ret >>> 0;
-        EncryptedDataFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {any}
-     */
-    to_object() {
-        const ret = wasm.encrypteddata_to_object(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @param {any} object
      * @returns {EncryptedData}
      */
@@ -485,19 +722,24 @@ export class EncryptedData {
         }
     }
     /**
-     * @returns {string}
+     * @param {string} pubkey_from
+     * @param {string} pubkey_to
+     * @param {string} data
+     * @param {string} nonce
      */
-    get pubkey_to() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.encrypteddata_pubkey_to(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
+    constructor(pubkey_from, pubkey_to, data, nonce) {
+        const ptr0 = passStringToWasm0(pubkey_from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(pubkey_to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ptr3 = passStringToWasm0(nonce, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len3 = WASM_VECTOR_LEN;
+        const ret = wasm.encrypteddata_new(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+        this.__wbg_ptr = ret >>> 0;
+        EncryptedDataFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {string}
@@ -529,6 +771,28 @@ export class EncryptedData {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
     }
+    /**
+     * @returns {string}
+     */
+    get pubkey_to() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encrypteddata_pubkey_to(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.encrypteddata_to_object(this.__wbg_ptr);
+        return ret;
+    }
 }
 
 const KeyPairFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -558,24 +822,11 @@ export class KeyPair {
     }
     /**
      * @param {string} pubkey
-     * @param {string} privkey
      */
-    constructor(pubkey, privkey) {
+    set pubkey(pubkey) {
         const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.keypair_new(ptr0, len0, ptr1, len1);
-        this.__wbg_ptr = ret >>> 0;
-        KeyPairFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {any}
-     */
-    to_object() {
-        const ret = wasm.keypair_to_object(this.__wbg_ptr);
-        return ret;
+        wasm.keypair_set_pubkey(this.__wbg_ptr, ptr0, len0);
     }
     /**
      * @param {any} object
@@ -584,6 +835,28 @@ export class KeyPair {
     static from_object(object) {
         const ret = wasm.keypair_from_object(object);
         return KeyPair.__wrap(ret);
+    }
+    /**
+     * @param {string} privkey
+     */
+    set privkey(privkey) {
+        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.keypair_set_privkey(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} pubkey
+     * @param {string} privkey
+     */
+    constructor(pubkey, privkey) {
+        const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.aesencrypteddata_new(ptr0, len0, ptr1, len1);
+        this.__wbg_ptr = ret >>> 0;
+        KeyPairFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {string}
@@ -616,20 +889,11 @@ export class KeyPair {
         }
     }
     /**
-     * @param {string} pubkey
+     * @returns {any}
      */
-    set pubkey(pubkey) {
-        const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.keypair_set_pubkey(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {string} privkey
-     */
-    set privkey(privkey) {
-        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.keypair_set_privkey(this.__wbg_ptr, ptr0, len0);
+    to_object() {
+        const ret = wasm.keypair_to_object(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -659,6 +923,52 @@ export class Tx {
         wasm.__wbg_tx_free(ptr, 0);
     }
     /**
+     * @param {string} amount
+     */
+    set amount(amount) {
+        const ptr0 = passStringToWasm0(amount, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.tx_set_amount(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {any} object
+     * @returns {Tx}
+     */
+    static from_object(object) {
+        const ret = wasm.tx_from_object(object);
+        return Tx.__wrap(ret);
+    }
+    /**
+     * @returns {string}
+     */
+    get to() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.tx_to(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get fee() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.tx_fee(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * @param {string} coin
      * @param {string} from
      * @param {string} to
@@ -685,21 +995,6 @@ export class Tx {
         return this;
     }
     /**
-     * @returns {any}
-     */
-    to_object() {
-        const ret = wasm.tx_to_object(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {any} object
-     * @returns {Tx}
-     */
-    static from_object(object) {
-        const ret = wasm.tx_from_object(object);
-        return Tx.__wrap(ret);
-    }
-    /**
      * @returns {string}
      */
     get coin() {
@@ -707,6 +1002,21 @@ export class Tx {
         let deferred1_1;
         try {
             const ret = wasm.tx_coin(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get data() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.tx_data(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -732,21 +1042,6 @@ export class Tx {
     /**
      * @returns {string}
      */
-    get to() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.tx_to(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
     get amount() {
         let deferred1_0;
         let deferred1_1;
@@ -760,66 +1055,12 @@ export class Tx {
         }
     }
     /**
-     * @returns {string}
-     */
-    get fee() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.tx_fee(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    get data() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.tx_data(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {string} coin
-     */
-    set coin(coin) {
-        const ptr0 = passStringToWasm0(coin, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.tx_set_coin(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {string} from
-     */
-    set from(from) {
-        const ptr0 = passStringToWasm0(from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.tx_set_from(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
      * @param {string} to
      */
     set to(to) {
         const ptr0 = passStringToWasm0(to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.tx_set_to(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {string} amount
-     */
-    set amount(amount) {
-        const ptr0 = passStringToWasm0(amount, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.tx_set_amount(this.__wbg_ptr, ptr0, len0);
     }
     /**
      * @param {string} fee
@@ -830,12 +1071,35 @@ export class Tx {
         wasm.tx_set_fee(this.__wbg_ptr, ptr0, len0);
     }
     /**
+     * @param {string} coin
+     */
+    set coin(coin) {
+        const ptr0 = passStringToWasm0(coin, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.tx_set_coin(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
      * @param {string} data
      */
     set data(data) {
         const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.tx_set_data(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} from
+     */
+    set from(from) {
+        const ptr0 = passStringToWasm0(from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.tx_set_from(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.tx_to_object(this.__wbg_ptr);
+        return ret;
     }
 }
 
