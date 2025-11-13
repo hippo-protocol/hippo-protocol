@@ -8,10 +8,8 @@ use aes_gcm::{
     Aes256Gcm, Key, KeyInit, Nonce,
 };
 use secp256k1_zkp::{
-    ecdh,
-    rand::{rngs::OsRng as Secp256k1Rng},
-    verify_commitments_sum_to_equal, Generator, Message, PedersenCommitment, PublicKey, Secp256k1,
-    SecretKey,
+    ecdh, rand::rngs::OsRng as Secp256k1Rng, verify_commitments_sum_to_equal, Generator, Message,
+    PedersenCommitment, PublicKey, Secp256k1, SecretKey,
 };
 use secp256k1_zkp::{ecdsa::Signature, Tweak};
 use secp256k1_zkp::{
@@ -95,11 +93,11 @@ pub fn encrypt_aes(data: String, key: String, encoding_type: EncodingType) -> Ae
         EncodingType::HEX => {
             data_bytes_vec = hex::decode(data).expect("Wrong hex format data");
             &data_bytes_vec
-        },
+        }
         EncodingType::BASE64 => {
             data_bytes_vec = STANDARD.decode(data).expect("Wrong base64 format data");
             &data_bytes_vec
-        },
+        }
     };
     let ciphertext = cipher.encrypt(&nonce, data_bytes).unwrap();
     AesEncryptedData::new(hex::encode(&ciphertext), hex::encode(&nonce))
