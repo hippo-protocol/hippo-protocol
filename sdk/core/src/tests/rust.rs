@@ -18,10 +18,10 @@ mod tests {
         // when
         let utf8_enc_data = encrypt(utf8_data.clone(), alice.pubkey(), EncodingType::UTF8);
         let utf8_dec_data = decrypt(utf8_enc_data, alice.privkey(), EncodingType::UTF8);
-        let hex_enc_data = encrypt(hex_data.clone(), alice.pubkey(), EncodingType::UTF8);
-        let hex_dec_data = decrypt(hex_enc_data, alice.privkey(), EncodingType::UTF8);
-        let base64_enc_data = encrypt(base64_data.clone(), alice.pubkey(), EncodingType::UTF8);
-        let base64_dec_data = decrypt(base64_enc_data, alice.privkey(), EncodingType::UTF8);
+        let hex_enc_data = encrypt(hex_data.clone(), alice.pubkey(), EncodingType::HEX);
+        let hex_dec_data = decrypt(hex_enc_data, alice.privkey(), EncodingType::HEX);
+        let base64_enc_data = encrypt(base64_data.clone(), alice.pubkey(), EncodingType::BASE64);
+        let base64_dec_data = decrypt(base64_enc_data, alice.privkey(), EncodingType::BASE64);
         // then
         assert_eq!(utf8_data, utf8_dec_data);
         assert_eq!(hex_data, hex_dec_data);
