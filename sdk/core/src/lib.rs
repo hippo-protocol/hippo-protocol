@@ -89,10 +89,17 @@ pub fn encrypt_aes(data: String, key: String, encoding_type: EncodingType) -> Ae
     let cipher = Aes256Gcm::new(&aes_key);
     // Nonce must be random and non-reusable value
     let nonce = Aes256Gcm::generate_nonce(&mut AesRng); // 96-bits; unique per message
-    let data_bytes = match encoding_type {
+    let data_bytes_vec;
+    let data_bytes: &[u8] = match encoding_type {
         EncodingType::UTF8 => data.as_bytes(),
-        EncodingType::HEX => &hex::decode(data).expect("Wrong hex format data"),
-        EncodingType::BASE64 => &STANDARD.decode(data).expect("Wrong base64 format data"),
+        EncodingType::HEX => {
+            data_bytes_vec = hex::decode(data).expect("Wrong hex format data");
+            &data_bytes_vec
+        },
+        EncodingType::BASE64 => {
+            data_bytes_vec = STANDARD.decode(data).expect("Wrong base64 format data");
+            &data_bytes_vec
+        },
     };
     let ciphertext = cipher.encrypt(&nonce, data_bytes).unwrap();
     AesEncryptedData::new(hex::encode(&ciphertext), hex::encode(&nonce))
