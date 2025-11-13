@@ -14,6 +14,7 @@ wasm-bindgen = "0.2"
 serde-wasm-bindgen = "0.6.5"
 secp256k1-zkp = { version = "0.11.0", features = ["rand-std", "std", "hashes"] }
 hex = "0.4.3"
+base64 = "0.22.1"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
