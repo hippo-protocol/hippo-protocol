@@ -33,6 +33,7 @@ import (
 	"github.com/hippocrat-dao/hippo-protocol/app/keepers"
 	"github.com/hippocrat-dao/hippo-protocol/app/upgrades"
 	v_1_0_1 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_1"
+	v_1_0_2 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_2"
 
 	"cosmossdk.io/x/evidence"
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -99,7 +100,7 @@ import (
 )
 
 const Name = "hippo"
-const Version = "v1.0.0"
+const Version = "v1.0.2"
 
 var (
 	// DefaultNodeHome default home directories for the application daemon
@@ -120,7 +121,7 @@ var (
 	_ runtime.AppI            = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 
-	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade}
+	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade, v_1_0_2.Upgrade}
 )
 
 // App extends an ABCI application, but with most of its parameters exported.
