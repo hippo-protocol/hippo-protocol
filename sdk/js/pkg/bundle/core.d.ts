@@ -1,18 +1,19 @@
 /* tslint:disable */
 /* eslint-disable */
+export function decrypt(data: EncryptedData, privkey: string, encoding_type: EncodingType): string;
 export function sha256(data: string): string;
-export function pedersen_reveal(commitment: Commitment, value: bigint, tag: string): boolean;
 export function verify(data: string, sig: string, pubkey: string): boolean;
+export function encrypt(data: string, pubkey: string, encoding_type: EncodingType): EncryptedData;
+export function decrypt_aes(data: AesEncryptedData, key: string, encoding_type: EncodingType): string;
+export function main_js(): void;
+export function pedersen_reveal(commitment: Commitment, value: bigint, tag: string): boolean;
+export function key_to_did(pubkey: string): Did;
+export function ecdh(privkey: string, pubkey: string): string;
+export function sign(data: string, privkey: string): string;
 export function pedersen_commit(value: bigint, tag: string): Commitment;
 export function encrypt_aes(data: string, key: string, encoding_type: EncodingType): AesEncryptedData;
-export function decrypt(data: EncryptedData, privkey: string, encoding_type: EncodingType): string;
-export function key_to_did(pubkey: string): Did;
-export function encrypt(data: string, pubkey: string, encoding_type: EncodingType): EncryptedData;
-export function ecdh(privkey: string, pubkey: string): string;
-export function did_to_key(did: Did): string;
 export function create_keypair(): KeyPair;
-export function sign(data: string, privkey: string): string;
-export function decrypt_aes(data: AesEncryptedData, key: string, encoding_type: EncodingType): string;
+export function did_to_key(did: Did): string;
 export enum EncodingType {
   UTF8 = 0,
   HEX = 1,

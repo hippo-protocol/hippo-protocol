@@ -209,3 +209,9 @@ pub fn pedersen_reveal(commitment: Commitment, value: u64, tag: String) -> bool 
         &vec![PedersenCommitment::from_str(&commitment.commitment()).expect("Wrong commitment")],
     )
 }
+
+#[wasm_bindgen(start)]
+pub fn main_js() -> Result<(), JsValue> {
+    console_error_panic_hook::set_once();
+    Ok(())
+}

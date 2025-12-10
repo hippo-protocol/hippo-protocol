@@ -61,6 +61,7 @@ export const ecdh: (a: number, b: number, c: number, d: number) => [number, numb
 export const encrypt: (a: number, b: number, c: number, d: number, e: number) => number;
 export const encrypt_aes: (a: number, b: number, c: number, d: number, e: number) => number;
 export const key_to_did: (a: number, b: number) => number;
+export const main_js: () => void;
 export const pedersen_commit: (a: bigint, b: number, c: number) => number;
 export const pedersen_reveal: (a: number, b: bigint, c: number, d: number) => number;
 export const sha256: (a: number, b: number) => [number, number];
