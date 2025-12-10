@@ -1,6 +1,6 @@
 {
   "name": "hippo-sdk",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "files": [
     "core_bg.wasm",
     "core.js",
