@@ -18,13 +18,11 @@ jobs:
 
       # 1. Setup Rust Toolchain (Updated to use 'nightly' channel)
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: nightly # Using nightly as specified in rust-toolchain.toml
-          profile: minimal
-          override: true
-          target: wasm32-unknown-unknown
-          components: rustfmt # Explicitly install rustfmt
+          toolchain: nightly
+          components: rustfmt
+          targets: wasm32-unknown-unknown
 
       # 2. Install wasm-pack
       - name: Install wasm-pack
