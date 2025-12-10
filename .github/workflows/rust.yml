@@ -1,0 +1,75 @@
+name: Rust / wasm-pack CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. Setup Rust Toolchain (Updated to use 'nightly' channel)
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly # Using nightly as specified in rust-toolchain.toml
+          profile: minimal
+          override: true
+          target: wasm32-unknown-unknown
+          components: rustfmt # Explicitly install rustfmt
+
+      # 2. Install wasm-pack
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+
+      # 3. Cache dependencies
+      - name: Cache Cargo Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            sdk/core/target # Explicitly cache the target directory inside the crate
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      # 4. Code Formatting Check
+      # Run 'cargo fmt --check' to ensure the code adheres to style guidelines.
+      # This step will fail the workflow if any files need formatting.
+      - name: Check Code Formatting (cargo fmt --check)
+        run: cargo fmt -- --check
+        working-directory: ./sdk/core
+
+      # 5. Standard Cargo Tests
+      - name: Run Cargo Tests
+        run: cargo test
+        working-directory: ./sdk/core
+
+      # 6. wasm-pack Tests for Node.js environment
+      - name: Run wasm-pack Node.js Tests
+        run: wasm-pack test --node
+        working-directory: ./sdk/core
+
+      # 7. Build for nodejs
+      - name: Build for Node.js
+        run: wasm-pack build --target=nodejs --out-dir=../js/pkg/node --out-name=core && rm ../js/pkg/node/.gitignore
+        working-directory: ./sdk/core
+
+      # 8. Build for web (bundler target)
+      - name: Build for Web (Bundler)
+        run: wasm-pack build --target=bundler --out-dir=../js/pkg/bundle --out-name=core && rm ../js/pkg/bundle/.gitignore
+        working-directory: ./sdk/core
+
+      # 9. Package for npm
+      - name: Package for NPM
+        run: wasm-pack pack ../js/pkg
+        working-directory: ./sdk/core
