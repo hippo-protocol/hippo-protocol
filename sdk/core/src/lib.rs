@@ -211,7 +211,7 @@ pub fn pedersen_reveal(commitment: Commitment, value: u64, tag: String) -> bool 
 }
 
 #[wasm_bindgen(start)]
-pub fn main_js() -> Result<(), JsValue> {
+pub fn init_panic_hook() -> Result<(), JsValue> {
     console_error_panic_hook::set_once();
     Ok(())
 }
