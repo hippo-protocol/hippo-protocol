@@ -5,7 +5,7 @@ export function sha256(data: string): string;
 export function verify(data: string, sig: string, pubkey: string): boolean;
 export function encrypt(data: string, pubkey: string, encoding_type: EncodingType): EncryptedData;
 export function decrypt_aes(data: AesEncryptedData, key: string, encoding_type: EncodingType): string;
-export function main_js(): void;
+export function init_panic_hook(): void;
 export function pedersen_reveal(commitment: Commitment, value: bigint, tag: string): boolean;
 export function key_to_did(pubkey: string): Did;
 export function ecdh(privkey: string, pubkey: string): string;

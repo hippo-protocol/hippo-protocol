@@ -7,9 +7,10 @@ fn encrypt_decrypt() {
     use crate::{decrypt, encrypt};
     let message = String::from("Hello, world!");
     let alice = crate::create_keypair();
-    let encrypted_message = encrypt(message.clone(), alice.pubkey(), EncodingType::UTF8);
+    let encrypted_message = encrypt(message.clone(), alice.pubkey(), EncodingType::UTF8).unwrap();
     assert_ne!(message, encrypted_message.data());
-    let decrypted_message = decrypt(encrypted_message, alice.privkey(), EncodingType::UTF8);
+    let decrypted_message =
+        decrypt(encrypted_message, alice.privkey(), EncodingType::UTF8).unwrap();
     assert_eq!(message, decrypted_message);
 }
 
@@ -18,7 +19,7 @@ fn did_conversion() {
     use crate::{create_keypair, did_to_key, key_to_did};
     let alice = create_keypair();
     let did = key_to_did(alice.pubkey());
-    assert_eq!(alice.pubkey(), did_to_key(did));
+    assert_eq!(alice.pubkey(), did_to_key(did).unwrap());
 }
 
 #[wasm_bindgen_test]
@@ -26,8 +27,8 @@ fn sign_verify() {
     use crate::{sign, verify};
     let message = String::from("Hello, world!");
     let alice = crate::create_keypair();
-    let signature = sign(message.clone(), alice.privkey());
-    let verified = verify(message, signature, alice.pubkey());
+    let signature = sign(message.clone(), alice.privkey()).unwrap();
+    let verified = verify(message, signature, alice.pubkey()).unwrap();
     assert_eq!(true, verified);
 }
 
@@ -47,7 +48,7 @@ fn ecdh_shared_secret() {
     use crate::{create_keypair, ecdh};
     let alice = create_keypair();
     let bob = create_keypair();
-    let shared_secret_alice = ecdh(alice.privkey(), bob.pubkey());
-    let shared_secret_bob = ecdh(bob.privkey(), alice.pubkey());
+    let shared_secret_alice = ecdh(alice.privkey(), bob.pubkey()).unwrap();
+    let shared_secret_bob = ecdh(bob.privkey(), alice.pubkey()).unwrap();
     assert_eq!(shared_secret_alice, shared_secret_bob);
 }
