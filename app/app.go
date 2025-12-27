@@ -640,3 +640,9 @@ func (app *App) AutoCliOpts() autocli.AppOptions {
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	}
 }
+
+// EmptyAppOptions is a stub implementing AppOptions
+type EmptyAppOptions struct{}
+
+// EmptyWasmOptions is a stub implementing Wasmkeeper Option
+var EmptyWasmOptions []wasmkeeper.Option
