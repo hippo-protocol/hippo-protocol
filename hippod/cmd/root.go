@@ -55,8 +55,11 @@ func NewRootCmd() *cobra.Command {
 	// Set config for wallet
 	consensus.SetWalletConfig()
 
-	tempDir, _ := os.MkdirTemp("", "hippo-temp-init") // make temporary directory as wasm locks the directory, so same directory cannot be reused
-	defer os.RemoveAll(tempDir)                       // remove temp directory
+	tempDir, err := os.MkdirTemp("", "hippo-temp-init") // make temporary directory as wasm locks the directory, so same directory cannot be reused
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(tempDir) // remove temp directory
 
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
@@ -279,7 +282,7 @@ func newApp(
 	return app.New(
 		logger, db, traceStore, true,
 		appOpts,
-		app.EmptyWasmOptions,
+		wasmOpts,
 		baseappOptions...,
 	)
 }
