@@ -78,6 +78,10 @@ jobs:
             echo "Waiting for node to start..."
             sleep 1
           done
+
+          echo "Port open. Waiting 30s for Wasm/Chain initialization..."
+          sleep 30
+
           echo "Node started."
 
       - name: Run Command Test # Ensure all the commands pass.

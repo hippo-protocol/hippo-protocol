@@ -39,6 +39,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/hippocrat-dao/hippo-protocol/app"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	"github.com/spf13/cast"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var ChainID string
@@ -49,9 +54,16 @@ var ChainID string
 func NewRootCmd() *cobra.Command {
 	// Set config for wallet
 	consensus.SetWalletConfig()
+
+	tempDir, err := os.MkdirTemp("", "hippo-temp-init") // make temporary directory as wasm locks the directory, so same directory cannot be reused
+	if err != nil {
+		panic(err)
+	}
+	defer os.RemoveAll(tempDir) // remove temp directory
+
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
-	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome))
+	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), app.EmptyWasmOptions)
 
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: hippoApp.InterfaceRegistry(),
@@ -263,9 +275,14 @@ func newApp(
 
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
+	var wasmOpts []wasmkeeper.Option
+	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
+		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
+	}
 	return app.New(
 		logger, db, traceStore, true,
 		appOpts,
+		wasmOpts,
 		baseappOptions...,
 	)
 }
@@ -299,14 +316,12 @@ func appExport(
 	viperAppOpts.Set(server.FlagInvCheckPeriod, 1)
 	appOpts = viperAppOpts
 
-	if height != -1 {
-		hippoApp = app.New(logger, db, traceStore, false, appOpts)
+	hippoApp = app.New(logger, db, traceStore, height == -1, appOpts, app.EmptyWasmOptions)
 
+	if height != -1 {
 		if err := hippoApp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
-	} else {
-		hippoApp = app.New(logger, db, traceStore, true, appOpts)
 	}
 
 	return hippoApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)

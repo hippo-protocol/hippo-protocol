@@ -20,5 +20,5 @@ func GetApp() app.App {
 	config.SetBech32PrefixForValidator(consensus.ValidatorAddrPrefix, consensus.ValidatorPubkeyPrefix)
 	config.SetBech32PrefixForConsensusNode(consensus.ConsensusNodeAddrPrefix, consensus.ConsensusNodePubkeyPrefix)
 
-	return *app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome))
+	return *app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome), app.EmptyWasmOptions)
 }
