@@ -8,6 +8,7 @@ import (
 	store "cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/tx/signing"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -20,6 +21,8 @@ import (
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/stretchr/testify/require"
 )
+
+var EmptyWasmOptions []wasmkeeper.Option
 
 // helper function to generate dummy keys
 func generateTestStoreKeys() (map[string]*storetypes.KVStoreKey, map[string]*storetypes.TransientStoreKey, map[string]*storetypes.MemoryStoreKey) {
@@ -113,7 +116,7 @@ func TestInitKeyAndKeepers(t *testing.T) {
 	}
 
 	require.NotPanics(t, func() {
-		appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger)
+		appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger, EmptyWasmOptions)
 	})
 
 	// Simple verification of important keepers
@@ -176,7 +179,7 @@ func TestSetupHooks(t *testing.T) {
 		tkeys:   tkeys,
 		memKeys: memKeys,
 	}
-	appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger)
+	appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger, EmptyWasmOptions)
 
 	require.NotPanics(t, func() {
 		appKeepers.SetupHooks()
