@@ -13,55 +13,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
-
-// func TestNewRootCmd(t *testing.T) {
-// 	home := "/tmp/hippo-test"
-// 	_ = os.MkdirAll(home+"/config", 0755)
-// 	_ = os.WriteFile(home+"/config/genesis.json", []byte(`{"genesis_time":"2023-01-01T00:00:00Z","chain_id":"test-chain","app_state":{}}`), 0644)
-
-// 	app.DefaultNodeHome = home
-
-// 	rc := NewRootCmd()
-// 	require.NotNil(t, rc)
-// 	require.Equal(t, "hippod", rc.Use)
-
-// 	rc.SetArgs([]string{"config"})
-// 	buf := new(bytes.Buffer)
-// 	rc.SetOut(buf)
-// 	rc.SetErr(buf)
-// 	err := rc.Execute()
-// 	require.NoError(t, err)
-
-// 	subCmds := []string{"debug", "config", "completion", "status", "genesis", "query", "tx", "keys"}
-// 	foundCommands := map[string]bool{}
-// 	for _, c := range rc.Commands() {
-// 		for _, name := range subCmds {
-// 			if c.Use == name || strings.HasPrefix(c.Use, name+" ") {
-// 				foundCommands[name] = true
-// 			}
-// 		}
-// 	}
-
-// 	for _, name := range subCmds {
-// 		require.True(t, foundCommands[name], "expected subcommand %s not found", name)
-// 	}
-// }
-
-func resetSDKConfig() {
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount("hippo", "hippopub")
-	config.SetBech32PrefixForValidator("hippovaloper", "hippovaloperpub")
-	config.SetBech32PrefixForConsensusNode("hippovalcons", "hippovalconspub")
-	config.Seal()
-}
 
 func TestRootCmd_All(t *testing.T) {
 	home := t.TempDir()
@@ -174,6 +133,14 @@ func TestAppExport(t *testing.T) {
 	exportedApp, err = appExport(log.NewNopLogger(), dbm.NewMemDB(), nil, -1, true, nil, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome), nil)
 	require.Error(t, err)
 	require.NotNil(t, exportedApp)
+
+	viperOpts := viper.New()
+	viperOpts.Set(flags.FlagHome, app.DefaultNodeHome)
+	// We use height = 1 so LoadHeight fails (since db is empty), covering the error path and avoiding ExportAppStatepanic.
+	exportedApp, err = appExport(log.NewNopLogger(), dbm.NewMemDB(), nil, 1, true, nil, viperOpts, nil)
+
+	require.Error(t, err)
+	require.NotEqual(t, "appOpts is not viper.Viper", err.Error())
 }
 
 type mockAppOptions struct {
@@ -224,6 +191,24 @@ func TestNewApp(t *testing.T) {
 
 	appInstance := newApp(logger, db, traceStore, appOpts)
 	require.NotNil(t, appInstance, "Should not be nil")
+
+	// telemetry enabled
+	tmpHome2 := setupGenesisFile(t)
+	appOptsTelemetry := mockAppOptions{
+		options: map[string]interface{}{
+			"home":                     tmpHome2,
+			server.FlagPruning:         "nothing",
+			server.FlagMinGasPrices:    "0.001uatom",
+			server.FlagHaltHeight:      uint64(0),
+			server.FlagHaltTime:        uint64(0),
+			server.FlagInterBlockCache: true,
+			server.FlagIndexEvents:     []string{"tx.height", "tx.hash"},
+			server.FlagIAVLCacheSize:   781250,
+			"telemetry.enabled":        "true",
+		},
+	}
+	appInstanceTelemetry := newApp(logger, db, traceStore, appOptsTelemetry)
+	require.NotNil(t, appInstanceTelemetry, "Should not be nil with telemetry enabled")
 }
 
 type fakeAppOptions map[string]interface{}

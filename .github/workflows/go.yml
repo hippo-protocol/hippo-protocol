@@ -35,8 +35,9 @@ jobs:
 
       - name: Test
         run: |
-          go test -coverpkg=$(go list ./... | grep -v "/test/e2e") $(go list ./... | grep -v "/test/e2e") -v
-          go test $(go list ./... | grep -v "/test/e2e") -coverprofile=cover.out
+          PKGS=$(go list ./... | grep -v "/test/e2e" | tr '\n' ',' | sed 's/,$//')
+          go test -coverpkg=$PKGS -v $(go list ./... | grep -v "/test/e2e")
+          go test -coverpkg=$PKGS -coverprofile=cover.out $(go list ./... | grep -v "/test/e2e")
           go tool cover -func=cover.out
 
           coverage=$(go tool cover -func=cover.out | awk '/total:/ {print $3}' | sed 's/%//' | awk '{print $1}')
@@ -78,6 +79,10 @@ jobs:
             echo "Waiting for node to start..."
             sleep 1
           done
+
+          echo "Port open. Waiting 30s for Wasm/Chain initialization..."
+          sleep 30
+
           echo "Node started."
 
       - name: Run Command Test # Ensure all the commands pass.

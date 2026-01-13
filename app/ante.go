@@ -5,10 +5,13 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
+
+	storetypes "cosmossdk.io/store/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 // setAnteHandler Reference github.com/cosmos/cosmos-sdk/x/auth/ante/ante.go
-func (app *App) setAnteHandler(txConfig client.TxConfig) {
+func (app *App) setAnteHandler(txConfig client.TxConfig, nodeConfig wasmtypes.NodeConfig, txCounterStoreKey *storetypes.KVStoreKey) {
 	app.SetAnteHandler(
 		sdktypes.ChainAnteDecorators(
 			ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
