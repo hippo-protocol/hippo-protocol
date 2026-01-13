@@ -174,6 +174,47 @@ function debugString(val) {
     // TODO we could test for more things here, like `Set`s and `Map`s.
     return className;
 }
+
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
+    }
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_4.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+/**
+ * @param {EncryptedData} data
+ * @param {string} privkey
+ * @param {EncodingType} encoding_type
+ * @returns {string}
+ */
+export function decrypt(data, privkey, encoding_type) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        _assertClass(data, EncryptedData);
+        var ptr0 = data.__destroy_into_raw();
+        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decrypt(ptr0, ptr1, len1, encoding_type);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
 /**
  * @param {string} data
  * @returns {string}
@@ -193,26 +234,6 @@ export function sha256(data) {
     }
 }
 
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
-    }
-}
-/**
- * @param {Commitment} commitment
- * @param {bigint} value
- * @param {string} tag
- * @returns {boolean}
- */
-export function pedersen_reveal(commitment, value, tag) {
-    _assertClass(commitment, Commitment);
-    var ptr0 = commitment.__destroy_into_raw();
-    const ptr1 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.pedersen_reveal(ptr0, value, ptr1, len1);
-    return ret !== 0;
-}
-
 /**
  * @param {string} data
  * @param {string} sig
@@ -227,7 +248,146 @@ export function verify(data, sig, pubkey) {
     const ptr2 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len2 = WASM_VECTOR_LEN;
     const ret = wasm.verify(ptr0, len0, ptr1, len1, ptr2, len2);
-    return ret !== 0;
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] !== 0;
+}
+
+/**
+ * @param {string} data
+ * @param {string} pubkey
+ * @param {EncodingType} encoding_type
+ * @returns {EncryptedData}
+ */
+export function encrypt(data, pubkey, encoding_type) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt(ptr0, len0, ptr1, len1, encoding_type);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return EncryptedData.__wrap(ret[0]);
+}
+
+/**
+ * @param {AesEncryptedData} data
+ * @param {string} key
+ * @param {EncodingType} encoding_type
+ * @returns {string}
+ */
+export function decrypt_aes(data, key, encoding_type) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        _assertClass(data, AesEncryptedData);
+        var ptr0 = data.__destroy_into_raw();
+        const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decrypt_aes(ptr0, ptr1, len1, encoding_type);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+export function init_panic_hook() {
+    wasm.init_panic_hook();
+}
+
+/**
+ * @param {Commitment} commitment
+ * @param {bigint} value
+ * @param {string} tag
+ * @returns {boolean}
+ */
+export function pedersen_reveal(commitment, value, tag) {
+    _assertClass(commitment, Commitment);
+    var ptr0 = commitment.__destroy_into_raw();
+    const ptr1 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.pedersen_reveal(ptr0, value, ptr1, len1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] !== 0;
+}
+
+/**
+ * @param {string} pubkey
+ * @returns {Did}
+ */
+export function key_to_did(pubkey) {
+    const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.key_to_did(ptr0, len0);
+    return Did.__wrap(ret);
+}
+
+/**
+ * @param {string} privkey
+ * @param {string} pubkey
+ * @returns {string}
+ */
+export function ecdh(privkey, pubkey) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.ecdh(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * @param {string} data
+ * @param {string} privkey
+ * @returns {string}
+ */
+export function sign(data, privkey) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.sign(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
 }
 
 /**
@@ -254,97 +414,10 @@ export function encrypt_aes(data, key, encoding_type) {
     const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
     const ret = wasm.encrypt_aes(ptr0, len0, ptr1, len1, encoding_type);
-    return AesEncryptedData.__wrap(ret);
-}
-
-/**
- * @param {EncryptedData} data
- * @param {string} privkey
- * @param {EncodingType} encoding_type
- * @returns {string}
- */
-export function decrypt(data, privkey, encoding_type) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        _assertClass(data, EncryptedData);
-        var ptr0 = data.__destroy_into_raw();
-        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decrypt(ptr0, ptr1, len1, encoding_type);
-        deferred3_0 = ret[0];
-        deferred3_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
     }
-}
-
-/**
- * @param {string} pubkey
- * @returns {Did}
- */
-export function key_to_did(pubkey) {
-    const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.key_to_did(ptr0, len0);
-    return Did.__wrap(ret);
-}
-
-/**
- * @param {string} data
- * @param {string} pubkey
- * @param {EncodingType} encoding_type
- * @returns {EncryptedData}
- */
-export function encrypt(data, pubkey, encoding_type) {
-    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.encrypt(ptr0, len0, ptr1, len1, encoding_type);
-    return EncryptedData.__wrap(ret);
-}
-
-/**
- * @param {string} privkey
- * @param {string} pubkey
- * @returns {string}
- */
-export function ecdh(privkey, pubkey) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.ecdh(ptr0, len0, ptr1, len1);
-        deferred3_0 = ret[0];
-        deferred3_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
-    }
-}
-
-/**
- * @param {Did} did
- * @returns {string}
- */
-export function did_to_key(did) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        _assertClass(did, Did);
-        var ptr0 = did.__destroy_into_raw();
-        const ret = wasm.did_to_key(ptr0);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
+    return AesEncryptedData.__wrap(ret[0]);
 }
 
 /**
@@ -356,45 +429,25 @@ export function create_keypair() {
 }
 
 /**
- * @param {string} data
- * @param {string} privkey
+ * @param {Did} did
  * @returns {string}
  */
-export function sign(data, privkey) {
+export function did_to_key(did) {
     let deferred3_0;
     let deferred3_1;
     try {
-        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.sign(ptr0, len0, ptr1, len1);
-        deferred3_0 = ret[0];
-        deferred3_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
-    }
-}
-
-/**
- * @param {AesEncryptedData} data
- * @param {string} key
- * @param {EncodingType} encoding_type
- * @returns {string}
- */
-export function decrypt_aes(data, key, encoding_type) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        _assertClass(data, AesEncryptedData);
-        var ptr0 = data.__destroy_into_raw();
-        const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decrypt_aes(ptr0, ptr1, len1, encoding_type);
-        deferred3_0 = ret[0];
-        deferred3_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
+        _assertClass(did, Did);
+        var ptr0 = did.__destroy_into_raw();
+        const ret = wasm.did_to_key(ptr0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
@@ -1126,12 +1179,24 @@ export function __wbg_call_7cccdd69e0791ae2() { return handleError(function (arg
     return ret;
 }, arguments) };
 
-export function __wbg_crypto_ed58b8e10a292839(arg0) {
+export function __wbg_crypto_574e78ad8b13b65f(arg0) {
     const ret = arg0.crypto;
     return ret;
 };
 
-export function __wbg_getRandomValues_bcb4912f16000dc4() { return handleError(function (arg0, arg1) {
+export function __wbg_error_7534b8e9a36f1ab4(arg0, arg1) {
+    let deferred0_0;
+    let deferred0_1;
+    try {
+        deferred0_0 = arg0;
+        deferred0_1 = arg1;
+        console.error(getStringFromWasm0(arg0, arg1));
+    } finally {
+        wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
+    }
+};
+
+export function __wbg_getRandomValues_b8f5dbd5f3995a9e() { return handleError(function (arg0, arg1) {
     arg0.getRandomValues(arg1);
 }, arguments) };
 
@@ -1167,13 +1232,18 @@ export function __wbg_length_a446193dc22c12f8(arg0) {
     return ret;
 };
 
-export function __wbg_msCrypto_0a36e2ec3a343d26(arg0) {
+export function __wbg_msCrypto_a61aeb35a24c1329(arg0) {
     const ret = arg0.msCrypto;
     return ret;
 };
 
 export function __wbg_new_405e22f390576ce2() {
     const ret = new Object();
+    return ret;
+};
+
+export function __wbg_new_8a6f238a6ece86ea() {
+    const ret = new Error();
     return ret;
 };
 
@@ -1197,21 +1267,21 @@ export function __wbg_newwithlength_a381634e90c276d4(arg0) {
     return ret;
 };
 
-export function __wbg_node_02999533c4ea02e3(arg0) {
+export function __wbg_node_905d3e251edff8a2(arg0) {
     const ret = arg0.node;
     return ret;
 };
 
-export function __wbg_process_5c1d670bc53614b8(arg0) {
+export function __wbg_process_dc0fbacc7c1c06f7(arg0) {
     const ret = arg0.process;
     return ret;
 };
 
-export function __wbg_randomFillSync_ab2cfe79ebbf2740() { return handleError(function (arg0, arg1) {
+export function __wbg_randomFillSync_ac0988aba3254290() { return handleError(function (arg0, arg1) {
     arg0.randomFillSync(arg1);
 }, arguments) };
 
-export function __wbg_require_79b1e9274cde3c87() { return handleError(function () {
+export function __wbg_require_60cc747a6bc5215a() { return handleError(function () {
     const ret = module.require;
     return ret;
 }, arguments) };
@@ -1222,6 +1292,14 @@ export function __wbg_set_3f1d0b984ed272ed(arg0, arg1, arg2) {
 
 export function __wbg_set_65595bdd868b3009(arg0, arg1, arg2) {
     arg0.set(arg1, arg2 >>> 0);
+};
+
+export function __wbg_stack_0ed75d68575b0f3c(arg0, arg1) {
+    const ret = arg1.stack;
+    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
 };
 
 export function __wbg_static_accessor_GLOBAL_88a902d13a557d07() {
@@ -1249,7 +1327,7 @@ export function __wbg_subarray_aa9065fa9dc5df96(arg0, arg1, arg2) {
     return ret;
 };
 
-export function __wbg_versions_c71aa1626a93e0a1(arg0) {
+export function __wbg_versions_c01dfd4722a88165(arg0) {
     const ret = arg0.versions;
     return ret;
 };

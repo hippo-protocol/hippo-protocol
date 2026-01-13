@@ -1,6 +1,6 @@
 {
   "type": "module",
   "dependencies": {
-    "hippo-sdk": "file:../../pkg/hippo-sdk-2.0.0.tgz"
+    "hippo-sdk": "file:../../pkg/hippo-sdk-2.0.1.tgz"
   }
 }
