@@ -1,4 +1,4 @@
-package v_1_0_2
+package v_1_0_3
 
 import (
 	"context"
@@ -8,6 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
+	errorsmod "cosmossdk.io/errors"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/hippocrat-dao/hippo-protocol/app/keepers"
 )
 
@@ -25,7 +27,14 @@ func CreateUpgradeHandler(
 			return vm, err
 		}
 
-		ctx.Logger().Info("Upgrade v1.0.2 complete")
+		wasmParams := wasmtypes.DefaultParams()
+		wasmParams.CodeUploadAccess = wasmtypes.AllowEverybody
+		wasmParams.InstantiateDefaultPermission = wasmtypes.AccessTypeEverybody
+		if err := keepers.WasmKeeper.SetParams(ctx, wasmParams); err != nil {
+			return vm, errorsmod.Wrapf(err, "unable to set CosmWasm params")
+		}
+
+		ctx.Logger().Info("Upgrade v1.0.3 complete")
 		return vm, nil
 	}
 }
