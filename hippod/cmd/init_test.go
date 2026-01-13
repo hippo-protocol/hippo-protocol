@@ -34,7 +34,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/hippocrat-dao/hippo-protocol/test"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -175,7 +174,16 @@ func TestInitCmd_RecoverMnemonic_Invalid(t *testing.T) {
 
 func TestActualInitCmd(t *testing.T) {
 	home := t.TempDir()
-	hippoApp := test.GetApp()
+
+	config := sdk.GetConfig()
+	config.SetPurpose(consensus.BIP44Purpose)
+	config.SetCoinType(consensus.BIP44CoinType)
+	config.SetBech32PrefixForAccount(consensus.AddrPrefix, consensus.PubkeyPrefix)
+	config.SetBech32PrefixForValidator(consensus.ValidatorAddrPrefix, consensus.ValidatorPubkeyPrefix)
+	config.SetBech32PrefixForConsensusNode(consensus.ConsensusNodeAddrPrefix, consensus.ConsensusNodePubkeyPrefix)
+
+	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(app.DefaultNodeHome), app.EmptyWasmOptions)
+
 	// Create a dummy module basic manager
 	mbm := hippoApp.BasicModuleManager
 
