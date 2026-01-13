@@ -14,7 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/server"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/gogoproto/proto"
@@ -75,7 +75,8 @@ func TestInitKeyAndKeepers(t *testing.T) {
 	}
 
 	blockedAddrs := map[string]bool{}
-	appOpts := server.NewDefaultContext().Viper
+	tempDir := t.TempDir()
+	appOpts := simtestutil.NewAppOptionsWithFlagHome(tempDir)
 
 	logger := log.NewNopLogger()
 
@@ -142,7 +143,9 @@ func TestSetupHooks(t *testing.T) {
 		"transfer":               {"minter", "burner"},
 	}
 	blockedAddrs := map[string]bool{}
-	appOpts := server.NewDefaultContext().Viper
+
+	tempDir := t.TempDir()
+	appOpts := simtestutil.NewAppOptionsWithFlagHome(tempDir)
 	logger := log.NewNopLogger()
 
 	db := dbm.NewMemDB()

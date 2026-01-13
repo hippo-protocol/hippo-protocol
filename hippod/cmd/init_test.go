@@ -34,7 +34,6 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/hippocrat-dao/hippo-protocol/app"
 	"github.com/hippocrat-dao/hippo-protocol/test"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/spf13/cobra"
@@ -42,6 +41,11 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/cosmos/gogoproto/proto"
+	"github.com/hippocrat-dao/hippo-protocol/app"
+
+	"cosmossdk.io/log"
+	dbm "github.com/cosmos/cosmos-db"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 )
 
 var homeDir string
@@ -170,22 +174,23 @@ func TestInitCmd_RecoverMnemonic_Invalid(t *testing.T) {
 }
 
 func TestActualInitCmd(t *testing.T) {
+	home := t.TempDir()
 	hippoApp := test.GetApp()
 	// Create a dummy module basic manager
 	mbm := hippoApp.BasicModuleManager
 
 	// Create the InitCmd
-	cmd := InitCmd(mbm, app.DefaultNodeHome)
+	cmd := InitCmd(mbm, home)
 
 	// Set command flags
-	cmd.SetArgs([]string{"test-moniker", "--chain-id", "test-chain-123"})
+	cmd.SetArgs([]string{"test-moniker", "--chain-id", "test-chain-123", "--home", home})
 
 	// Execute the command
 	err := cmd.Execute()
 	require.Error(t, err)
 
 	// Verify that the genesis.json file was created
-	genesisFile := filepath.Join(app.DefaultNodeHome, "config", "genesis.json")
+	genesisFile := filepath.Join(home, "config", "genesis.json")
 	_, err = os.Stat(genesisFile)
 	require.Error(t, err)
 
@@ -195,19 +200,19 @@ func TestActualInitCmd(t *testing.T) {
 	require.Nil(t, genesisDoc)
 
 	// Verify the config.toml file was created
-	configFile := filepath.Join(app.DefaultNodeHome, "config", "config.toml")
+	configFile := filepath.Join(home, "config", "config.toml")
 	_, err = os.Stat(configFile)
 	require.Error(t, err)
 
 	// Test overwrite flag
-	cmdOverwrite := InitCmd(mbm, app.DefaultNodeHome)
-	cmdOverwrite.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "-o"})
+	cmdOverwrite := InitCmd(mbm, home)
+	cmdOverwrite.SetArgs([]string{"test-moniker", "--home", home, "--chain-id", "test-chain-123", "-o"})
 	err = cmdOverwrite.Execute()
 	require.Error(t, err)
 
 	//Test recover flag
-	cmdRecover := InitCmd(mbm, app.DefaultNodeHome)
-	cmdRecover.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "--recover"})
+	cmdRecover := InitCmd(mbm, home)
+	cmdRecover.SetArgs([]string{"test-moniker", "--home", home, "--chain-id", "test-chain-123", "--recover"})
 
 	//Mock stdin to provide mnemonic
 	r, w, err := os.Pipe()
@@ -221,8 +226,8 @@ func TestActualInitCmd(t *testing.T) {
 	require.Error(t, err)
 
 	// Test default bond denom flag
-	cmdDenom := InitCmd(mbm, app.DefaultNodeHome)
-	cmdDenom.SetArgs([]string{"test-moniker", "--home", app.DefaultNodeHome, "--chain-id", "test-chain-123", "--default-bond-denom", "testdenom"})
+	cmdDenom := InitCmd(mbm, home)
+	cmdDenom.SetArgs([]string{"test-moniker", "--home", home, "--chain-id", "test-chain-123", "--default-bond-denom", "testdenom"})
 
 	err = cmdDenom.Execute()
 	require.Error(t, err)
@@ -231,7 +236,10 @@ func TestActualInitCmd(t *testing.T) {
 }
 
 func TestOverrideGenesis(t *testing.T) {
-	hippoApp := test.GetApp()
+	tempDir := t.TempDir()
+
+	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), app.EmptyWasmOptions)
+
 	appGenState := hippoApp.DefaultGenesis()
 	appCodec := hippoApp.AppCodec()
 
@@ -351,7 +359,8 @@ func TestDisplayInfo(t *testing.T) {
 
 func TestFailingOverrideGenesis(t *testing.T) {
 	getParam := func(key string) (codec.JSONCodec, *cmttypes.GenesisDoc, map[string]json.RawMessage) {
-		hippoApp := test.GetApp()
+		tempDir := t.TempDir()
+		hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), app.EmptyWasmOptions)
 		appGenState := hippoApp.DefaultGenesis()
 		appCodec := hippoApp.AppCodec()
 
