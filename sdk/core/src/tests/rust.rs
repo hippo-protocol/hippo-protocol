@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        create_keypair, decrypt, did_to_key, encrypt, key_to_did, pedersen_commit, pedersen_reveal,
-        sign,
+        create_keypair, decrypt, decrypt_bytes, did_to_key, encrypt, encrypt_bytes, key_to_did,
+        pedersen_commit, pedersen_reveal, sign,
         types::{Commitment, EncodingType},
         verify,
     };
@@ -101,5 +101,17 @@ mod tests {
         assert!(!wrong_value_and_tag);
         assert!(!wrong_blinding_factor_with_same_value);
         assert!(!wrong_commitment_with_correct_blinding_factor)
+    }
+
+    #[test]
+    fn test_enc_dec_bytes() {
+        // given
+        let data = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let alice = create_keypair();
+        // when
+        let enc_data = encrypt_bytes(data.clone(), alice.pubkey()).unwrap();
+        let dec_data = decrypt_bytes(enc_data, alice.privkey()).unwrap();
+        // then
+        assert_eq!(data, dec_data);
     }
 }
