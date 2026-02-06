@@ -22,6 +22,8 @@ use types::{AesEncryptedData, Commitment, Did, EncodingType, EncryptedData, KeyP
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
+use crate::types::{AesEncryptedDataBytes, EncryptedDataBytes};
+
 #[wasm_bindgen]
 pub fn create_keypair() -> KeyPair {
     let secp = Secp256k1::new();
@@ -253,6 +255,81 @@ pub fn pedersen_reveal(commitment: Commitment, value: u64, tag: String) -> Resul
         )],
         &vec![commitment_obj],
     ))
+}
+
+#[wasm_bindgen]
+pub fn sha256_bytes(data: Vec<u8>) -> Vec<u8> {
+    sha256::Hash::hash(&data).to_byte_array().to_vec()
+}
+
+#[wasm_bindgen]
+pub fn encrypt_bytes(data: Vec<u8>, pubkey: String) -> Result<EncryptedDataBytes, JsError> {
+    let secp = Secp256k1::new();
+    // Alice: one-off key pair to caculate shared secret.
+    let (secret_key, public_key) = secp.generate_keypair(&mut Secp256k1Rng);
+    // Bob: param pubkey is the one who's able to decrypt the data.
+    let encrypt_to_pubkey = secp256k1_zkp::PublicKey::from_str(&pubkey)
+        .map_err(|e| JsError::new(&format!("Invalid public key: {}", e)))?;
+    // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
+    let shared_secret = ecdh::SharedSecret::new(&encrypt_to_pubkey, &secret_key).secret_bytes();
+
+    let aes_encrypted_data = encrypt_aes_bytes(data, hex::encode(&shared_secret))?;
+
+    Ok(EncryptedDataBytes::new(
+        public_key.to_string(),
+        pubkey,
+        aes_encrypted_data.data(),
+        aes_encrypted_data.nonce(),
+    ))
+}
+
+#[wasm_bindgen]
+pub fn decrypt_bytes(data: EncryptedDataBytes, privkey: String) -> Result<Vec<u8>, JsError> {
+    // Alice: one-off pubkey to calculate shared secret.
+    let encrypt_from_pubkey = secp256k1_zkp::PublicKey::from_str(&data.pubkey_from())
+        .map_err(|e| JsError::new(&format!("Invalid public key in data: {}", e)))?;
+    // Bob: the one who's able to decrypt the data with privkey.
+    let privkey_to_decrypt = secp256k1_zkp::SecretKey::from_str(&privkey)
+        .map_err(|e| JsError::new(&format!("Invalid private key: {}", e)))?;
+    // Only Alice and Bob can know the secret, which is used as a key to encrypt data.
+    let shared_secret =
+        ecdh::SharedSecret::new(&encrypt_from_pubkey, &privkey_to_decrypt).secret_bytes();
+
+    decrypt_aes_bytes(
+        AesEncryptedDataBytes::new(data.data(), data.nonce()),
+        hex::encode(&shared_secret),
+    )
+}
+
+#[wasm_bindgen]
+pub fn encrypt_aes_bytes(data: Vec<u8>, key: String) -> Result<AesEncryptedDataBytes, JsError> {
+    // Secret key just fit into AES key
+    let hex_key =
+        hex::decode(key).map_err(|e| JsError::new(&format!("Key is malformed: {}", e)))?;
+    let aes_key = Key::<Aes256Gcm>::from_slice(&hex_key);
+    let cipher = Aes256Gcm::new(&aes_key);
+    // Nonce must be random and non-reusable value
+    let nonce = Aes256Gcm::generate_nonce(&mut AesRng); // 96-bits; unique per message
+
+    let ciphertext = cipher
+        .encrypt(&nonce, &*data)
+        .map_err(|e| JsError::new(&format!("AES encryption failed: {}", e)))?;
+    Ok(AesEncryptedDataBytes::new(ciphertext, nonce.to_vec()))
+}
+#[wasm_bindgen]
+pub fn decrypt_aes_bytes(data: AesEncryptedDataBytes, key: String) -> Result<Vec<u8>, JsError> {
+    // Secret key just fit into AES key
+    let hex_key =
+        hex::decode(key).map_err(|e| JsError::new(&format!("Key is malformed: {}", e)))?;
+    let aes_key = Key::<Aes256Gcm>::from_slice(&hex_key);
+    let decipher = Aes256Gcm::new(&aes_key);
+
+    decipher
+        .decrypt(
+            Nonce::from_slice(data.nonce().as_slice()),
+            data.data().as_slice(),
+        )
+        .map_err(|e| JsError::new(&format!("AES decryption failed: {}", e)))
 }
 
 #[wasm_bindgen(start)]

@@ -1,109 +1,17 @@
 
 let imports = {};
 imports['__wbindgen_placeholder__'] = module.exports;
-let wasm;
-const { TextEncoder, TextDecoder } = require(`util`);
-
-let WASM_VECTOR_LEN = 0;
-
-let cachedUint8ArrayMemory0 = null;
-
-function getUint8ArrayMemory0() {
-    if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
-        cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
-    }
-    return cachedUint8ArrayMemory0;
-}
-
-let cachedTextEncoder = new TextEncoder('utf-8');
-
-const encodeString = (typeof cachedTextEncoder.encodeInto === 'function'
-    ? function (arg, view) {
-    return cachedTextEncoder.encodeInto(arg, view);
-}
-    : function (arg, view) {
-    const buf = cachedTextEncoder.encode(arg);
-    view.set(buf);
-    return {
-        read: arg.length,
-        written: buf.length
-    };
-});
-
-function passStringToWasm0(arg, malloc, realloc) {
-
-    if (realloc === undefined) {
-        const buf = cachedTextEncoder.encode(arg);
-        const ptr = malloc(buf.length, 1) >>> 0;
-        getUint8ArrayMemory0().subarray(ptr, ptr + buf.length).set(buf);
-        WASM_VECTOR_LEN = buf.length;
-        return ptr;
-    }
-
-    let len = arg.length;
-    let ptr = malloc(len, 1) >>> 0;
-
-    const mem = getUint8ArrayMemory0();
-
-    let offset = 0;
-
-    for (; offset < len; offset++) {
-        const code = arg.charCodeAt(offset);
-        if (code > 0x7F) break;
-        mem[ptr + offset] = code;
-    }
-
-    if (offset !== len) {
-        if (offset !== 0) {
-            arg = arg.slice(offset);
-        }
-        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
-        const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
-        const ret = encodeString(arg, view);
-
-        offset += ret.written;
-        ptr = realloc(ptr, len, offset, 1) >>> 0;
-    }
-
-    WASM_VECTOR_LEN = offset;
-    return ptr;
-}
-
-let cachedDataViewMemory0 = null;
-
-function getDataViewMemory0() {
-    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
-        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
-    }
-    return cachedDataViewMemory0;
-}
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
-    wasm.__wbindgen_export_4.set(idx, obj);
+    wasm.__wbindgen_externrefs.set(idx, obj);
     return idx;
 }
 
-function handleError(f, args) {
-    try {
-        return f.apply(this, args);
-    } catch (e) {
-        const idx = addToExternrefTable0(e);
-        wasm.__wbindgen_exn_store(idx);
+function _assertClass(instance, klass) {
+    if (!(instance instanceof klass)) {
+        throw new Error(`expected instance of ${klass.name}`);
     }
-}
-
-let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
-
-cachedTextDecoder.decode();
-
-function getStringFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
-}
-
-function isLikeNone(x) {
-    return x === undefined || x === null;
 }
 
 function debugString(val) {
@@ -171,299 +79,149 @@ function debugString(val) {
     return className;
 }
 
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+
+let cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
     }
+    return cachedDataViewMemory0;
+}
+
+function getStringFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return decodeText(ptr, len);
+}
+
+let cachedUint8ArrayMemory0 = null;
+function getUint8ArrayMemory0() {
+    if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
+        cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
+    }
+    return cachedUint8ArrayMemory0;
+}
+
+function handleError(f, args) {
+    try {
+        return f.apply(this, args);
+    } catch (e) {
+        const idx = addToExternrefTable0(e);
+        wasm.__wbindgen_exn_store(idx);
+    }
+}
+
+function isLikeNone(x) {
+    return x === undefined || x === null;
+}
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8ArrayMemory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
+function passStringToWasm0(arg, malloc, realloc) {
+    if (realloc === undefined) {
+        const buf = cachedTextEncoder.encode(arg);
+        const ptr = malloc(buf.length, 1) >>> 0;
+        getUint8ArrayMemory0().subarray(ptr, ptr + buf.length).set(buf);
+        WASM_VECTOR_LEN = buf.length;
+        return ptr;
+    }
+
+    let len = arg.length;
+    let ptr = malloc(len, 1) >>> 0;
+
+    const mem = getUint8ArrayMemory0();
+
+    let offset = 0;
+
+    for (; offset < len; offset++) {
+        const code = arg.charCodeAt(offset);
+        if (code > 0x7F) break;
+        mem[ptr + offset] = code;
+    }
+    if (offset !== len) {
+        if (offset !== 0) {
+            arg = arg.slice(offset);
+        }
+        ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+        const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
+        const ret = cachedTextEncoder.encodeInto(arg, view);
+
+        offset += ret.written;
+        ptr = realloc(ptr, len, offset, 1) >>> 0;
+    }
+
+    WASM_VECTOR_LEN = offset;
+    return ptr;
 }
 
 function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_4.get(idx);
+    const value = wasm.__wbindgen_externrefs.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
 }
-/**
- * @param {EncryptedData} data
- * @param {string} privkey
- * @param {EncodingType} encoding_type
- * @returns {string}
- */
-module.exports.decrypt = function(data, privkey, encoding_type) {
-    let deferred4_0;
-    let deferred4_1;
-    try {
-        _assertClass(data, EncryptedData);
-        var ptr0 = data.__destroy_into_raw();
-        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decrypt(ptr0, ptr1, len1, encoding_type);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
-        if (ret[3]) {
-            ptr3 = 0; len3 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
-    } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+
+let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
+cachedTextDecoder.decode();
+function decodeText(ptr, len) {
+    return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
+}
+
+const cachedTextEncoder = new TextEncoder();
+
+if (!('encodeInto' in cachedTextEncoder)) {
+    cachedTextEncoder.encodeInto = function (arg, view) {
+        const buf = cachedTextEncoder.encode(arg);
+        view.set(buf);
+        return {
+            read: arg.length,
+            written: buf.length
+        };
     }
-};
+}
 
-/**
- * @param {string} data
- * @returns {string}
- */
-module.exports.sha256 = function(data) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.sha256(ptr0, len0);
-        deferred2_0 = ret[0];
-        deferred2_1 = ret[1];
-        return getStringFromWasm0(ret[0], ret[1]);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-};
-
-/**
- * @param {string} data
- * @param {string} sig
- * @param {string} pubkey
- * @returns {boolean}
- */
-module.exports.verify = function(data, sig, pubkey) {
-    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(sig, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ptr2 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len2 = WASM_VECTOR_LEN;
-    const ret = wasm.verify(ptr0, len0, ptr1, len1, ptr2, len2);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return ret[0] !== 0;
-};
-
-/**
- * @param {string} data
- * @param {string} pubkey
- * @param {EncodingType} encoding_type
- * @returns {EncryptedData}
- */
-module.exports.encrypt = function(data, pubkey, encoding_type) {
-    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.encrypt(ptr0, len0, ptr1, len1, encoding_type);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return EncryptedData.__wrap(ret[0]);
-};
-
-/**
- * @param {AesEncryptedData} data
- * @param {string} key
- * @param {EncodingType} encoding_type
- * @returns {string}
- */
-module.exports.decrypt_aes = function(data, key, encoding_type) {
-    let deferred4_0;
-    let deferred4_1;
-    try {
-        _assertClass(data, AesEncryptedData);
-        var ptr0 = data.__destroy_into_raw();
-        const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decrypt_aes(ptr0, ptr1, len1, encoding_type);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
-        if (ret[3]) {
-            ptr3 = 0; len3 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
-    } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
-    }
-};
-
-module.exports.init_panic_hook = function() {
-    wasm.init_panic_hook();
-};
-
-/**
- * @param {Commitment} commitment
- * @param {bigint} value
- * @param {string} tag
- * @returns {boolean}
- */
-module.exports.pedersen_reveal = function(commitment, value, tag) {
-    _assertClass(commitment, Commitment);
-    var ptr0 = commitment.__destroy_into_raw();
-    const ptr1 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.pedersen_reveal(ptr0, value, ptr1, len1);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return ret[0] !== 0;
-};
-
-/**
- * @param {string} pubkey
- * @returns {Did}
- */
-module.exports.key_to_did = function(pubkey) {
-    const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.key_to_did(ptr0, len0);
-    return Did.__wrap(ret);
-};
-
-/**
- * @param {string} privkey
- * @param {string} pubkey
- * @returns {string}
- */
-module.exports.ecdh = function(privkey, pubkey) {
-    let deferred4_0;
-    let deferred4_1;
-    try {
-        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.ecdh(ptr0, len0, ptr1, len1);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
-        if (ret[3]) {
-            ptr3 = 0; len3 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
-    } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
-    }
-};
-
-/**
- * @param {string} data
- * @param {string} privkey
- * @returns {string}
- */
-module.exports.sign = function(data, privkey) {
-    let deferred4_0;
-    let deferred4_1;
-    try {
-        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.sign(ptr0, len0, ptr1, len1);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
-        if (ret[3]) {
-            ptr3 = 0; len3 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
-    } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
-    }
-};
-
-/**
- * @param {bigint} value
- * @param {string} tag
- * @returns {Commitment}
- */
-module.exports.pedersen_commit = function(value, tag) {
-    const ptr0 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.pedersen_commit(value, ptr0, len0);
-    return Commitment.__wrap(ret);
-};
-
-/**
- * @param {string} data
- * @param {string} key
- * @param {EncodingType} encoding_type
- * @returns {AesEncryptedData}
- */
-module.exports.encrypt_aes = function(data, key, encoding_type) {
-    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.encrypt_aes(ptr0, len0, ptr1, len1, encoding_type);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return AesEncryptedData.__wrap(ret[0]);
-};
-
-/**
- * @returns {KeyPair}
- */
-module.exports.create_keypair = function() {
-    const ret = wasm.create_keypair();
-    return KeyPair.__wrap(ret);
-};
-
-/**
- * @param {Did} did
- * @returns {string}
- */
-module.exports.did_to_key = function(did) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        _assertClass(did, Did);
-        var ptr0 = did.__destroy_into_raw();
-        const ret = wasm.did_to_key(ptr0);
-        var ptr2 = ret[0];
-        var len2 = ret[1];
-        if (ret[3]) {
-            ptr2 = 0; len2 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred3_0 = ptr2;
-        deferred3_1 = len2;
-        return getStringFromWasm0(ptr2, len2);
-    } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
-    }
-};
-
-/**
- * @enum {0 | 1 | 2}
- */
-module.exports.EncodingType = Object.freeze({
-    UTF8: 0, "0": "UTF8",
-    HEX: 1, "1": "HEX",
-    BASE64: 2, "2": "BASE64",
-});
+let WASM_VECTOR_LEN = 0;
 
 const AesEncryptedDataFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_aesencrypteddata_free(ptr >>> 0, 1));
 
-class AesEncryptedData {
+const AesEncryptedDataBytesFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_aesencrypteddatabytes_free(ptr >>> 0, 1));
 
+const CommitmentFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_commitment_free(ptr >>> 0, 1));
+
+const DidFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_did_free(ptr >>> 0, 1));
+
+const EncryptedDataFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_encrypteddata_free(ptr >>> 0, 1));
+
+const EncryptedDataBytesFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_encrypteddatabytes_free(ptr >>> 0, 1));
+
+const KeyPairFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_keypair_free(ptr >>> 0, 1));
+
+const TxFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_tx_free(ptr >>> 0, 1));
+
+class AesEncryptedData {
     static __wrap(ptr) {
         ptr = ptr >>> 0;
         const obj = Object.create(AesEncryptedData.prototype);
@@ -471,14 +229,12 @@ class AesEncryptedData {
         AesEncryptedDataFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
         AesEncryptedDataFinalization.unregister(this);
         return ptr;
     }
-
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_aesencrypteddata_free(ptr, 0);
@@ -543,14 +299,79 @@ class AesEncryptedData {
         return ret;
     }
 }
-module.exports.AesEncryptedData = AesEncryptedData;
+if (Symbol.dispose) AesEncryptedData.prototype[Symbol.dispose] = AesEncryptedData.prototype.free;
+exports.AesEncryptedData = AesEncryptedData;
 
-const CommitmentFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_commitment_free(ptr >>> 0, 1));
+class AesEncryptedDataBytes {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(AesEncryptedDataBytes.prototype);
+        obj.__wbg_ptr = ptr;
+        AesEncryptedDataBytesFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        AesEncryptedDataBytesFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_aesencrypteddatabytes_free(ptr, 0);
+    }
+    /**
+     * @param {any} object
+     * @returns {AesEncryptedDataBytes}
+     */
+    static from_object(object) {
+        const ret = wasm.aesencrypteddatabytes_from_object(object);
+        return AesEncryptedDataBytes.__wrap(ret);
+    }
+    /**
+     * @param {Uint8Array} data
+     * @param {Uint8Array} nonce
+     */
+    constructor(data, nonce) {
+        const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passArray8ToWasm0(nonce, wasm.__wbindgen_malloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.aesencrypteddata_new(ptr0, len0, ptr1, len1);
+        this.__wbg_ptr = ret >>> 0;
+        AesEncryptedDataBytesFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get data() {
+        const ret = wasm.aesencrypteddatabytes_data(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get nonce() {
+        const ret = wasm.aesencrypteddatabytes_nonce(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.aesencrypteddatabytes_to_object(this.__wbg_ptr);
+        return ret;
+    }
+}
+if (Symbol.dispose) AesEncryptedDataBytes.prototype[Symbol.dispose] = AesEncryptedDataBytes.prototype.free;
+exports.AesEncryptedDataBytes = AesEncryptedDataBytes;
 
 class Commitment {
-
     static __wrap(ptr) {
         ptr = ptr >>> 0;
         const obj = Object.create(Commitment.prototype);
@@ -558,14 +379,12 @@ class Commitment {
         CommitmentFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
         CommitmentFinalization.unregister(this);
         return ptr;
     }
-
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_commitment_free(ptr, 0);
@@ -646,14 +465,10 @@ class Commitment {
         return ret;
     }
 }
-module.exports.Commitment = Commitment;
-
-const DidFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_did_free(ptr >>> 0, 1));
+if (Symbol.dispose) Commitment.prototype[Symbol.dispose] = Commitment.prototype.free;
+exports.Commitment = Commitment;
 
 class Did {
-
     static __wrap(ptr) {
         ptr = ptr >>> 0;
         const obj = Object.create(Did.prototype);
@@ -661,14 +476,12 @@ class Did {
         DidFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
         DidFinalization.unregister(this);
         return ptr;
     }
-
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_did_free(ptr, 0);
@@ -723,14 +536,20 @@ class Did {
         return ret;
     }
 }
-module.exports.Did = Did;
+if (Symbol.dispose) Did.prototype[Symbol.dispose] = Did.prototype.free;
+exports.Did = Did;
 
-const EncryptedDataFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_encrypteddata_free(ptr >>> 0, 1));
+/**
+ * @enum {0 | 1 | 2}
+ */
+const EncodingType = Object.freeze({
+    UTF8: 0, "0": "UTF8",
+    HEX: 1, "1": "HEX",
+    BASE64: 2, "2": "BASE64",
+});
+exports.EncodingType = EncodingType;
 
 class EncryptedData {
-
     static __wrap(ptr) {
         ptr = ptr >>> 0;
         const obj = Object.create(EncryptedData.prototype);
@@ -738,14 +557,12 @@ class EncryptedData {
         EncryptedDataFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
         EncryptedDataFinalization.unregister(this);
         return ptr;
     }
-
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_encrypteddata_free(ptr, 0);
@@ -846,14 +663,115 @@ class EncryptedData {
         return ret;
     }
 }
-module.exports.EncryptedData = EncryptedData;
+if (Symbol.dispose) EncryptedData.prototype[Symbol.dispose] = EncryptedData.prototype.free;
+exports.EncryptedData = EncryptedData;
 
-const KeyPairFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_keypair_free(ptr >>> 0, 1));
+class EncryptedDataBytes {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(EncryptedDataBytes.prototype);
+        obj.__wbg_ptr = ptr;
+        EncryptedDataBytesFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        EncryptedDataBytesFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_encrypteddatabytes_free(ptr, 0);
+    }
+    /**
+     * @param {any} object
+     * @returns {EncryptedDataBytes}
+     */
+    static from_object(object) {
+        const ret = wasm.encrypteddatabytes_from_object(object);
+        return EncryptedDataBytes.__wrap(ret);
+    }
+    /**
+     * @returns {string}
+     */
+    get pubkey_from() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encrypteddatabytes_pubkey_from(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {string} pubkey_from
+     * @param {string} pubkey_to
+     * @param {Uint8Array} data
+     * @param {Uint8Array} nonce
+     */
+    constructor(pubkey_from, pubkey_to, data, nonce) {
+        const ptr0 = passStringToWasm0(pubkey_from, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(pubkey_to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ptr3 = passArray8ToWasm0(nonce, wasm.__wbindgen_malloc);
+        const len3 = WASM_VECTOR_LEN;
+        const ret = wasm.encrypteddata_new(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+        this.__wbg_ptr = ret >>> 0;
+        EncryptedDataBytesFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get data() {
+        const ret = wasm.encrypteddatabytes_data(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get nonce() {
+        const ret = wasm.encrypteddatabytes_nonce(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {string}
+     */
+    get pubkey_to() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encrypteddatabytes_pubkey_to(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {any}
+     */
+    to_object() {
+        const ret = wasm.encrypteddatabytes_to_object(this.__wbg_ptr);
+        return ret;
+    }
+}
+if (Symbol.dispose) EncryptedDataBytes.prototype[Symbol.dispose] = EncryptedDataBytes.prototype.free;
+exports.EncryptedDataBytes = EncryptedDataBytes;
 
 class KeyPair {
-
     static __wrap(ptr) {
         ptr = ptr >>> 0;
         const obj = Object.create(KeyPair.prototype);
@@ -861,14 +779,12 @@ class KeyPair {
         KeyPairFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
         KeyPairFinalization.unregister(this);
         return ptr;
     }
-
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_keypair_free(ptr, 0);
@@ -949,14 +865,10 @@ class KeyPair {
         return ret;
     }
 }
-module.exports.KeyPair = KeyPair;
-
-const TxFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_tx_free(ptr >>> 0, 1));
+if (Symbol.dispose) KeyPair.prototype[Symbol.dispose] = KeyPair.prototype.free;
+exports.KeyPair = KeyPair;
 
 class Tx {
-
     static __wrap(ptr) {
         ptr = ptr >>> 0;
         const obj = Object.create(Tx.prototype);
@@ -964,14 +876,12 @@ class Tx {
         TxFinalization.register(obj, obj.__wbg_ptr, obj);
         return obj;
     }
-
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
         TxFinalization.unregister(this);
         return ptr;
     }
-
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_tx_free(ptr, 0);
@@ -1156,9 +1066,391 @@ class Tx {
         return ret;
     }
 }
-module.exports.Tx = Tx;
+if (Symbol.dispose) Tx.prototype[Symbol.dispose] = Tx.prototype.free;
+exports.Tx = Tx;
 
-module.exports.__wbg_String_8f0eb39a4a4c2f66 = function(arg0, arg1) {
+/**
+ * @returns {KeyPair}
+ */
+function create_keypair() {
+    const ret = wasm.create_keypair();
+    return KeyPair.__wrap(ret);
+}
+exports.create_keypair = create_keypair;
+
+/**
+ * @param {EncryptedData} data
+ * @param {string} privkey
+ * @param {EncodingType} encoding_type
+ * @returns {string}
+ */
+function decrypt(data, privkey, encoding_type) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        _assertClass(data, EncryptedData);
+        var ptr0 = data.__destroy_into_raw();
+        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decrypt(ptr0, ptr1, len1, encoding_type);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+exports.decrypt = decrypt;
+
+/**
+ * @param {AesEncryptedData} data
+ * @param {string} key
+ * @param {EncodingType} encoding_type
+ * @returns {string}
+ */
+function decrypt_aes(data, key, encoding_type) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        _assertClass(data, AesEncryptedData);
+        var ptr0 = data.__destroy_into_raw();
+        const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decrypt_aes(ptr0, ptr1, len1, encoding_type);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+exports.decrypt_aes = decrypt_aes;
+
+/**
+ * @param {AesEncryptedDataBytes} data
+ * @param {string} key
+ * @returns {Uint8Array}
+ */
+function decrypt_aes_bytes(data, key) {
+    _assertClass(data, AesEncryptedDataBytes);
+    var ptr0 = data.__destroy_into_raw();
+    const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.decrypt_aes_bytes(ptr0, ptr1, len1);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v3;
+}
+exports.decrypt_aes_bytes = decrypt_aes_bytes;
+
+/**
+ * @param {EncryptedDataBytes} data
+ * @param {string} privkey
+ * @returns {Uint8Array}
+ */
+function decrypt_bytes(data, privkey) {
+    _assertClass(data, EncryptedDataBytes);
+    var ptr0 = data.__destroy_into_raw();
+    const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.decrypt_bytes(ptr0, ptr1, len1);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v3;
+}
+exports.decrypt_bytes = decrypt_bytes;
+
+/**
+ * @param {Did} did
+ * @returns {string}
+ */
+function did_to_key(did) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        _assertClass(did, Did);
+        var ptr0 = did.__destroy_into_raw();
+        const ret = wasm.did_to_key(ptr0);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
+}
+exports.did_to_key = did_to_key;
+
+/**
+ * @param {string} privkey
+ * @param {string} pubkey
+ * @returns {string}
+ */
+function ecdh(privkey, pubkey) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.ecdh(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+exports.ecdh = ecdh;
+
+/**
+ * @param {string} data
+ * @param {string} pubkey
+ * @param {EncodingType} encoding_type
+ * @returns {EncryptedData}
+ */
+function encrypt(data, pubkey, encoding_type) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt(ptr0, len0, ptr1, len1, encoding_type);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return EncryptedData.__wrap(ret[0]);
+}
+exports.encrypt = encrypt;
+
+/**
+ * @param {string} data
+ * @param {string} key
+ * @param {EncodingType} encoding_type
+ * @returns {AesEncryptedData}
+ */
+function encrypt_aes(data, key, encoding_type) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt_aes(ptr0, len0, ptr1, len1, encoding_type);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return AesEncryptedData.__wrap(ret[0]);
+}
+exports.encrypt_aes = encrypt_aes;
+
+/**
+ * @param {Uint8Array} data
+ * @param {string} key
+ * @returns {AesEncryptedDataBytes}
+ */
+function encrypt_aes_bytes(data, key) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt_aes_bytes(ptr0, len0, ptr1, len1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return AesEncryptedDataBytes.__wrap(ret[0]);
+}
+exports.encrypt_aes_bytes = encrypt_aes_bytes;
+
+/**
+ * @param {Uint8Array} data
+ * @param {string} pubkey
+ * @returns {EncryptedDataBytes}
+ */
+function encrypt_bytes(data, pubkey) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt_bytes(ptr0, len0, ptr1, len1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return EncryptedDataBytes.__wrap(ret[0]);
+}
+exports.encrypt_bytes = encrypt_bytes;
+
+function init_panic_hook() {
+    wasm.init_panic_hook();
+}
+exports.init_panic_hook = init_panic_hook;
+
+/**
+ * @param {string} pubkey
+ * @returns {Did}
+ */
+function key_to_did(pubkey) {
+    const ptr0 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.key_to_did(ptr0, len0);
+    return Did.__wrap(ret);
+}
+exports.key_to_did = key_to_did;
+
+/**
+ * @param {bigint} value
+ * @param {string} tag
+ * @returns {Commitment}
+ */
+function pedersen_commit(value, tag) {
+    const ptr0 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.pedersen_commit(value, ptr0, len0);
+    return Commitment.__wrap(ret);
+}
+exports.pedersen_commit = pedersen_commit;
+
+/**
+ * @param {Commitment} commitment
+ * @param {bigint} value
+ * @param {string} tag
+ * @returns {boolean}
+ */
+function pedersen_reveal(commitment, value, tag) {
+    _assertClass(commitment, Commitment);
+    var ptr0 = commitment.__destroy_into_raw();
+    const ptr1 = passStringToWasm0(tag, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.pedersen_reveal(ptr0, value, ptr1, len1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] !== 0;
+}
+exports.pedersen_reveal = pedersen_reveal;
+
+/**
+ * @param {string} data
+ * @returns {string}
+ */
+function sha256(data) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.sha256(ptr0, len0);
+        deferred2_0 = ret[0];
+        deferred2_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+exports.sha256 = sha256;
+
+/**
+ * @param {Uint8Array} data
+ * @returns {Uint8Array}
+ */
+function sha256_bytes(data) {
+    const ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.sha256_bytes(ptr0, len0);
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
+exports.sha256_bytes = sha256_bytes;
+
+/**
+ * @param {string} data
+ * @param {string} privkey
+ * @returns {string}
+ */
+function sign(data, privkey) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(privkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.sign(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+exports.sign = sign;
+
+/**
+ * @param {string} data
+ * @param {string} sig
+ * @param {string} pubkey
+ * @returns {boolean}
+ */
+function verify(data, sig, pubkey) {
+    const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(sig, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passStringToWasm0(pubkey, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.verify(ptr0, len0, ptr1, len1, ptr2, len2);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] !== 0;
+}
+exports.verify = verify;
+
+exports.__wbg_Error_52673b7de5a0ca89 = function(arg0, arg1) {
+    const ret = Error(getStringFromWasm0(arg0, arg1));
+    return ret;
+};
+
+exports.__wbg_Number_2d1dcfcf4ec51736 = function(arg0) {
+    const ret = Number(arg0);
+    return ret;
+};
+
+exports.__wbg_String_8f0eb39a4a4c2f66 = function(arg0, arg1) {
     const ret = String(arg1);
     const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
@@ -1166,27 +1458,92 @@ module.exports.__wbg_String_8f0eb39a4a4c2f66 = function(arg0, arg1) {
     getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
 };
 
-module.exports.__wbg_buffer_609cc3eee51ed158 = function(arg0) {
-    const ret = arg0.buffer;
+exports.__wbg___wbindgen_boolean_get_dea25b33882b895b = function(arg0) {
+    const v = arg0;
+    const ret = typeof(v) === 'boolean' ? v : undefined;
+    return isLikeNone(ret) ? 0xFFFFFF : ret ? 1 : 0;
+};
+
+exports.__wbg___wbindgen_debug_string_adfb662ae34724b6 = function(arg0, arg1) {
+    const ret = debugString(arg1);
+    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+};
+
+exports.__wbg___wbindgen_in_0d3e1e8f0c669317 = function(arg0, arg1) {
+    const ret = arg0 in arg1;
     return ret;
 };
 
-module.exports.__wbg_call_672a4d21634d4a24 = function() { return handleError(function (arg0, arg1) {
-    const ret = arg0.call(arg1);
+exports.__wbg___wbindgen_is_function_8d400b8b1af978cd = function(arg0) {
+    const ret = typeof(arg0) === 'function';
     return ret;
-}, arguments) };
+};
 
-module.exports.__wbg_call_7cccdd69e0791ae2 = function() { return handleError(function (arg0, arg1, arg2) {
+exports.__wbg___wbindgen_is_object_ce774f3490692386 = function(arg0) {
+    const val = arg0;
+    const ret = typeof(val) === 'object' && val !== null;
+    return ret;
+};
+
+exports.__wbg___wbindgen_is_string_704ef9c8fc131030 = function(arg0) {
+    const ret = typeof(arg0) === 'string';
+    return ret;
+};
+
+exports.__wbg___wbindgen_is_undefined_f6b95eab589e0269 = function(arg0) {
+    const ret = arg0 === undefined;
+    return ret;
+};
+
+exports.__wbg___wbindgen_jsval_loose_eq_766057600fdd1b0d = function(arg0, arg1) {
+    const ret = arg0 == arg1;
+    return ret;
+};
+
+exports.__wbg___wbindgen_number_get_9619185a74197f95 = function(arg0, arg1) {
+    const obj = arg1;
+    const ret = typeof(obj) === 'number' ? obj : undefined;
+    getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
+    getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
+};
+
+exports.__wbg___wbindgen_string_get_a2a31e16edf96e42 = function(arg0, arg1) {
+    const obj = arg1;
+    const ret = typeof(obj) === 'string' ? obj : undefined;
+    var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    var len1 = WASM_VECTOR_LEN;
+    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+};
+
+exports.__wbg___wbindgen_throw_dd24417ed36fc46e = function(arg0, arg1) {
+    throw new Error(getStringFromWasm0(arg0, arg1));
+};
+
+exports.__wbg_call_3020136f7a2d6e44 = function() { return handleError(function (arg0, arg1, arg2) {
     const ret = arg0.call(arg1, arg2);
     return ret;
 }, arguments) };
 
-module.exports.__wbg_crypto_574e78ad8b13b65f = function(arg0) {
+exports.__wbg_call_abb4ff46ce38be40 = function() { return handleError(function (arg0, arg1) {
+    const ret = arg0.call(arg1);
+    return ret;
+}, arguments) };
+
+exports.__wbg_crypto_ed58b8e10a292839 = function(arg0) {
     const ret = arg0.crypto;
     return ret;
 };
 
-module.exports.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
+exports.__wbg_done_62ea16af4ce34b24 = function(arg0) {
+    const ret = arg0.done;
+    return ret;
+};
+
+exports.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
     let deferred0_0;
     let deferred0_1;
     try {
@@ -1198,16 +1555,26 @@ module.exports.__wbg_error_7534b8e9a36f1ab4 = function(arg0, arg1) {
     }
 };
 
-module.exports.__wbg_getRandomValues_b8f5dbd5f3995a9e = function() { return handleError(function (arg0, arg1) {
+exports.__wbg_getRandomValues_bcb4912f16000dc4 = function() { return handleError(function (arg0, arg1) {
     arg0.getRandomValues(arg1);
 }, arguments) };
 
-module.exports.__wbg_getwithrefkey_1dc361bd10053bfe = function(arg0, arg1) {
+exports.__wbg_get_6b7bd52aca3f9671 = function(arg0, arg1) {
+    const ret = arg0[arg1 >>> 0];
+    return ret;
+};
+
+exports.__wbg_get_af9dab7e9603ea93 = function() { return handleError(function (arg0, arg1) {
+    const ret = Reflect.get(arg0, arg1);
+    return ret;
+}, arguments) };
+
+exports.__wbg_get_with_ref_key_1dc361bd10053bfe = function(arg0, arg1) {
     const ret = arg0[arg1];
     return ret;
 };
 
-module.exports.__wbg_instanceof_ArrayBuffer_e14585432e3737fc = function(arg0) {
+exports.__wbg_instanceof_ArrayBuffer_f3320d2419cd0355 = function(arg0) {
     let result;
     try {
         result = arg0 instanceof ArrayBuffer;
@@ -1218,7 +1585,7 @@ module.exports.__wbg_instanceof_ArrayBuffer_e14585432e3737fc = function(arg0) {
     return ret;
 };
 
-module.exports.__wbg_instanceof_Uint8Array_17156bcf118086a9 = function(arg0) {
+exports.__wbg_instanceof_Uint8Array_da54ccc9d3e09434 = function(arg0) {
     let result;
     try {
         result = arg0 instanceof Uint8Array;
@@ -1229,74 +1596,108 @@ module.exports.__wbg_instanceof_Uint8Array_17156bcf118086a9 = function(arg0) {
     return ret;
 };
 
-module.exports.__wbg_length_a446193dc22c12f8 = function(arg0) {
+exports.__wbg_isArray_51fd9e6422c0a395 = function(arg0) {
+    const ret = Array.isArray(arg0);
+    return ret;
+};
+
+exports.__wbg_isSafeInteger_ae7d3f054d55fa16 = function(arg0) {
+    const ret = Number.isSafeInteger(arg0);
+    return ret;
+};
+
+exports.__wbg_iterator_27b7c8b35ab3e86b = function() {
+    const ret = Symbol.iterator;
+    return ret;
+};
+
+exports.__wbg_length_22ac23eaec9d8053 = function(arg0) {
     const ret = arg0.length;
     return ret;
 };
 
-module.exports.__wbg_msCrypto_a61aeb35a24c1329 = function(arg0) {
+exports.__wbg_length_d45040a40c570362 = function(arg0) {
+    const ret = arg0.length;
+    return ret;
+};
+
+exports.__wbg_msCrypto_0a36e2ec3a343d26 = function(arg0) {
     const ret = arg0.msCrypto;
     return ret;
 };
 
-module.exports.__wbg_new_405e22f390576ce2 = function() {
+exports.__wbg_new_1ba21ce319a06297 = function() {
     const ret = new Object();
     return ret;
 };
 
-module.exports.__wbg_new_8a6f238a6ece86ea = function() {
-    const ret = new Error();
+exports.__wbg_new_25f239778d6112b9 = function() {
+    const ret = new Array();
     return ret;
 };
 
-module.exports.__wbg_new_a12002a7f91c75be = function(arg0) {
+exports.__wbg_new_6421f6084cc5bc5a = function(arg0) {
     const ret = new Uint8Array(arg0);
     return ret;
 };
 
-module.exports.__wbg_newnoargs_105ed471475aaf50 = function(arg0, arg1) {
+exports.__wbg_new_8a6f238a6ece86ea = function() {
+    const ret = new Error();
+    return ret;
+};
+
+exports.__wbg_new_no_args_cb138f77cf6151ee = function(arg0, arg1) {
     const ret = new Function(getStringFromWasm0(arg0, arg1));
     return ret;
 };
 
-module.exports.__wbg_newwithbyteoffsetandlength_d97e637ebe145a9a = function(arg0, arg1, arg2) {
-    const ret = new Uint8Array(arg0, arg1 >>> 0, arg2 >>> 0);
-    return ret;
-};
-
-module.exports.__wbg_newwithlength_a381634e90c276d4 = function(arg0) {
+exports.__wbg_new_with_length_aa5eaf41d35235e5 = function(arg0) {
     const ret = new Uint8Array(arg0 >>> 0);
     return ret;
 };
 
-module.exports.__wbg_node_905d3e251edff8a2 = function(arg0) {
+exports.__wbg_next_138a17bbf04e926c = function(arg0) {
+    const ret = arg0.next;
+    return ret;
+};
+
+exports.__wbg_next_3cfe5c0fe2a4cc53 = function() { return handleError(function (arg0) {
+    const ret = arg0.next();
+    return ret;
+}, arguments) };
+
+exports.__wbg_node_02999533c4ea02e3 = function(arg0) {
     const ret = arg0.node;
     return ret;
 };
 
-module.exports.__wbg_process_dc0fbacc7c1c06f7 = function(arg0) {
+exports.__wbg_process_5c1d670bc53614b8 = function(arg0) {
     const ret = arg0.process;
     return ret;
 };
 
-module.exports.__wbg_randomFillSync_ac0988aba3254290 = function() { return handleError(function (arg0, arg1) {
+exports.__wbg_prototypesetcall_dfe9b766cdc1f1fd = function(arg0, arg1, arg2) {
+    Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
+};
+
+exports.__wbg_randomFillSync_ab2cfe79ebbf2740 = function() { return handleError(function (arg0, arg1) {
     arg0.randomFillSync(arg1);
 }, arguments) };
 
-module.exports.__wbg_require_60cc747a6bc5215a = function() { return handleError(function () {
+exports.__wbg_require_79b1e9274cde3c87 = function() { return handleError(function () {
     const ret = module.require;
     return ret;
 }, arguments) };
 
-module.exports.__wbg_set_3f1d0b984ed272ed = function(arg0, arg1, arg2) {
+exports.__wbg_set_3f1d0b984ed272ed = function(arg0, arg1, arg2) {
     arg0[arg1] = arg2;
 };
 
-module.exports.__wbg_set_65595bdd868b3009 = function(arg0, arg1, arg2) {
-    arg0.set(arg1, arg2 >>> 0);
+exports.__wbg_set_7df433eea03a5c14 = function(arg0, arg1, arg2) {
+    arg0[arg1 >>> 0] = arg2;
 };
 
-module.exports.__wbg_stack_0ed75d68575b0f3c = function(arg0, arg1) {
+exports.__wbg_stack_0ed75d68575b0f3c = function(arg0, arg1) {
     const ret = arg1.stack;
     const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
@@ -1304,134 +1705,72 @@ module.exports.__wbg_stack_0ed75d68575b0f3c = function(arg0, arg1) {
     getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
 };
 
-module.exports.__wbg_static_accessor_GLOBAL_88a902d13a557d07 = function() {
+exports.__wbg_static_accessor_GLOBAL_769e6b65d6557335 = function() {
     const ret = typeof global === 'undefined' ? null : global;
     return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
 };
 
-module.exports.__wbg_static_accessor_GLOBAL_THIS_56578be7e9f832b0 = function() {
+exports.__wbg_static_accessor_GLOBAL_THIS_60cf02db4de8e1c1 = function() {
     const ret = typeof globalThis === 'undefined' ? null : globalThis;
     return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
 };
 
-module.exports.__wbg_static_accessor_SELF_37c5d418e4bf5819 = function() {
+exports.__wbg_static_accessor_SELF_08f5a74c69739274 = function() {
     const ret = typeof self === 'undefined' ? null : self;
     return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
 };
 
-module.exports.__wbg_static_accessor_WINDOW_5de37043a91a9c40 = function() {
+exports.__wbg_static_accessor_WINDOW_a8924b26aa92d024 = function() {
     const ret = typeof window === 'undefined' ? null : window;
     return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
 };
 
-module.exports.__wbg_subarray_aa9065fa9dc5df96 = function(arg0, arg1, arg2) {
+exports.__wbg_subarray_845f2f5bce7d061a = function(arg0, arg1, arg2) {
     const ret = arg0.subarray(arg1 >>> 0, arg2 >>> 0);
     return ret;
 };
 
-module.exports.__wbg_versions_c01dfd4722a88165 = function(arg0) {
+exports.__wbg_value_57b7b035e117f7ee = function(arg0) {
+    const ret = arg0.value;
+    return ret;
+};
+
+exports.__wbg_versions_c71aa1626a93e0a1 = function(arg0) {
     const ret = arg0.versions;
     return ret;
 };
 
-module.exports.__wbindgen_boolean_get = function(arg0) {
-    const v = arg0;
-    const ret = typeof(v) === 'boolean' ? (v ? 1 : 0) : 2;
+exports.__wbindgen_cast_2241b6af4c4b2941 = function(arg0, arg1) {
+    // Cast intrinsic for `Ref(String) -> Externref`.
+    const ret = getStringFromWasm0(arg0, arg1);
     return ret;
 };
 
-module.exports.__wbindgen_debug_string = function(arg0, arg1) {
-    const ret = debugString(arg1);
-    const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
-    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
-};
-
-module.exports.__wbindgen_error_new = function(arg0, arg1) {
-    const ret = new Error(getStringFromWasm0(arg0, arg1));
+exports.__wbindgen_cast_cb9088102bce6b30 = function(arg0, arg1) {
+    // Cast intrinsic for `Ref(Slice(U8)) -> NamedExternref("Uint8Array")`.
+    const ret = getArrayU8FromWasm0(arg0, arg1);
     return ret;
 };
 
-module.exports.__wbindgen_in = function(arg0, arg1) {
-    const ret = arg0 in arg1;
+exports.__wbindgen_cast_d6cd19b81560fd6e = function(arg0) {
+    // Cast intrinsic for `F64 -> Externref`.
+    const ret = arg0;
     return ret;
 };
 
-module.exports.__wbindgen_init_externref_table = function() {
-    const table = wasm.__wbindgen_export_4;
+exports.__wbindgen_init_externref_table = function() {
+    const table = wasm.__wbindgen_externrefs;
     const offset = table.grow(4);
     table.set(0, undefined);
     table.set(offset + 0, undefined);
     table.set(offset + 1, null);
     table.set(offset + 2, true);
     table.set(offset + 3, false);
-    ;
 };
 
-module.exports.__wbindgen_is_function = function(arg0) {
-    const ret = typeof(arg0) === 'function';
-    return ret;
-};
-
-module.exports.__wbindgen_is_object = function(arg0) {
-    const val = arg0;
-    const ret = typeof(val) === 'object' && val !== null;
-    return ret;
-};
-
-module.exports.__wbindgen_is_string = function(arg0) {
-    const ret = typeof(arg0) === 'string';
-    return ret;
-};
-
-module.exports.__wbindgen_is_undefined = function(arg0) {
-    const ret = arg0 === undefined;
-    return ret;
-};
-
-module.exports.__wbindgen_jsval_loose_eq = function(arg0, arg1) {
-    const ret = arg0 == arg1;
-    return ret;
-};
-
-module.exports.__wbindgen_memory = function() {
-    const ret = wasm.memory;
-    return ret;
-};
-
-module.exports.__wbindgen_number_get = function(arg0, arg1) {
-    const obj = arg1;
-    const ret = typeof(obj) === 'number' ? obj : undefined;
-    getDataViewMemory0().setFloat64(arg0 + 8 * 1, isLikeNone(ret) ? 0 : ret, true);
-    getDataViewMemory0().setInt32(arg0 + 4 * 0, !isLikeNone(ret), true);
-};
-
-module.exports.__wbindgen_string_get = function(arg0, arg1) {
-    const obj = arg1;
-    const ret = typeof(obj) === 'string' ? obj : undefined;
-    var ptr1 = isLikeNone(ret) ? 0 : passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    var len1 = WASM_VECTOR_LEN;
-    getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
-    getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
-};
-
-module.exports.__wbindgen_string_new = function(arg0, arg1) {
-    const ret = getStringFromWasm0(arg0, arg1);
-    return ret;
-};
-
-module.exports.__wbindgen_throw = function(arg0, arg1) {
-    throw new Error(getStringFromWasm0(arg0, arg1));
-};
-
-const path = require('path').join(__dirname, 'core_bg.wasm');
-const bytes = require('fs').readFileSync(path);
-
-const wasmModule = new WebAssembly.Module(bytes);
-const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
-wasm = wasmInstance.exports;
-module.exports.__wasm = wasm;
+const wasmPath = `${__dirname}/core_bg.wasm`;
+const wasmBytes = require('fs').readFileSync(wasmPath);
+const wasmModule = new WebAssembly.Module(wasmBytes);
+const wasm = exports.__wasm = new WebAssembly.Instance(wasmModule, imports).exports;
 
 wasm.__wbindgen_start();
-

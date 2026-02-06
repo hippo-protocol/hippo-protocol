@@ -163,6 +163,87 @@ impl AesEncryptedData {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[wasm_bindgen]
+pub struct EncryptedDataBytes {
+    pubkey_from: String,
+    pubkey_to: String,
+    data: Vec<u8>,
+    nonce: Vec<u8>,
+}
+
+#[wasm_bindgen]
+impl EncryptedDataBytes {
+    #[wasm_bindgen(constructor)]
+    pub fn new(pubkey_from: String, pubkey_to: String, data: Vec<u8>, nonce: Vec<u8>) -> Self {
+        EncryptedDataBytes {
+            pubkey_from,
+            pubkey_to,
+            data,
+            nonce,
+        }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> EncryptedDataBytes {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn pubkey_from(&self) -> String {
+        self.pubkey_from.clone()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn pubkey_to(&self) -> String {
+        self.pubkey_to.clone()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn data(&self) -> Vec<u8> {
+        self.data.clone()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn nonce(&self) -> Vec<u8> {
+        self.nonce.clone()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[wasm_bindgen]
+pub struct AesEncryptedDataBytes {
+    data: Vec<u8>,
+    nonce: Vec<u8>,
+}
+
+#[wasm_bindgen]
+impl AesEncryptedDataBytes {
+    #[wasm_bindgen(constructor)]
+    pub fn new(data: Vec<u8>, nonce: Vec<u8>) -> Self {
+        AesEncryptedDataBytes { data, nonce }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> AesEncryptedDataBytes {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn data(&self) -> Vec<u8> {
+        self.data.clone()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn nonce(&self) -> Vec<u8> {
+        self.nonce.clone()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[wasm_bindgen]
 pub struct Tx {
     /// coin name(e.g. HP).
     coin: String,
