@@ -299,13 +299,16 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	slashingGenState.Params.SlashFractionDowntime = math.LegacyNewDecWithPrec(consensus.SlashFractionDowntime*100, 4) // 0.01%
 	appState[slashingtypes.ModuleName] = cdc.MustMarshalJSON(&slashingGenState)
 
-	var wasmGenState wasmtypes.GenesisState
-	if err := cdc.UnmarshalJSON(appState[wasmtypes.ModuleName], &wasmGenState); err != nil {
-		return nil, err
+	// Configure wasm params if wasm module is present in genesis
+	if wasmGenesisJSON, ok := appState[wasmtypes.ModuleName]; ok && len(wasmGenesisJSON) > 0 {
+		var wasmGenState wasmtypes.GenesisState
+		if err := cdc.UnmarshalJSON(wasmGenesisJSON, &wasmGenState); err != nil {
+			return nil, err
+		}
+		wasmGenState.Params.CodeUploadAccess = wasmtypes.AllowEverybody
+		wasmGenState.Params.InstantiateDefaultPermission = wasmtypes.AccessTypeEverybody
+		appState[wasmtypes.ModuleName] = cdc.MustMarshalJSON(&wasmGenState)
 	}
-	wasmGenState.Params.CodeUploadAccess = wasmtypes.AllowEverybody
-	wasmGenState.Params.InstantiateDefaultPermission = wasmtypes.AccessTypeEverybody
-	appState[wasmtypes.ModuleName] = cdc.MustMarshalJSON(&wasmGenState)
 
 	// MaxAgeDuration and MaxAgeNumBlocks values should be longer than unbonding period.
 	// Otherwise it may allow malicious validators to escape penalties.
