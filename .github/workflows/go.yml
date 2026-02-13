@@ -83,15 +83,33 @@ jobs:
           echo "Port open. Waiting 10s for Chain initialization..."
           sleep 10
 
-          echo "Node started. Submitting v1.0.3 upgrade proposal..."
+          echo "Node started. Creating v1.0.3 upgrade proposal..."
           
-          # Submit upgrade proposal for v1.0.3
-          echo -e "password" | go run hippod/main.go tx gov submit-proposal software-upgrade v1.0.3 \
-            --title "Upgrade to v1.0.3" \
-            --description "Add CosmWasm module" \
-            --upgrade-height 20 \
+          # Create upgrade proposal JSON file
+          cat > /tmp/upgrade-proposal.json <<EOF
+          {
+            "messages": [
+              {
+                "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+                "authority": "hippo10d07y265gmmuvt4z0w9aw880jnsr700jg5w6jp",
+                "plan": {
+                  "name": "v1.0.3",
+                  "height": "20",
+                  "info": "Add CosmWasm module"
+                }
+              }
+            ],
+            "metadata": "ipfs://CID",
+            "deposit": "50000000000000000000000ahp",
+            "title": "Upgrade to v1.0.3",
+            "summary": "Add CosmWasm module support to the chain",
+            "expedited": false
+          }
+          EOF
+          
+          # Submit upgrade proposal
+          echo -e "password" | go run hippod/main.go tx gov submit-proposal /tmp/upgrade-proposal.json \
             --from alice \
-            --deposit 50000000000000000000000ahp \
             --chain-id hippo-protocol-testnet-1 \
             --keyring-backend file \
             --fees 1000000000000000000ahp \
