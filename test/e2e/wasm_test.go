@@ -38,6 +38,87 @@ t.Logf("Loaded contract %s (%d bytes)", contractPath, len(wasmBytes))
 return wasmBytes
 }
 
+// extractTxHashAndWait extracts txhash from transaction output and waits for it to be processed
+func extractTxHashAndWait(t *testing.T, txOut string) string {
+// Extract txhash from output
+re := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
+match := re.FindStringSubmatch(txOut)
+require.Greater(t, len(match), 1, "txhash should be in transaction output: %s", txOut)
+txhash := match[1]
+t.Logf("Transaction submitted with hash: %s", txhash)
+
+// Wait for transaction to be processed
+time.Sleep(6 * time.Second)
+
+return txhash
+}
+
+// queryTxAndExtractCodeID queries a transaction by hash and extracts the code_id from events
+func queryTxAndExtractCodeID(t *testing.T, txhash string) string {
+cmd := exec.Command("go", "run", path, "query", "tx", txhash)
+out, err := cmd.CombinedOutput()
+require.NoError(t, err, "should be able to query transaction: %s", string(out))
+
+outStr := string(out)
+
+// Try to find code_id in YAML events format (key: code_id followed by value: "X")
+re := regexp.MustCompile(`key:\s*code_id\s*\n\s*value:\s*"?(\d+)"?`)
+match := re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+// Try inline format: code_id: "X"
+re = regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+// Try JSON format: "code_id": "X"
+re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+require.Greater(t, len(match), 1, "code_id should be in transaction result: %s", outStr)
+return ""
+}
+
+// queryTxAndExtractContractAddr queries a transaction by hash and extracts the contract address from events
+func queryTxAndExtractContractAddr(t *testing.T, txhash string) string {
+cmd := exec.Command("go", "run", path, "query", "tx", txhash)
+out, err := cmd.CombinedOutput()
+require.NoError(t, err, "should be able to query transaction: %s", string(out))
+
+outStr := string(out)
+
+// Try to find _contract_address in YAML events format (key: _contract_address followed by value: "addr")
+re := regexp.MustCompile(`key:\s*_contract_address\s*\n\s*value:\s*"?([a-z0-9]+)"?`)
+match := re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+// Try inline format: _contract_address: "addr"
+re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+// Try alternative pattern: contract: "addr"
+re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+require.Greater(t, len(match), 1, "contract address should be in transaction result: %s", outStr)
+return ""
+}
+
 // TestWasmQuery tests basic wasm query commands
 func TestWasmQuery(t *testing.T) {
 tests := []WasmTest{
@@ -61,10 +142,10 @@ require.NoError(t, err, "should be able to query wasm params")
 
 // Verify that code upload is allowed for everybody
 assert.Contains(t, string(out), "code_upload_access", "params should contain code_upload_access")
-assert.Contains(t, string(out), "permission: ACCESS_TYPE_EVERYBODY", "code upload should be allowed for everybody")
+assert.Contains(t, string(out), "permission: Everybody", "code upload should be allowed for everybody")
 
 // Verify instantiate default permission
-assert.Contains(t, string(out), "instantiate_default_permission: ACCESS_TYPE_EVERYBODY", "instantiate should be allowed for everybody by default")
+assert.Contains(t, string(out), "instantiate_default_permission: Everybody", "instantiate should be allowed for everybody by default")
 }
 
 // TestWasmStoreCodeCounter tests uploading the counter contract
@@ -90,24 +171,17 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-// Extract code ID from transaction output
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-// Try alternative format
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output: %s", txOut)
-codeID := match[1]
-t.Logf("Counter contract stored with code_id: %s", codeID)
+// Extract txhash and wait for processing
+txhash := extractTxHashAndWait(t, txOut)
 
-// Wait for transaction to be processed
-time.Sleep(6 * time.Second)
+// Query transaction to get code_id
+codeID := queryTxAndExtractCodeID(t, txhash)
+t.Logf("Counter contract stored with code_id: %s", codeID)
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "list-code")
@@ -143,22 +217,17 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-// Extract code ID
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
-t.Logf("CW20 token contract stored with code_id: %s", codeID)
+// Extract txhash and wait for processing
+txhash := extractTxHashAndWait(t, txOut)
 
-time.Sleep(6 * time.Second)
+// Query transaction to get code_id
+codeID := queryTxAndExtractCodeID(t, txhash)
+t.Logf("CW20 token contract stored with code_id: %s", codeID)
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "code-info", codeID)
@@ -187,22 +256,17 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-// Extract code ID
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
-t.Logf("Name service contract stored with code_id: %s", codeID)
+// Extract txhash and wait for processing
+txhash := extractTxHashAndWait(t, txOut)
 
-time.Sleep(6 * time.Second)
+// Query transaction to get code_id
+codeID := queryTxAndExtractCodeID(t, txhash)
+t.Logf("Name service contract stored with code_id: %s", codeID)
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "code-info", codeID)
@@ -230,24 +294,20 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-// Extract code ID
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
+// Extract txhash and wait for processing
+txhash := extractTxHashAndWait(t, txOut)
 
-time.Sleep(6 * time.Second)
+// Query transaction to get code_id
+codeID := queryTxAndExtractCodeID(t, txhash)
 
 // Instantiate the contract with init message
-initMsg := `{"count":0}`
+// hackatom contract expects verifier and beneficiary addresses
+initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
 txOut = testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
@@ -256,24 +316,18 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
+
 "--no-admin",
 "-y",
 "--keyring-backend=file",
 })
 
-// Extract contract address from transaction output
-re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-// Try alternative pattern
-re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "contract address should be in transaction output: %s", txOut)
-contractAddr := match[1]
-t.Logf("Contract instantiated at address: %s", contractAddr)
+// Extract txhash and wait for processing
+txhash = extractTxHashAndWait(t, txOut)
 
-time.Sleep(6 * time.Second)
+// Query transaction to get contract address
+contractAddr := queryTxAndExtractContractAddr(t, txhash)
+t.Logf("Contract instantiated at address: %s", contractAddr)
 
 // List contracts by code to verify instantiation
 cmd := exec.Command("go", "run", path, "query", "wasm", "list-contract-by-code", codeID)
@@ -308,23 +362,17 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
-
-time.Sleep(6 * time.Second)
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
 
 // Instantiate
-initMsg := `{"count":10}`
+// hackatom contract expects verifier and beneficiary addresses
+initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
 txOut = testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
@@ -333,24 +381,18 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
+
 "--no-admin",
 "-y",
 "--keyring-backend=file",
 })
 
-re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "contract address should be in transaction output")
-contractAddr := match[1]
+txhash = extractTxHashAndWait(t, txOut)
+contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
-time.Sleep(6 * time.Second)
-
-// Execute the contract (increment counter)
-execMsg := `{"increment":{}}`
+// Execute the contract (release funds)
+// hackatom contract supports "release" execute message
+execMsg := `{"release":{}}`
 txOut = testTx(t, []string{
 "tx", "wasm", "execute",
 contractAddr,
@@ -358,6 +400,7 @@ execMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=300000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -368,7 +411,8 @@ t.Logf("Contract execution successful")
 time.Sleep(6 * time.Second)
 
 // Query contract state to verify execution
-queryMsg := `{"get_count":{}}`
+// hackatom contract supports "verifier" query
+queryMsg := `{"verifier":{}}`
 cmd := exec.Command("go", "run", path, "query", "wasm", "contract-state", "smart", contractAddr, queryMsg)
 out, err := cmd.CombinedOutput()
 
@@ -398,22 +442,16 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
 
-time.Sleep(6 * time.Second)
-
-initMsg := `{"count":0}`
+// hackatom contract expects verifier and beneficiary addresses
+initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
 txOut = testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
@@ -423,21 +461,14 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
+
 "--no-admin",
 "-y",
 "--keyring-backend=file",
 })
 
-re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "contract address should be in transaction output")
-contractAddr := match[1]
-
-time.Sleep(6 * time.Second)
+txhash = extractTxHashAndWait(t, txOut)
+contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
 // Query contract balance
 cmd := exec.Command("go", "run", path, "query", "bank", "balances", contractAddr)
@@ -521,22 +552,16 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+
 "-y",
 "--keyring-backend=file",
 })
 
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "%s contract should return code_id", contract.name)
-codeID := match[1]
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
 codeIDs = append(codeIDs, codeID)
 
 t.Logf("%s contract stored with code_id: %s", contract.name, codeID)
-time.Sleep(6 * time.Second)
 }
 
 // Verify all contracts are listed

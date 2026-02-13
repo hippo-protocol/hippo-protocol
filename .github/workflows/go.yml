@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feature/cosmwasm"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "feature/cosmwasm"]
 
 jobs:
   build:
@@ -80,10 +80,146 @@ jobs:
             sleep 1
           done
 
-          echo "Port open. Waiting 30s for Wasm/Chain initialization..."
+          echo "Port open. Waiting 30s for Chain initialization..."
           sleep 30
 
-          echo "Node started."
+          echo "Node started. Performing sequential upgrades: v1.0.1 -> v1.0.2 -> v1.0.3"
+          
+          # Upgrade 1: v1.0.1 at height 15
+          echo "=== Creating v1.0.1 upgrade proposal ==="
+          cat > /tmp/upgrade-v1.0.1.json <<EOF
+          {
+            "messages": [
+              {
+                "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+                "authority": "hippo10d07y265gmmuvt4z0w9aw880jnsr700jg5w6jp",
+                "plan": {
+                  "name": "v1.0.1",
+                  "height": "15",
+                  "info": "Upgrade to v1.0.1"
+                }
+              }
+            ],
+            "metadata": "ipfs://CID",
+            "deposit": "50000000000000000000000ahp",
+            "title": "Upgrade to v1.0.1",
+            "summary": "First upgrade",
+            "expedited": false
+          }
+          EOF
+          
+          echo -e "password" | go run hippod/main.go tx gov submit-proposal /tmp/upgrade-v1.0.1.json \
+            --from alice --chain-id hippo-protocol-testnet-1 --keyring-backend file \
+            --fees 1000000000000000000ahp -y
+          sleep 6
+          
+          echo -e "password" | go run hippod/main.go tx gov vote 1 yes \
+            --from alice --chain-id hippo-protocol-testnet-1 --keyring-backend file \
+            --fees 1000000000000000000ahp -y
+          
+          echo "Waiting for v1.0.1 upgrade at block 15..."
+          for i in {1..30}; do
+            HEIGHT=$(go run hippod/main.go status 2>&1 | grep -o '"latest_block_height":"[^"]*"' | cut -d'"' -f4 || echo "0")
+            echo "Current height: $HEIGHT"
+            if [ "$HEIGHT" -ge "16" ]; then
+              echo "v1.0.1 upgrade completed!"
+              break
+            fi
+            sleep 2
+          done
+          sleep 5
+          
+          # Upgrade 2: v1.0.2 at height 25
+          echo "=== Creating v1.0.2 upgrade proposal ==="
+          cat > /tmp/upgrade-v1.0.2.json <<EOF
+          {
+            "messages": [
+              {
+                "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+                "authority": "hippo10d07y265gmmuvt4z0w9aw880jnsr700jg5w6jp",
+                "plan": {
+                  "name": "v1.0.2",
+                  "height": "25",
+                  "info": "Upgrade to v1.0.2"
+                }
+              }
+            ],
+            "metadata": "ipfs://CID",
+            "deposit": "50000000000000000000000ahp",
+            "title": "Upgrade to v1.0.2",
+            "summary": "Second upgrade",
+            "expedited": false
+          }
+          EOF
+          
+          echo -e "password" | go run hippod/main.go tx gov submit-proposal /tmp/upgrade-v1.0.2.json \
+            --from alice --chain-id hippo-protocol-testnet-1 --keyring-backend file \
+            --fees 1000000000000000000ahp -y
+          sleep 6
+          
+          echo -e "password" | go run hippod/main.go tx gov vote 2 yes \
+            --from alice --chain-id hippo-protocol-testnet-1 --keyring-backend file \
+            --fees 1000000000000000000ahp -y
+          
+          echo "Waiting for v1.0.2 upgrade at block 25..."
+          for i in {1..30}; do
+            HEIGHT=$(go run hippod/main.go status 2>&1 | grep -o '"latest_block_height":"[^"]*"' | cut -d'"' -f4 || echo "0")
+            echo "Current height: $HEIGHT"
+            if [ "$HEIGHT" -ge "26" ]; then
+              echo "v1.0.2 upgrade completed!"
+              break
+            fi
+            sleep 2
+          done
+          sleep 5
+          
+          # Upgrade 3: v1.0.3 at height 35 (adds CosmWasm)
+          echo "=== Creating v1.0.3 upgrade proposal ==="
+          cat > /tmp/upgrade-v1.0.3.json <<EOF
+          {
+            "messages": [
+              {
+                "@type": "/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade",
+                "authority": "hippo10d07y265gmmuvt4z0w9aw880jnsr700jg5w6jp",
+                "plan": {
+                  "name": "v1.0.3",
+                  "height": "35",
+                  "info": "Add CosmWasm module"
+                }
+              }
+            ],
+            "metadata": "ipfs://CID",
+            "deposit": "50000000000000000000000ahp",
+            "title": "Upgrade to v1.0.3",
+            "summary": "Add CosmWasm module support to the chain",
+            "expedited": false
+          }
+          EOF
+          
+          echo -e "password" | go run hippod/main.go tx gov submit-proposal /tmp/upgrade-v1.0.3.json \
+            --from alice --chain-id hippo-protocol-testnet-1 --keyring-backend file \
+            --fees 1000000000000000000ahp -y
+          sleep 6
+          
+          echo -e "password" | go run hippod/main.go tx gov vote 3 yes \
+            --from alice --chain-id hippo-protocol-testnet-1 --keyring-backend file \
+            --fees 1000000000000000000ahp -y
+          
+          echo "Waiting for v1.0.3 upgrade at block 35..."
+          for i in {1..40}; do
+            HEIGHT=$(go run hippod/main.go status 2>&1 | grep -o '"latest_block_height":"[^"]*"' | cut -d'"' -f4 || echo "0")
+            echo "Current height: $HEIGHT"
+            if [ "$HEIGHT" -ge "36" ]; then
+              echo "v1.0.3 upgrade completed!"
+              break
+            fi
+            sleep 2
+          done
+          
+          echo "Waiting additional 30s for Wasm module initialization..."
+          sleep 30
+
+          echo "All upgrades completed. Ready for tests."
 
       - name: Run Command Test # Ensure all the commands pass.
         run: |
