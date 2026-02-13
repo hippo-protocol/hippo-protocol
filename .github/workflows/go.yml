@@ -138,8 +138,8 @@ jobs:
             sleep 2
           done
           
-          echo "Waiting additional 10s for Wasm module initialization..."
-          sleep 10
+          echo "Waiting additional 30s for Wasm module initialization..."
+          sleep 30
 
           echo "Ready for tests."
 
