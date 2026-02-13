@@ -61,10 +61,10 @@ require.NoError(t, err, "should be able to query wasm params")
 
 // Verify that code upload is allowed for everybody
 assert.Contains(t, string(out), "code_upload_access", "params should contain code_upload_access")
-assert.Contains(t, string(out), "permission: ACCESS_TYPE_EVERYBODY", "code upload should be allowed for everybody")
+assert.Contains(t, string(out), "permission: Everybody", "code upload should be allowed for everybody")
 
 // Verify instantiate default permission
-assert.Contains(t, string(out), "instantiate_default_permission: ACCESS_TYPE_EVERYBODY", "instantiate should be allowed for everybody by default")
+assert.Contains(t, string(out), "instantiate_default_permission: Everybody", "instantiate should be allowed for everybody by default")
 }
 
 // TestWasmStoreCodeCounter tests uploading the counter contract
@@ -90,6 +90,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -143,6 +144,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -187,6 +189,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -230,6 +233,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -256,6 +260,7 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "--no-admin",
 "-y",
 "--keyring-backend=file",
@@ -308,6 +313,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -333,6 +339,7 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "--no-admin",
 "-y",
 "--keyring-backend=file",
@@ -358,6 +365,7 @@ execMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=300000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -398,6 +406,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
@@ -423,6 +432,7 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "--no-admin",
 "-y",
 "--keyring-backend=file",
@@ -521,6 +531,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
+"--broadcast-mode=block",
 "-y",
 "--keyring-backend=file",
 })
