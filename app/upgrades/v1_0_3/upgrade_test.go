@@ -1,21 +1,23 @@
 package v_1_0_3
 
 import (
-"sync"
-"testing"
+	"sync"
+	"testing"
 
-upgradetypes "cosmossdk.io/x/upgrade/types"
-wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
-"github.com/hippocrat-dao/hippo-protocol/types/consensus"
-"github.com/stretchr/testify/require"
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
+	"github.com/stretchr/testify/require"
 )
 
 var once sync.Once
 
+// setupWalletConfig ensures wallet configuration is set up only once across all tests
+// This is necessary because cosmos-sdk's config can only be sealed once per process
 func setupWalletConfig() {
-once.Do(func() {
-consensus.SetWalletConfig()
-})
+	once.Do(func() {
+		consensus.SetWalletConfig()
+	})
 }
 
 // TestUpgradeNameConstant verifies the upgrade name constant
@@ -52,10 +54,13 @@ require.NotNil(t, handler, "handler should not be nil")
 })
 }
 
-// TestWasmModuleName verifies correct wasm module name is used
-func TestWasmModuleName(t *testing.T) {
-require.Contains(t, Upgrade.StoreUpgrades.Added, wasmtypes.ModuleName)
-require.Equal(t, "wasm", wasmtypes.ModuleName)
+// TestWasmModuleConfiguration verifies wasm module configuration
+func TestWasmModuleConfiguration(t *testing.T) {
+	// Verify module is added to upgrade store
+	require.Contains(t, Upgrade.StoreUpgrades.Added, wasmtypes.ModuleName)
+	
+	// Verify module name is correct
+	require.Equal(t, "wasm", wasmtypes.ModuleName)
 }
 
 // TestCosmWasmDefaultParamsStructure verifies default CosmWasm parameters structure
@@ -101,23 +106,17 @@ require.NotEmpty(t, Upgrade.StoreUpgrades.Added, "store upgrades should add at l
 
 // TestUpgradeHandlerSignature verifies the upgrade handler has correct signature
 func TestUpgradeHandlerSignature(t *testing.T) {
-setupWalletConfig()
+	setupWalletConfig()
 
-// Create a handler
-handler := CreateUpgradeHandler(nil, nil, nil)
-
-// Verify it's a valid upgrade handler function
-require.NotNil(t, handler)
-
-// Test that the handler accepts the correct parameters
-// This is a compile-time check, but we verify runtime behavior
-require.NotPanics(t, func() {
-var _ upgradetypes.UpgradeHandler = handler
-})
-}
-
-// TestModuleName verifies the module name constant
-func TestModuleName(t *testing.T) {
-// Ensure wasm module name matches expected value
-require.Equal(t, "wasm", wasmtypes.ModuleName)
+	// Create a handler
+	handler := CreateUpgradeHandler(nil, nil, nil)
+	
+	// Verify it's a valid upgrade handler function
+	require.NotNil(t, handler)
+	
+	// Test that the handler accepts the correct parameters
+	// This is a compile-time check, but we verify runtime behavior
+	require.NotPanics(t, func() {
+		var _ upgradetypes.UpgradeHandler = handler
+	})
 }
