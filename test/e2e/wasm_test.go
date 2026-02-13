@@ -336,16 +336,8 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
-
-time.Sleep(6 * time.Second)
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
 
 // Instantiate
 initMsg := `{"count":10}`
@@ -363,16 +355,8 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "contract address should be in transaction output")
-contractAddr := match[1]
-
-time.Sleep(6 * time.Second)
+txhash = extractTxHashAndWait(t, txOut)
+contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
 // Execute the contract (increment counter)
 execMsg := `{"increment":{}}`
@@ -429,16 +413,8 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output")
-codeID := match[1]
-
-time.Sleep(6 * time.Second)
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
 
 initMsg := `{"count":0}`
 txOut = testTx(t, []string{
@@ -456,16 +432,8 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "contract address should be in transaction output")
-contractAddr := match[1]
-
-time.Sleep(6 * time.Second)
+txhash = extractTxHashAndWait(t, txOut)
+contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
 // Query contract balance
 cmd := exec.Command("go", "run", path, "query", "bank", "balances", contractAddr)
@@ -554,18 +522,11 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "%s contract should return code_id", contract.name)
-codeID := match[1]
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
 codeIDs = append(codeIDs, codeID)
 
 t.Logf("%s contract stored with code_id: %s", contract.name, codeID)
-time.Sleep(6 * time.Second)
 }
 
 // Verify all contracts are listed
