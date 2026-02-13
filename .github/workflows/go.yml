@@ -80,8 +80,8 @@ jobs:
             sleep 1
           done
 
-          echo "Port open. Waiting 10s for Chain initialization..."
-          sleep 10
+          echo "Port open. Waiting 30s for Wasm/Chain initialization..."
+          sleep 30
 
           echo "Node started. Creating v1.0.3 upgrade proposal..."
           
