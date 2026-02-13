@@ -306,7 +306,8 @@ txhash := extractTxHashAndWait(t, txOut)
 codeID := queryTxAndExtractCodeID(t, txhash)
 
 // Instantiate the contract with init message
-initMsg := `{"count":0}`
+// hackatom contract expects verifier and beneficiary addresses
+initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
 txOut = testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
@@ -370,7 +371,8 @@ txhash := extractTxHashAndWait(t, txOut)
 codeID := queryTxAndExtractCodeID(t, txhash)
 
 // Instantiate
-initMsg := `{"count":10}`
+// hackatom contract expects verifier and beneficiary addresses
+initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
 txOut = testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
@@ -388,8 +390,9 @@ fmt.Sprintf("--from=%s", delegator_address),
 txhash = extractTxHashAndWait(t, txOut)
 contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
-// Execute the contract (increment counter)
-execMsg := `{"increment":{}}`
+// Execute the contract (release funds)
+// hackatom contract supports "release" execute message
+execMsg := `{"release":{}}`
 txOut = testTx(t, []string{
 "tx", "wasm", "execute",
 contractAddr,
@@ -408,7 +411,8 @@ t.Logf("Contract execution successful")
 time.Sleep(6 * time.Second)
 
 // Query contract state to verify execution
-queryMsg := `{"get_count":{}}`
+// hackatom contract supports "verifier" query
+queryMsg := `{"verifier":{}}`
 cmd := exec.Command("go", "run", path, "query", "wasm", "contract-state", "smart", contractAddr, queryMsg)
 out, err := cmd.CombinedOutput()
 
@@ -446,7 +450,8 @@ fmt.Sprintf("--from=%s", delegator_address),
 txhash := extractTxHashAndWait(t, txOut)
 codeID := queryTxAndExtractCodeID(t, txhash)
 
-initMsg := `{"count":0}`
+// hackatom contract expects verifier and beneficiary addresses
+initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
 txOut = testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
