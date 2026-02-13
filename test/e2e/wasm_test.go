@@ -59,16 +59,31 @@ cmd := exec.Command("go", "run", path, "query", "tx", txhash)
 out, err := cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query transaction: %s", string(out))
 
-// Extract code_id from transaction events
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(string(out))
-if len(match) < 2 {
-// Try alternative format in logs
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(string(out))
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction result: %s", string(out))
+outStr := string(out)
+
+// Try to find code_id in YAML events format (key: code_id followed by value: "X")
+re := regexp.MustCompile(`key:\s*code_id\s*\n\s*value:\s*"?(\d+)"?`)
+match := re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
 return match[1]
+}
+
+// Try inline format: code_id: "X"
+re = regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+// Try JSON format: "code_id": "X"
+re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+require.Greater(t, len(match), 1, "code_id should be in transaction result: %s", outStr)
+return ""
 }
 
 // queryTxAndExtractContractAddr queries a transaction by hash and extracts the contract address from events
@@ -77,16 +92,31 @@ cmd := exec.Command("go", "run", path, "query", "tx", txhash)
 out, err := cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query transaction: %s", string(out))
 
-// Extract contract address from transaction events
-re := regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
-match := re.FindStringSubmatch(string(out))
-if len(match) < 2 {
-// Try alternative pattern
-re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
-match = re.FindStringSubmatch(string(out))
-}
-require.Greater(t, len(match), 1, "contract address should be in transaction result: %s", string(out))
+outStr := string(out)
+
+// Try to find _contract_address in YAML events format (key: _contract_address followed by value: "addr")
+re := regexp.MustCompile(`key:\s*_contract_address\s*\n\s*value:\s*"?([a-z0-9]+)"?`)
+match := re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
 return match[1]
+}
+
+// Try inline format: _contract_address: "addr"
+re = regexp.MustCompile(`_contract_address"?:\s*"?([a-z0-9]+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+// Try alternative pattern: contract: "addr"
+re = regexp.MustCompile(`contract:\s*"?([a-z0-9]+)"?`)
+match = re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+return match[1]
+}
+
+require.Greater(t, len(match), 1, "contract address should be in transaction result: %s", outStr)
+return ""
 }
 
 // TestWasmQuery tests basic wasm query commands
