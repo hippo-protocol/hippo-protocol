@@ -300,7 +300,7 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	appState[slashingtypes.ModuleName] = cdc.MustMarshalJSON(&slashingGenState)
 
 	// Configure wasm params if wasm module is present in genesis
-	if wasmGenesisJSON, ok := appState[wasmtypes.ModuleName]; ok && len(wasmGenesisJSON) > 0 {
+	if wasmGenesisJSON, ok := appState[wasmtypes.ModuleName]; ok {
 		var wasmGenState wasmtypes.GenesisState
 		if err := cdc.UnmarshalJSON(wasmGenesisJSON, &wasmGenState); err != nil {
 			return nil, err
