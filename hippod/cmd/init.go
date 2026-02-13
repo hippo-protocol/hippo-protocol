@@ -23,7 +23,6 @@ import (
 	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 
@@ -298,17 +297,6 @@ func overrideGenesis(cdc codec.JSONCodec, genDoc *types.GenesisDoc, appState map
 	slashingGenState.Params.SlashFractionDoubleSign = math.LegacyNewDecWithPrec(consensus.SlashFractionDoubleSign, 2) // 5%
 	slashingGenState.Params.SlashFractionDowntime = math.LegacyNewDecWithPrec(consensus.SlashFractionDowntime*100, 4) // 0.01%
 	appState[slashingtypes.ModuleName] = cdc.MustMarshalJSON(&slashingGenState)
-
-	// Configure wasm params if wasm module is present in genesis
-	if wasmGenesisJSON, ok := appState[wasmtypes.ModuleName]; ok {
-		var wasmGenState wasmtypes.GenesisState
-		if err := cdc.UnmarshalJSON(wasmGenesisJSON, &wasmGenState); err != nil {
-			return nil, err
-		}
-		wasmGenState.Params.CodeUploadAccess = wasmtypes.AllowEverybody
-		wasmGenState.Params.InstantiateDefaultPermission = wasmtypes.AccessTypeEverybody
-		appState[wasmtypes.ModuleName] = cdc.MustMarshalJSON(&wasmGenState)
-	}
 
 	// MaxAgeDuration and MaxAgeNumBlocks values should be longer than unbonding period.
 	// Otherwise it may allow malicious validators to escape penalties.

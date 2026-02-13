@@ -80,10 +80,50 @@ jobs:
             sleep 1
           done
 
-          echo "Port open. Waiting 30s for Wasm/Chain initialization..."
-          sleep 30
+          echo "Port open. Waiting 10s for Chain initialization..."
+          sleep 10
 
-          echo "Node started."
+          echo "Node started. Submitting v1.0.3 upgrade proposal..."
+          
+          # Submit upgrade proposal for v1.0.3
+          echo -e "password" | go run hippod/main.go tx gov submit-proposal software-upgrade v1.0.3 \
+            --title "Upgrade to v1.0.3" \
+            --description "Add CosmWasm module" \
+            --upgrade-height 20 \
+            --from alice \
+            --deposit 50000000000000000000000ahp \
+            --chain-id hippo-protocol-testnet-1 \
+            --keyring-backend file \
+            --fees 1000000000000000000ahp \
+            -y
+          
+          echo "Waiting for proposal to be submitted..."
+          sleep 6
+          
+          # Vote on proposal
+          echo -e "password" | go run hippod/main.go tx gov vote 1 yes \
+            --from alice \
+            --chain-id hippo-protocol-testnet-1 \
+            --keyring-backend file \
+            --fees 1000000000000000000ahp \
+            -y
+          
+          echo "Waiting for upgrade to execute at block 20..."
+          # Wait for block 20+ (upgrade height)
+          for i in {1..30}; do
+            HEIGHT=$(go run hippod/main.go status 2>&1 | grep -o '"latest_block_height":"[^"]*"' | cut -d'"' -f4 || echo "0")
+            echo "Current height: $HEIGHT"
+            if [ "$HEIGHT" -ge "21" ]; then
+              echo "Upgrade completed!"
+              break
+            fi
+            sleep 2
+          done
+          
+          echo "Waiting additional 10s for Wasm module initialization..."
+          sleep 10
+
+          echo "Ready for tests."
 
       - name: Run Command Test # Ensure all the commands pass.
         run: |

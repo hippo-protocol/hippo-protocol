@@ -38,6 +38,39 @@ t.Logf("Loaded contract %s (%d bytes)", contractPath, len(wasmBytes))
 return wasmBytes
 }
 
+// extractTxHashAndWait extracts txhash from transaction output and waits for it to be processed
+func extractTxHashAndWait(t *testing.T, txOut string) string {
+// Extract txhash from output
+re := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
+match := re.FindStringSubmatch(txOut)
+require.Greater(t, len(match), 1, "txhash should be in transaction output: %s", txOut)
+txhash := match[1]
+t.Logf("Transaction submitted with hash: %s", txhash)
+
+// Wait for transaction to be processed
+time.Sleep(6 * time.Second)
+
+return txhash
+}
+
+// queryTxAndExtractCodeID queries a transaction by hash and extracts the code_id from events
+func queryTxAndExtractCodeID(t *testing.T, txhash string) string {
+cmd := exec.Command("go", "run", path, "query", "tx", txhash)
+out, err := cmd.CombinedOutput()
+require.NoError(t, err, "should be able to query transaction: %s", string(out))
+
+// Extract code_id from transaction events
+re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
+match := re.FindStringSubmatch(string(out))
+if len(match) < 2 {
+// Try alternative format in logs
+re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
+match = re.FindStringSubmatch(string(out))
+}
+require.Greater(t, len(match), 1, "code_id should be in transaction result: %s", string(out))
+return match[1]
+}
+
 // TestWasmQuery tests basic wasm query commands
 func TestWasmQuery(t *testing.T) {
 tests := []WasmTest{
@@ -90,25 +123,17 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
 
-// Extract code ID from transaction output
-re := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
-match := re.FindStringSubmatch(txOut)
-if len(match) < 2 {
-// Try alternative format
-re = regexp.MustCompile(`"code_id":\s*"?(\d+)"?`)
-match = re.FindStringSubmatch(txOut)
-}
-require.Greater(t, len(match), 1, "code_id should be in transaction output: %s", txOut)
-codeID := match[1]
-t.Logf("Counter contract stored with code_id: %s", codeID)
+// Extract txhash and wait for processing
+txhash := extractTxHashAndWait(t, txOut)
 
-// Wait for transaction to be processed
-time.Sleep(6 * time.Second)
+// Query transaction to get code_id
+codeID := queryTxAndExtractCodeID(t, txhash)
+t.Logf("Counter contract stored with code_id: %s", codeID)
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "list-code")
@@ -144,7 +169,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -189,7 +214,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -233,7 +258,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -260,7 +285,7 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "--no-admin",
 "-y",
 "--keyring-backend=file",
@@ -313,7 +338,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -339,7 +364,7 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "--no-admin",
 "-y",
 "--keyring-backend=file",
@@ -365,7 +390,7 @@ execMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=300000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -406,7 +431,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
@@ -432,7 +457,7 @@ initMsg,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=500000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "--no-admin",
 "-y",
 "--keyring-backend=file",
@@ -531,7 +556,7 @@ wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=2000000",
 "--fees=1000000000000000000ahp",
-"--broadcast-mode=block",
+
 "-y",
 "--keyring-backend=file",
 })
