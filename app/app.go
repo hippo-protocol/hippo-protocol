@@ -398,7 +398,7 @@ func New(
 	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
-	app.setAnteHandler(txConfig, wasmConfig, app.GetKVStoreKey()[wasmtypes.StoreKey])
+	app.setAnteHandler(txConfig, wasmConfig, runtime.NewKVStoreService(app.GetKVStoreKey()[wasmtypes.StoreKey]))
 
 	// In v0.46, the SDK introduces _postHandlers_. PostHandlers are like
 	// antehandlers, but are run _after_ the `runMsgs` execution. They are also
