@@ -366,11 +366,57 @@ func TestCommission(t *testing.T) {
 
 	assert.Condition(t, func() bool { return len(match) > 1 }, "commission should be in the output")
 	commission := match[1]
+	t.Logf("Initial commission: %s", commission)
 
-	testTx(t, []string{"tx", "distribution", "withdraw-rewards", validator_address, "--commission", fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+	// Execute withdraw transaction and capture txhash
+	txOutput := testTx(t, []string{"tx", "distribution", "withdraw-rewards", validator_address, "--commission", fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+	
+	// Extract txhash from output
+	txHashRe := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
+	txHashMatch := txHashRe.FindStringSubmatch(txOutput)
+	var txHash string
+	if len(txHashMatch) > 1 {
+		txHash = txHashMatch[1]
+		t.Logf("Withdraw transaction submitted with txhash: %s", txHash)
+	} else {
+		t.Logf("Warning: Could not extract txhash from transaction output")
+	}
 
 	// Wait for transaction to be processed
 	time.Sleep(6 * time.Second)
+
+	// Query the transaction to verify it was successful
+	if txHash != "" {
+		cmd = exec.Command("go", "run", path, "query", "tx", txHash)
+		out, err = cmd.CombinedOutput()
+		if err != nil {
+			t.Logf("Warning: Could not query transaction %s: %v", txHash, err)
+		} else {
+			txOutput := string(out)
+			t.Logf("Transaction status for %s:", txHash)
+			
+			// Check for code field (code: 0 means success)
+			codeRe := regexp.MustCompile(`code:\s*(\d+)`)
+			codeMatch := codeRe.FindStringSubmatch(txOutput)
+			if len(codeMatch) > 1 {
+				code := codeMatch[1]
+				if code == "0" {
+					t.Logf("  ✓ Transaction succeeded (code: 0)")
+				} else {
+					t.Logf("  ✗ Transaction failed with code: %s", code)
+				}
+			}
+			
+			// Log raw_log for additional details
+			if strings.Contains(txOutput, "raw_log:") {
+				rawLogRe := regexp.MustCompile(`raw_log:\s*['"]?([^'"]+)['"]?`)
+				rawLogMatch := rawLogRe.FindStringSubmatch(txOutput)
+				if len(rawLogMatch) > 1 {
+					t.Logf("  Transaction log: %s", rawLogMatch[1])
+				}
+			}
+		}
+	}
 
 	success := false
 	for i := 0; i < 25; i++ {
@@ -382,9 +428,16 @@ func TestCommission(t *testing.T) {
 		}
 		match = re.FindStringSubmatch(string(out))
 
-		if len(match) > 1 && compareAmount(match[1], commission) < 0 {
-			success = true
-			break
+		if len(match) > 1 {
+			currentCommission := match[1]
+			if i == 0 || i == 5 || i == 10 || i == 15 || i == 20 || i == 24 {
+				t.Logf("Poll iteration %d: commission = %s (comparing to initial %s)", i, currentCommission, commission)
+			}
+			if compareAmount(currentCommission, commission) < 0 {
+				t.Logf("✓ Commission decreased! Initial: %s, Current: %s", commission, currentCommission)
+				success = true
+				break
+			}
 		}
 		time.Sleep(2 * time.Second)
 	}
