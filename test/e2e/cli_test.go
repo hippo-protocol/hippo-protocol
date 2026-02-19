@@ -370,7 +370,7 @@ func TestCommission(t *testing.T) {
 	txOut := testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
 	// Extract txhash and wait for transaction to be included in a block
-	txHashRe := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
+	txHashRe := regexp.MustCompile(`txhash:\s*([A-Fa-f0-9]+)`)
 	txHashMatch := txHashRe.FindStringSubmatch(txOut)
 	assert.Condition(t, func() bool { return len(txHashMatch) > 1 }, "txhash should be in transaction output")
 	txhash := txHashMatch[1]

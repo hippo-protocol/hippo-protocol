@@ -41,7 +41,7 @@ return wasmBytes
 // extractTxHashAndWait extracts txhash from transaction output and waits for it to be processed
 func extractTxHashAndWait(t *testing.T, txOut string) string {
 // Extract txhash from output
-re := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
+re := regexp.MustCompile(`txhash:\s*([A-Fa-f0-9]+)`)
 match := re.FindStringSubmatch(txOut)
 require.Greater(t, len(match), 1, "txhash should be in transaction output: %s", txOut)
 txhash := match[1]
