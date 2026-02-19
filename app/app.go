@@ -34,6 +34,7 @@ import (
 	"github.com/hippocrat-dao/hippo-protocol/app/upgrades"
 	v_1_0_1 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_1"
 	v_1_0_2 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_2"
+	v_1_0_3 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_3"
 
 	"cosmossdk.io/x/evidence"
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -107,7 +108,7 @@ import (
 )
 
 const Name = "hippo"
-const Version = "v1.0.2"
+const Version = "v1.0.3"
 
 var (
 	// DefaultNodeHome default home directories for the application daemon
@@ -129,7 +130,7 @@ var (
 	_ runtime.AppI            = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 
-	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade, v_1_0_2.Upgrade}
+	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade, v_1_0_2.Upgrade, v_1_0_3.Upgrade}
 )
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -397,7 +398,7 @@ func New(
 	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
-	app.setAnteHandler(txConfig, wasmConfig, app.GetKVStoreKey()[wasmtypes.StoreKey])
+	app.setAnteHandler(txConfig, wasmConfig, runtime.NewKVStoreService(app.GetKVStoreKey()[wasmtypes.StoreKey]))
 
 	// In v0.46, the SDK introduces _postHandlers_. PostHandlers are like
 	// antehandlers, but are run _after_ the `runMsgs` execution. They are also

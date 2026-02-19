@@ -6,15 +6,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 
-	storetypes "cosmossdk.io/store/types"
+	corestoretypes "cosmossdk.io/core/store"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 // setAnteHandler Reference github.com/cosmos/cosmos-sdk/x/auth/ante/ante.go
-func (app *App) setAnteHandler(txConfig client.TxConfig, nodeConfig wasmtypes.NodeConfig, txCounterStoreKey *storetypes.KVStoreKey) {
+func (app *App) setAnteHandler(txConfig client.TxConfig, nodeConfig wasmtypes.NodeConfig, txCounterStoreService corestoretypes.KVStoreService) {
 	app.SetAnteHandler(
 		sdktypes.ChainAnteDecorators(
-			ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+			ante.NewSetUpContextDecorator(),                                          // outermost AnteDecorator. SetUpContext must be called first
+			wasmkeeper.NewLimitSimulationGasDecorator(nodeConfig.SimulationGasLimit), // after setup context to enforce limits early
+			wasmkeeper.NewCountTXDecorator(txCounterStoreService),
 			ante.NewExtensionOptionsDecorator(nil),
 			ante.NewValidateBasicDecorator(),
 			ante.NewTxTimeoutHeightDecorator(),
