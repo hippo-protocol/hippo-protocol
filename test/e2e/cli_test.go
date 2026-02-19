@@ -367,13 +367,24 @@ func TestCommission(t *testing.T) {
 	assert.Condition(t, func() bool { return len(match) > 1 }, "commission should be in the output")
 	commission := match[1]
 
-	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+	txOut := testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
-	// Wait for transaction to be included in a block before checking commission.
-	// The transaction is submitted asynchronously (-y flag), so we need to wait
-	// for it to be processed before verifying the commission decreased.
-	time.Sleep(18 * time.Second)
+	// Extract txhash and wait for transaction to be included in a block
+	txHashRe := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
+	txHashMatch := txHashRe.FindStringSubmatch(txOut)
+	assert.Condition(t, func() bool { return len(txHashMatch) > 1 }, "txhash should be in transaction output")
+	txhash := txHashMatch[1]
 
+	// Wait for transaction to be processed
+	time.Sleep(6 * time.Second)
+
+	// Verify transaction succeeded by querying it
+	cmd = exec.Command("go", "run", path, "query", "tx", txhash)
+	out, err = cmd.CombinedOutput()
+	assert.NoError(t, err, "should be able to query transaction: %s", string(out))
+	assert.Contains(t, string(out), "code: 0", "transaction should succeed with code 0")
+
+	// Now check if commission decreased
 	success := false
 	for i := 0; i < 20; i++ {
 		time.Sleep(2 * time.Second)
