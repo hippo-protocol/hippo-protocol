@@ -370,7 +370,7 @@ func TestCommission(t *testing.T) {
 	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
 	success := false
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		cmd = exec.Command("go", "run", path, "query", "distribution", "commission", validator_address)
 		out, err = cmd.CombinedOutput()
 		if err != nil {
@@ -378,7 +378,7 @@ func TestCommission(t *testing.T) {
 			continue
 		}
 		match = re.FindStringSubmatch(string(out))
-
+		fmt.Println(match)
 		if len(match) > 1 && compareAmount(match[1], commission) < 0 {
 			success = true
 			break
@@ -388,4 +388,5 @@ func TestCommission(t *testing.T) {
 
 	assert.True(t, success, "commission should be decreased after withdraw commission")
 }
+
 
