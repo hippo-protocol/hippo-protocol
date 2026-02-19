@@ -380,7 +380,7 @@ func TestCommission(t *testing.T) {
 	var txFound bool
 	for i := 0; i < 10; i++ {
 		time.Sleep(3 * time.Second)
-		
+
 		cmd = exec.Command("go", "run", path, "query", "tx", txhash)
 		out, err = cmd.CombinedOutput()
 		if err == nil {
