@@ -372,7 +372,7 @@ func TestCommission(t *testing.T) {
 	// Wait for transaction to be included in a block before checking commission.
 	// The transaction is submitted asynchronously (-y flag), so we need to wait
 	// for it to be processed before verifying the commission decreased.
-	time.Sleep(6 * time.Second)
+	time.Sleep(18 * time.Second)
 
 	success := false
 	for i := 0; i < 20; i++ {
@@ -393,3 +393,4 @@ func TestCommission(t *testing.T) {
 
 	assert.True(t, success, "commission should be decreased after withdraw commission")
 }
+
