@@ -366,7 +366,7 @@ func TestCommission(t *testing.T) {
 
 	assert.Condition(t, func() bool { return len(match) > 1 }, "commission should be in the output")
 	commission := match[1]
-
+	fmt.Println(match)
 	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
 	success := false
@@ -388,5 +388,6 @@ func TestCommission(t *testing.T) {
 
 	assert.True(t, success, "commission should be decreased after withdraw commission")
 }
+
 
 
