@@ -375,7 +375,8 @@ func TestCommission(t *testing.T) {
 	assert.Condition(t, func() bool { return len(txHashMatch) > 1 }, "txhash should be in transaction output")
 	txhash := txHashMatch[1]
 
-	// Poll until transaction is queryable and verify it succeeded
+	// Poll until transaction is queryable (transaction indexing can take longer than block inclusion)
+	var txQueryOut []byte
 	var txFound bool
 	for i := 0; i < 10; i++ {
 		time.Sleep(3 * time.Second)
@@ -384,12 +385,13 @@ func TestCommission(t *testing.T) {
 		out, err = cmd.CombinedOutput()
 		if err == nil {
 			txFound = true
-			assert.Contains(t, string(out), "code: 0", "transaction should succeed with code 0")
+			txQueryOut = out
 			break
 		}
 		// Transaction not indexed yet, continue polling
 	}
-	assert.True(t, txFound, "transaction should be queryable after waiting")
+	assert.True(t, txFound, "transaction should be queryable after polling")
+	assert.Contains(t, string(txQueryOut), "code: 0", "transaction should succeed with code 0")
 
 	// Now check if commission decreased
 	success := false
