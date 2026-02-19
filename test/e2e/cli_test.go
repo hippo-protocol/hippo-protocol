@@ -399,7 +399,7 @@ func TestCommission(t *testing.T) {
 	}
 	
 	if !txFound {
-		t.Logf("WARNING: Transaction %s never became queryable after 60 seconds", txhash)
+		t.Logf("WARNING: Transaction %s never became queryable after polling", txhash)
 		t.Logf("Transaction output was: %s", txOut)
 		t.Logf("This may indicate transaction indexing is slow/disabled or transaction failed in execution")
 		t.Logf("Falling back to original test behavior: checking if commission decreased")
