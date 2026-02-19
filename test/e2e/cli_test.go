@@ -369,11 +369,8 @@ func TestCommission(t *testing.T) {
 
 	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
-	// Wait for transaction to be processed
-	time.Sleep(6 * time.Second)
-
 	success := false
-	for i := 0; i < 25; i++ {
+	for i := 0; i < 100; i++ {
 		cmd = exec.Command("go", "run", path, "query", "distribution", "commission", validator_address)
 		out, err = cmd.CombinedOutput()
 		if err != nil {
@@ -391,3 +388,4 @@ func TestCommission(t *testing.T) {
 
 	assert.True(t, success, "commission should be decreased after withdraw commission")
 }
+
