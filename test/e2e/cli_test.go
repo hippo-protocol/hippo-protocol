@@ -369,7 +369,9 @@ func TestCommission(t *testing.T) {
 
 	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
 
-	// Wait for transaction to be included in a block before checking
+	// Wait for transaction to be included in a block before checking commission.
+	// The transaction is submitted asynchronously (-y flag), so we need to wait
+	// for it to be processed before verifying the commission decreased.
 	time.Sleep(6 * time.Second)
 
 	success := false
