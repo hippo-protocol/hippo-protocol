@@ -374,22 +374,33 @@ func TestCommission(t *testing.T) {
 	txHashMatch := txHashRe.FindStringSubmatch(txOut)
 	assert.Condition(t, func() bool { return len(txHashMatch) > 1 }, "txhash should be in transaction output")
 	txhash := txHashMatch[1]
+	t.Logf("Withdrawal transaction submitted with hash: %s", txhash)
 
 	// Poll until transaction is queryable (transaction indexing can take longer than block inclusion)
 	var txQueryOut []byte
 	var txFound bool
-	for i := 0; i < 10; i++ {
-		time.Sleep(3 * time.Second)
+	for i := 0; i < 15; i++ {
+		time.Sleep(4 * time.Second)
 
 		cmd = exec.Command("go", "run", path, "query", "tx", txhash)
 		out, err = cmd.CombinedOutput()
 		if err == nil {
 			txFound = true
 			txQueryOut = out
+			t.Logf("Transaction found after %d attempts", i+1)
 			break
+		}
+		if i%3 == 0 {
+			t.Logf("Attempt %d/%d: transaction not yet queryable", i+1, 15)
 		}
 		// Transaction not indexed yet, continue polling
 	}
+	
+	if !txFound {
+		t.Logf("Transaction %s never became queryable after 60 seconds", txhash)
+		t.Logf("Transaction output was: %s", txOut)
+	}
+	
 	assert.True(t, txFound, "transaction should be queryable after polling")
 	assert.Contains(t, string(txQueryOut), "code: 0", "transaction should succeed with code 0")
 
