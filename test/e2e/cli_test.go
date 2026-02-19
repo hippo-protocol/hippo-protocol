@@ -366,11 +366,14 @@ func TestCommission(t *testing.T) {
 
 	assert.Condition(t, func() bool { return len(match) > 1 }, "commission should be in the output")
 	commission := match[1]
-	fmt.Println(match)
-	testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+
+	testTx(t, []string{"tx", "distribution", "withdraw-rewards", validator_address, "--commission", fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+
+	// Wait for transaction to be processed
+	time.Sleep(6 * time.Second)
 
 	success := false
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 25; i++ {
 		cmd = exec.Command("go", "run", path, "query", "distribution", "commission", validator_address)
 		out, err = cmd.CombinedOutput()
 		if err != nil {
@@ -378,7 +381,7 @@ func TestCommission(t *testing.T) {
 			continue
 		}
 		match = re.FindStringSubmatch(string(out))
-		fmt.Println(match)
+
 		if len(match) > 1 && compareAmount(match[1], commission) < 0 {
 			success = true
 			break
