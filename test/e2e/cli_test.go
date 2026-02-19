@@ -369,7 +369,9 @@ func TestCommission(t *testing.T) {
 	t.Logf("Initial commission: %s", commission)
 
 	// Execute withdraw transaction and capture txhash
-	txOutput := testTx(t, []string{"tx", "distribution", "withdraw-rewards", validator_address, "--commission", fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+	// Note: Using original command syntax that worked before
+	txOutput := testTx(t, []string{"tx", "distribution", "withdraw-rewards", "--commission", validator_address, fmt.Sprintf("--from=%s", delegator_address), "--fees=1000000000000000000ahp", "-y", "--keyring-backend=file"})
+	t.Logf("Transaction output: %s", txOutput)
 	
 	// Extract txhash from output
 	txHashRe := regexp.MustCompile(`txhash:\s*([A-F0-9]+)`)
@@ -391,6 +393,7 @@ func TestCommission(t *testing.T) {
 		out, err = cmd.CombinedOutput()
 		if err != nil {
 			t.Logf("Warning: Could not query transaction %s: %v", txHash, err)
+			t.Logf("Query output: %s", string(out))
 		} else {
 			txOutput := string(out)
 			t.Logf("Transaction status for %s:", txHash)
