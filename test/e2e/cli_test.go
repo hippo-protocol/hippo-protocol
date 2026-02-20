@@ -357,6 +357,10 @@ func TestCommission(t *testing.T) {
 	delegator_address := os.Getenv(key_delegator_address)
 	validator_address := os.Getenv(key_validator_address)
 
+	// Wait for previous transactions from other tests to be processed
+	// to avoid sequence mismatch errors
+	time.Sleep(8 * time.Second)
+
 	cmd := exec.Command("go", "run", path, "query", "distribution", "commission", validator_address)
 	out, err := cmd.CombinedOutput()
 	assert.NoError(t, err, "validator commission should be queried correctly")
@@ -388,3 +392,6 @@ func TestCommission(t *testing.T) {
 
 	assert.True(t, success, "commission should be decreased after withdraw commission")
 }
+
+
+
