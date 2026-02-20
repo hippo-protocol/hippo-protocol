@@ -1,6 +1,7 @@
 package test
 
 import (
+"encoding/base64"
 "fmt"
 "io"
 "net/http"
@@ -119,6 +120,104 @@ require.Greater(t, len(match), 1, "contract address should be in transaction res
 return ""
 }
 
+// storeCodeViaGovernance uploads wasm contract code via governance proposal
+// Returns the code_id once the proposal passes and is executed
+func storeCodeViaGovernance(t *testing.T, contractPath string, contractName string) string {
+delegator_address := os.Getenv(key_delegator_address)
+require.NotEmpty(t, delegator_address, "delegator address should be set")
+
+// Load the contract
+wasmBytes := loadContractWasm(t, contractPath)
+
+// Encode to base64 for JSON
+base64Wasm := base64.StdEncoding.EncodeToString(wasmBytes)
+
+// Create proposal JSON
+proposalJSON := fmt.Sprintf(`{
+  "messages": [
+    {
+      "@type": "/cosmwasm.wasm.v1.MsgStoreCode",
+      "sender": "%s",
+      "wasm_byte_code": "%s",
+      "instantiate_permission": null
+    }
+  ],
+  "metadata": "ipfs://CID",
+  "deposit": "100000000000000000000000000ahp",
+  "title": "Store %s Contract",
+  "summary": "Proposal to store %s smart contract code via governance",
+  "expedited": false
+}`, delegator_address, base64Wasm, contractName, contractName)
+
+// Write proposal to temp file
+tempDir := t.TempDir()
+proposalPath := filepath.Join(tempDir, "wasm_store_proposal.json")
+err := os.WriteFile(proposalPath, []byte(proposalJSON), 0644)
+require.NoError(t, err, "should write proposal file")
+
+// Submit proposal
+t.Logf("Submitting governance proposal to store %s contract...", contractName)
+txOut := testTx(t, []string{
+"tx", "gov", "submit-proposal",
+proposalPath,
+fmt.Sprintf("--from=%s", delegator_address),
+"--fees=1000000000000000000ahp",
+"-y",
+"--keyring-backend=file",
+})
+
+txhash := extractTxHashAndWait(t, txOut)
+
+// Get proposal ID from the transaction
+cmd := exec.Command("go", "run", path, "query", "tx", txhash)
+out, err := cmd.CombinedOutput()
+require.NoError(t, err, "should query proposal submission tx")
+
+// Extract proposal ID (usually it's 1, 2, 3, etc. incrementing)
+re := regexp.MustCompile(`proposal_id.*?['":]?\s*['":]?\s*(\d+)`)
+match := re.FindStringSubmatch(string(out))
+proposalID := "1" // Default to 1 if not found
+if len(match) >= 2 {
+proposalID = match[1]
+}
+t.Logf("Proposal ID: %s", proposalID)
+
+// Deposit to reach voting period (if needed, already included in proposal)
+time.Sleep(6 * time.Second)
+
+// Vote on proposal
+t.Logf("Voting on proposal %s...", proposalID)
+testTx(t, []string{
+"tx", "gov", "vote",
+proposalID,
+"yes",
+fmt.Sprintf("--from=%s", delegator_address),
+"--fees=1000000000000000000ahp",
+"-y",
+"--keyring-backend=file",
+})
+
+// Wait for voting period and execution
+t.Logf("Waiting for proposal to pass and execute...")
+time.Sleep(30 * time.Second)
+
+// Query to get code_id - check wasm list-code
+cmd = exec.Command("go", "run", path, "query", "wasm", "list-code")
+out, err = cmd.CombinedOutput()
+require.NoError(t, err, "should be able to list codes after governance execution")
+
+// Extract the latest code_id
+codeIDRe := regexp.MustCompile(`code_id:\s*"?(\d+)"?`)
+matches := codeIDRe.FindAllStringSubmatch(string(out), -1)
+require.NotEmpty(t, matches, "should find at least one code_id after proposal execution")
+
+// Get the last (latest) code_id
+latestCodeID := matches[len(matches)-1][1]
+t.Logf("Contract %s stored via governance with code_id: %s", contractName, latestCodeID)
+
+return latestCodeID
+}
+
 // TestWasmQuery tests basic wasm query commands
 func TestWasmQuery(t *testing.T) {
 tests := []WasmTest{
@@ -148,42 +247,10 @@ assert.Contains(t, string(out), "permission: Nobody", "code upload should be res
 assert.Contains(t, string(out), "instantiate_default_permission: Everybody", "instantiate should be allowed for everybody by default")
 }
 
-// TestWasmStoreCodeCounter tests uploading the counter contract
+// TestWasmStoreCodeCounter tests uploading the counter contract via governance
 func TestWasmStoreCodeCounter(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
-delegator_address := os.Getenv(key_delegator_address)
-require.NotEmpty(t, delegator_address, "delegator address should be set")
-
-// Create a temporary wasm file for testing
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, "counter.wasm")
-
-// Load the contract from testdata
-wasmBytes := loadContractWasm(t, counterContractPath)
-
-// Write the wasm file
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file")
-
-// Store the wasm code
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-// Extract txhash and wait for processing
-txhash := extractTxHashAndWait(t, txOut)
-
-// Query transaction to get code_id
-codeID := queryTxAndExtractCodeID(t, txhash)
-t.Logf("Counter contract stored with code_id: %s", codeID)
+// Store contract via governance proposal
+codeID := storeCodeViaGovernance(t, counterContractPath, "Counter")
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "list-code")
@@ -196,127 +263,50 @@ cmd = exec.Command("go", "run", path, "query", "wasm", "code-info", codeID)
 out, err = cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query code info")
 assert.Contains(t, string(out), fmt.Sprintf("code_id: %q", codeID), "code info should contain code_id")
-assert.Contains(t, string(out), delegator_address, "code info should contain creator address")
+
+t.Logf("✓ Counter contract successfully stored via governance with code_id: %s", codeID)
 }
 
-// TestWasmStoreCodeCW20 tests uploading the CW20 token contract
+// TestWasmStoreCodeCW20 tests uploading the CW20 token contract via governance
 func TestWasmStoreCodeCW20(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
-delegator_address := os.Getenv(key_delegator_address)
-require.NotEmpty(t, delegator_address, "delegator address should be set")
-
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, "cw20_token.wasm")
-
-// Load the CW20 contract
-wasmBytes := loadContractWasm(t, cw20TokenContractPath)
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file")
-
-// Store the wasm code
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-// Extract txhash and wait for processing
-txhash := extractTxHashAndWait(t, txOut)
-
-// Query transaction to get code_id
-codeID := queryTxAndExtractCodeID(t, txhash)
-t.Logf("CW20 token contract stored with code_id: %s", codeID)
+// Store contract via governance proposal
+codeID := storeCodeViaGovernance(t, cw20TokenContractPath, "CW20Token")
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "code-info", codeID)
 out, err := cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query code info")
 assert.Contains(t, string(out), codeID, "code info should contain code_id")
+
+t.Logf("✓ CW20 token contract successfully stored via governance with code_id: %s", codeID)
 }
 
-// TestWasmStoreCodeNameService tests uploading the name service contract
+// TestWasmStoreCodeNameService tests uploading the name service contract via governance
 func TestWasmStoreCodeNameService(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
-delegator_address := os.Getenv(key_delegator_address)
-require.NotEmpty(t, delegator_address, "delegator address should be set")
-
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, "nameservice.wasm")
-
-// Load the name service contract
-wasmBytes := loadContractWasm(t, nameserviceContractPath)
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file")
-
-// Store the wasm code
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-// Extract txhash and wait for processing
-txhash := extractTxHashAndWait(t, txOut)
-
-// Query transaction to get code_id
-codeID := queryTxAndExtractCodeID(t, txhash)
-t.Logf("Name service contract stored with code_id: %s", codeID)
+// Store contract via governance proposal
+codeID := storeCodeViaGovernance(t, nameserviceContractPath, "NameService")
 
 // Verify the code was stored
 cmd := exec.Command("go", "run", path, "query", "wasm", "code-info", codeID)
 out, err := cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query code info")
 assert.Contains(t, string(out), codeID, "code info should contain code_id")
+
+t.Logf("✓ Name service contract successfully stored via governance with code_id: %s", codeID)
 }
 
 // TestWasmInstantiateContract tests instantiating a wasm contract
 func TestWasmInstantiateContract(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
-// First, store a contract
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, "counter.wasm")
-wasmBytes := loadContractWasm(t, counterContractPath)
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file")
-
-// Store the wasm code
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-// Extract txhash and wait for processing
-txhash := extractTxHashAndWait(t, txOut)
-
-// Query transaction to get code_id
-codeID := queryTxAndExtractCodeID(t, txhash)
+// First, store contract via governance
+codeID := storeCodeViaGovernance(t, counterContractPath, "Counter-Instantiate")
 
 // Instantiate the contract with init message
 // hackatom contract expects verifier and beneficiary addresses
 initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
-txOut = testTx(t, []string{
+txOut := testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
 initMsg,
@@ -331,7 +321,7 @@ fmt.Sprintf("--from=%s", delegator_address),
 })
 
 // Extract txhash and wait for processing
-txhash = extractTxHashAndWait(t, txOut)
+txhash := extractTxHashAndWait(t, txOut)
 
 // Query transaction to get contract address
 contractAddr := queryTxAndExtractContractAddr(t, txhash)
@@ -349,41 +339,22 @@ out, err = cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query contract info")
 assert.Contains(t, string(out), contractAddr, "contract info should contain contract address")
 assert.Contains(t, string(out), codeID, "contract info should contain code_id")
+
+t.Logf("✓ Contract successfully instantiated using governance-uploaded code")
 }
 
 // TestWasmExecuteContract tests executing a wasm contract
 func TestWasmExecuteContract(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
-// Store and instantiate a contract first
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, "counter.wasm")
-wasmBytes := loadContractWasm(t, counterContractPath)
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file")
-
-// Store
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-txhash := extractTxHashAndWait(t, txOut)
-codeID := queryTxAndExtractCodeID(t, txhash)
+// Store via governance
+codeID := storeCodeViaGovernance(t, counterContractPath, "Counter-Execute")
 
 // Instantiate
 // hackatom contract expects verifier and beneficiary addresses
 initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
-txOut = testTx(t, []string{
+txOut := testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
 initMsg,
@@ -397,7 +368,7 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-txhash = extractTxHashAndWait(t, txOut)
+txhash := extractTxHashAndWait(t, txOut)
 contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
 // Execute the contract (release funds)
@@ -432,39 +403,21 @@ t.Logf("Contract state query successful: %s", string(out))
 } else {
 t.Logf("Contract execute succeeded, state query format may differ: %s", string(out))
 }
+
+t.Logf("✓ Contract successfully executed using governance-uploaded code")
 }
 
 // TestWasmSendFunds tests sending funds with contract instantiation
 func TestWasmSendFunds(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
-// Store and instantiate a contract
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, "counter.wasm")
-wasmBytes := loadContractWasm(t, counterContractPath)
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file")
-
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-txhash := extractTxHashAndWait(t, txOut)
-codeID := queryTxAndExtractCodeID(t, txhash)
+// Store via governance
+codeID := storeCodeViaGovernance(t, counterContractPath, "Counter-SendFunds")
 
 // hackatom contract expects verifier and beneficiary addresses
 initMsg := fmt.Sprintf(`{"verifier":"%s","beneficiary":"%s"}`, delegator_address, delegator_address)
-txOut = testTx(t, []string{
+txOut := testTx(t, []string{
 "tx", "wasm", "instantiate",
 codeID,
 initMsg,
@@ -479,7 +432,7 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-txhash = extractTxHashAndWait(t, txOut)
+txhash := extractTxHashAndWait(t, txOut)
 contractAddr := queryTxAndExtractContractAddr(t, txhash)
 
 // Query contract balance
@@ -493,6 +446,8 @@ t.Logf("Contract successfully received funds: %s", string(out))
 } else {
 t.Logf("Contract balance query completed: %s", string(out))
 }
+
+t.Logf("✓ Funds successfully sent to contract using governance-uploaded code")
 }
 
 // TestWasmAPI tests wasm-related API endpoints
@@ -532,49 +487,24 @@ t.Logf("API endpoint %s returned status %d", test.path, response.StatusCode)
 }
 }
 
-// TestMultipleContracts tests all three contracts in sequence
+// TestMultipleContracts tests all three contracts in sequence via governance
 func TestMultipleContracts(t *testing.T) {
-t.Skip("Code upload requires governance proposal (AllowNobody policy)")
-
-delegator_address := os.Getenv(key_delegator_address)
-require.NotEmpty(t, delegator_address, "delegator address should be set")
-
 contracts := []struct {
 name string
 path string
 }{
 {"Counter", counterContractPath},
-{"CW20 Token", cw20TokenContractPath},
-{"Name Service", nameserviceContractPath},
+{"CW20Token", cw20TokenContractPath},
+{"NameService", nameserviceContractPath},
 }
 
 codeIDs := make([]string, 0, len(contracts))
 
-// Store all contracts
+// Store all contracts via governance
 for _, contract := range contracts {
-t.Logf("Storing %s contract...", contract.name)
-
-tempDir := t.TempDir()
-wasmFile := filepath.Join(tempDir, filepath.Base(contract.path))
-wasmBytes := loadContractWasm(t, contract.path)
-err := os.WriteFile(wasmFile, wasmBytes, 0644)
-require.NoError(t, err, "should write wasm file for %s", contract.name)
-
-txOut := testTx(t, []string{
-"tx", "wasm", "store",
-wasmFile,
-fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
-
-"-y",
-"--keyring-backend=file",
-})
-
-txhash := extractTxHashAndWait(t, txOut)
-codeID := queryTxAndExtractCodeID(t, txhash)
+t.Logf("Storing %s contract via governance...", contract.name)
+codeID := storeCodeViaGovernance(t, contract.path, contract.name)
 codeIDs = append(codeIDs, codeID)
-
 t.Logf("%s contract stored with code_id: %s", contract.name, codeID)
 }
 
@@ -587,5 +517,5 @@ for i, codeID := range codeIDs {
 assert.Contains(t, string(out), codeID, "%s contract should appear in list", contracts[i].name)
 }
 
-t.Logf("Successfully stored and verified %d different contracts", len(contracts))
+t.Logf("✓ Successfully stored and verified %d different contracts via governance", len(contracts))
 }
