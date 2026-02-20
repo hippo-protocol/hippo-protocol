@@ -417,9 +417,7 @@ func New(
 	// upgrade.
 	app.setPostHandler()
 
-	// register wasm snapshot extension to allow state-sync
-	// with wasm contract data and code stored in the wasm module.
-	// required for state-sync to work with wasm module
+	// Register wasm snapshot extension to enable state-sync with wasm contract data and code
 	if manager := app.SnapshotManager(); manager != nil {
 		err = manager.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.AppKeepersWithKey.WasmKeeper))
 		if err != nil {
@@ -442,7 +440,7 @@ func New(
 
 		// Initialize pinned codes in wasmvm as they are not persisted there
 		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
-			tmos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
+			tmos.Exit(fmt.Sprintf("failed to initialize pinned codes %s", err))
 		}
 	}
 
