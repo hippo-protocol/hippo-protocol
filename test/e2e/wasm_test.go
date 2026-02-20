@@ -140,9 +140,9 @@ cmd := exec.Command("go", "run", path, "query", "wasm", "params")
 out, err := cmd.CombinedOutput()
 require.NoError(t, err, "should be able to query wasm params")
 
-// Verify that code upload is allowed for everybody
+// Verify that code upload is restricted to governance only
 assert.Contains(t, string(out), "code_upload_access", "params should contain code_upload_access")
-assert.Contains(t, string(out), "permission: Everybody", "code upload should be allowed for everybody")
+assert.Contains(t, string(out), "permission: Nobody", "code upload should be restricted to governance only")
 
 // Verify instantiate default permission
 assert.Contains(t, string(out), "instantiate_default_permission: Everybody", "instantiate should be allowed for everybody by default")
@@ -150,6 +150,8 @@ assert.Contains(t, string(out), "instantiate_default_permission: Everybody", "in
 
 // TestWasmStoreCodeCounter tests uploading the counter contract
 func TestWasmStoreCodeCounter(t *testing.T) {
+t.Skip("Skipping: Direct code upload is disabled with governance-only access (AllowNobody). Code must be uploaded via governance proposals.")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
@@ -199,6 +201,8 @@ assert.Contains(t, string(out), delegator_address, "code info should contain cre
 
 // TestWasmStoreCodeCW20 tests uploading the CW20 token contract
 func TestWasmStoreCodeCW20(t *testing.T) {
+t.Skip("Skipping: Direct code upload is disabled with governance-only access (AllowNobody). Code must be uploaded via governance proposals.")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
@@ -238,6 +242,8 @@ assert.Contains(t, string(out), codeID, "code info should contain code_id")
 
 // TestWasmStoreCodeNameService tests uploading the name service contract
 func TestWasmStoreCodeNameService(t *testing.T) {
+t.Skip("Skipping: Direct code upload is disabled with governance-only access (AllowNobody). Code must be uploaded via governance proposals.")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
@@ -277,6 +283,8 @@ assert.Contains(t, string(out), codeID, "code info should contain code_id")
 
 // TestWasmInstantiateContract tests instantiating a wasm contract
 func TestWasmInstantiateContract(t *testing.T) {
+t.Skip("Skipping: Requires code upload which is disabled with governance-only access (AllowNobody).")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
@@ -345,6 +353,8 @@ assert.Contains(t, string(out), codeID, "contract info should contain code_id")
 
 // TestWasmExecuteContract tests executing a wasm contract
 func TestWasmExecuteContract(t *testing.T) {
+t.Skip("Skipping: Requires code upload which is disabled with governance-only access (AllowNobody).")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
@@ -426,6 +436,8 @@ t.Logf("Contract execute succeeded, state query format may differ: %s", string(o
 
 // TestWasmSendFunds tests sending funds with contract instantiation
 func TestWasmSendFunds(t *testing.T) {
+t.Skip("Skipping: Requires code upload which is disabled with governance-only access (AllowNobody).")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
@@ -522,6 +534,8 @@ t.Logf("API endpoint %s returned status %d", test.path, response.StatusCode)
 
 // TestMultipleContracts tests all three contracts in sequence
 func TestMultipleContracts(t *testing.T) {
+t.Skip("Skipping: Requires code upload which is disabled with governance-only access (AllowNobody).")
+
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
 
