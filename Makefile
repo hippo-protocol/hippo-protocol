@@ -199,7 +199,7 @@ proto-update-deps:
 
 
 REQUIRE_GO_VERSION = 1.24
-TM_VERSION := v0.38.17
+TM_VERSION := v0.38.21
 GORELEASER_IMAGE := ghcr.io/goreleaser/goreleaser-cross:v$(REQUIRE_GO_VERSION)
 COSMWASM_VERSION := v2.2.3
 
