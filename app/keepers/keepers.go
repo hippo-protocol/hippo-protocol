@@ -204,6 +204,9 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 
 	// The last arguments can contain custom message handlers, and custom query handlers,
 	// if we want to allow any custom callbacks
+	// Note: Using PortKeeper here instead of ChannelKeeperV2 because this project uses IBC v8.
+	// ChannelKeeperV2 is only available in IBC v10+ (used in wasmd).
+	// When upgrading to IBC v10+, consider changing to ChannelKeeperV2 for improved functionality.
 	appKeepers.WasmKeeper = wasmkeeper.NewKeeper(
 		appCodec,
 		runtime.NewKVStoreService(appKeepers.keys[wasmtypes.StoreKey]),
@@ -226,6 +229,15 @@ func (appKeepers *AppKeepersWithKey) InitKeyAndKeepers(
 		wasmOpts...,
 	)
 
+	// Create wasm IBC handler
+	// Note: The IBC integration here is simplified compared to wasmd reference because:
+	// 1. This blockchain uses IBC v8 (wasmd uses v10+)
+	// 2. ICA (Interchain Accounts) modules are not integrated
+	// 3. IBC callbacks middleware is not used (requires ICA integration)
+	// For full IBC callbacks support (e.g., contract hooks on IBC packets), consider:
+	// - Upgrading to IBC v10+
+	// - Integrating ICA controller and host modules
+	// - Adding ibccallbacks middleware to the IBC stack
 	var wasmStack porttypes.IBCModule
 	wasmStack = wasm.NewIBCHandler(appKeepers.WasmKeeper, appKeepers.IBCKeeper.ChannelKeeper, appKeepers.IBCKeeper.ChannelKeeper)
 
