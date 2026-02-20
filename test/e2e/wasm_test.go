@@ -173,16 +173,14 @@ cmd := exec.Command("go", "run", path, "query", "tx", txhash)
 out, err := cmd.CombinedOutput()
 require.NoError(t, err, "should query proposal submission tx")
 
-// Extract proposal ID (usually it's 1, 2, 3, etc. incrementing)
+// Extract proposal ID from transaction events
 re := regexp.MustCompile(`proposal_id.*?['":]?\s*['":]?\s*(\d+)`)
 match := re.FindStringSubmatch(string(out))
-proposalID := "1" // Default to 1 if not found
-if len(match) >= 2 {
-proposalID = match[1]
-}
+require.GreaterOrEqual(t, len(match), 2, "proposal_id should be in transaction output: %s", string(out))
+proposalID := match[1]
 t.Logf("Proposal ID: %s", proposalID)
 
-// Deposit to reach voting period (if needed, already included in proposal)
+// Wait for proposal to be processed and enter deposit/voting period
 time.Sleep(6 * time.Second)
 
 // Vote on proposal
@@ -197,7 +195,8 @@ fmt.Sprintf("--from=%s", delegator_address),
 "--keyring-backend=file",
 })
 
-// Wait for voting period and execution
+// Wait for voting period to end and proposal to execute
+// Governance params typically have short voting periods in test environments
 t.Logf("Waiting for proposal to pass and execute...")
 time.Sleep(30 * time.Second)
 
