@@ -440,7 +440,7 @@ func New(
 
 		// Initialize pinned codes in wasmvm as they are not persisted there
 		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
-			tmos.Exit(fmt.Sprintf("failed to initialize pinned codes %s", err))
+			tmos.Exit(fmt.Sprintf("failed to initialize pinned codes: %s", err))
 		}
 	}
 
