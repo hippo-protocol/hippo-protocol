@@ -91,8 +91,13 @@ func TestUpgradePlan(t *testing.T) {
 // TestCosmWasmAccessTypes verifies expected access types are available
 func TestCosmWasmAccessTypes(t *testing.T) {
 	// Verify the access types we're using in the upgrade exist
+	require.NotNil(t, wasmtypes.AllowNobody)
 	require.NotNil(t, wasmtypes.AllowEverybody)
 	require.NotEqual(t, wasmtypes.AccessTypeUnspecified, wasmtypes.AccessTypeEverybody)
+
+	// Verify that AllowNobody has the expected structure (governance-only)
+	require.NotNil(t, wasmtypes.AllowNobody.Permission)
+	require.Equal(t, wasmtypes.AccessTypeNobody, wasmtypes.AllowNobody.Permission)
 
 	// Verify that AllowEverybody has the expected structure
 	require.NotNil(t, wasmtypes.AllowEverybody.Permission)

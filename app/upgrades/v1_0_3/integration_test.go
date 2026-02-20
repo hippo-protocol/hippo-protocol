@@ -122,7 +122,7 @@ func TestUpgradeHandlerIntegration(t *testing.T) {
 	// Verify CosmWasm params are set correctly after upgrade
 	params := appKeepers.WasmKeeper.GetParams(ctx)
 	require.NotNil(t, params, "wasm params should not be nil")
-	require.Equal(t, wasmtypes.AllowEverybody, params.CodeUploadAccess, "code upload should be allowed for everybody")
+	require.Equal(t, wasmtypes.AllowNobody, params.CodeUploadAccess, "code upload should only be allowed via governance")
 	require.Equal(t, wasmtypes.AccessTypeEverybody, params.InstantiateDefaultPermission, "instantiate should be allowed for everybody")
 
 	t.Log("✓ Upgrade handler executed successfully")

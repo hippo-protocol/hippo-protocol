@@ -28,7 +28,9 @@ func CreateUpgradeHandler(
 		}
 
 		wasmParams := wasmtypes.DefaultParams()
-		wasmParams.CodeUploadAccess = wasmtypes.AllowEverybody
+		// Only governance proposals can upload new smart contract code
+		wasmParams.CodeUploadAccess = wasmtypes.AllowNobody
+		// Once code is approved and uploaded via gov, it can be instantiated
 		wasmParams.InstantiateDefaultPermission = wasmtypes.AccessTypeEverybody
 		if err := keepers.WasmKeeper.SetParams(ctx, wasmParams); err != nil {
 			return vm, errorsmod.Wrapf(err, "unable to set CosmWasm params")
