@@ -2,6 +2,7 @@ package test
 
 import (
 "encoding/base64"
+"encoding/json"
 "fmt"
 "io"
 "net/http"
@@ -132,27 +133,31 @@ wasmBytes := loadContractWasm(t, contractPath)
 // Encode to base64 for JSON
 base64Wasm := base64.StdEncoding.EncodeToString(wasmBytes)
 
-// Create proposal JSON
-proposalJSON := fmt.Sprintf(`{
-  "messages": [
-    {
-      "@type": "/cosmwasm.wasm.v1.MsgStoreCode",
-      "sender": "%s",
-      "wasm_byte_code": "%s",
-      "instantiate_permission": null
-    }
-  ],
-  "metadata": "ipfs://CID",
-  "deposit": "100000000000000000000000000ahp",
-  "title": "Store %s Contract",
-  "summary": "Proposal to store %s smart contract code via governance",
-  "expedited": false
-}`, delegator_address, base64Wasm, contractName, contractName)
+// Create proposal structure
+proposalData := map[string]interface{}{
+"messages": []map[string]interface{}{
+{
+"@type":             "/cosmwasm.wasm.v1.MsgStoreCode",
+"sender":            delegator_address,
+"wasm_byte_code":    base64Wasm,
+"instantiate_permission": nil,
+},
+},
+"metadata":  "ipfs://CID",
+"deposit":   "100000000000000000000000000ahp",
+"title":     fmt.Sprintf("Store %s Contract", contractName),
+"summary":   fmt.Sprintf("Proposal to store %s smart contract code via governance", contractName),
+"expedited": false,
+}
+
+// Marshal to JSON
+proposalJSON, err := json.Marshal(proposalData)
+require.NoError(t, err, "should marshal proposal JSON")
 
 // Write proposal to temp file
 tempDir := t.TempDir()
 proposalPath := filepath.Join(tempDir, "wasm_store_proposal.json")
-err := os.WriteFile(proposalPath, []byte(proposalJSON), 0644)
+err = os.WriteFile(proposalPath, proposalJSON, 0644)
 require.NoError(t, err, "should write proposal file")
 
 // Submit proposal
@@ -171,7 +176,10 @@ txhash := extractTxHashAndWait(t, txOut)
 // Get proposal ID from the transaction
 cmd := exec.Command("go", "run", path, "query", "tx", txhash)
 out, err := cmd.CombinedOutput()
+if err != nil {
+t.Logf("Failed to query transaction %s: %v\nOutput: %s", txhash, err, string(out))
 require.NoError(t, err, "should query proposal submission tx")
+}
 
 // Extract proposal ID from transaction events
 re := regexp.MustCompile(`proposal_id.*?['":]?\s*['":]?\s*(\d+)`)
