@@ -278,6 +278,8 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctm.NewAppModule(),
 		transfer.NewAppModule(app.TransferKeeper),
+		// GetSubspace is used to retrieve legacy params subspace for wasm module.
+		// This is required for backward compatibility with older versions that used params module for configuration.
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 	)
 
@@ -415,6 +417,9 @@ func New(
 	// upgrade.
 	app.setPostHandler()
 
+	// register wasm snapshot extension to allow state-sync
+	// with wasm contract data and code stored in the wasm module.
+	// required for state-sync to work with wasm module
 	if manager := app.SnapshotManager(); manager != nil {
 		err = manager.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.AppKeepersWithKey.WasmKeeper))
 		if err != nil {
@@ -435,8 +440,9 @@ func New(
 
 		ctx := app.NewUncachedContext(true, tmproto.Header{})
 
+		// Initialize pinned codes in wasmvm as they are not persisted there
 		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
-			tmos.Exit(fmt.Sprintf("WasmKeeper failed initialize pinned codes %s", err))
+			tmos.Exit(fmt.Sprintf("failed initialize pinned codes %s", err))
 		}
 	}
 
@@ -646,4 +652,11 @@ func (app *App) AutoCliOpts() autocli.AppOptions {
 type EmptyAppOptions struct{}
 
 // EmptyWasmOptions is a stub implementing Wasmkeeper Option
+// Available options include:
+// - WithMessageEncoders: custom message encoders for contract execution
+// - WithQueryPlugins: custom query plugins for contract queries
+// - WithMessageHandlerDecorator: decorator for message handling
+// - WithCoinTransferrer: custom coin transfer implementation
+// - WithVMCacheMetrics: enable VM cache metrics
+// - WithGasRegister: custom gas register for operations
 var EmptyWasmOptions []wasmkeeper.Option
