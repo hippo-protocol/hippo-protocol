@@ -34,4 +34,6 @@ RUN chmod +x /usr/bin/hippod
 
 EXPOSE 26656 26657 1317 9090
 
+# Default CMD shows version; override with 'start' command for running a node
+# Example: docker run hippo-protocol:latest start --home /root/.hippo
 CMD ["/usr/bin/hippod", "version"]
