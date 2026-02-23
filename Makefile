@@ -74,9 +74,20 @@ ifeq (boltdb,$(findstring boltdb,$(COSMOS_BUILD_OPTIONS)))
   build_tags += boltdb
 endif
 
+# handle muslc for static CosmWasm linking
+ifeq (muslc,$(findstring muslc,$(COSMOS_BUILD_OPTIONS)))
+  build_tags += muslc
+endif
+
 ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   ldflags += -w -s
 endif
+
+# handle static linking
+ifeq ($(LINK_STATICALLY),true)
+  ldflags += -linkmode=external -extldflags "-Wl,-z,muldefs -static"
+endif
+
 #ldflags += $(LDFLAGS)
 ldflags := $(strip $(ldflags))
 
@@ -201,7 +212,7 @@ proto-update-deps:
 REQUIRE_GO_VERSION = 1.23
 TM_VERSION := v0.38.17
 GORELEASER_IMAGE := ghcr.io/goreleaser/goreleaser-cross:v$(REQUIRE_GO_VERSION)
-COSMWASM_VERSION := v2.2.3
+COSMWASM_VERSION := v2.2.4
 
 ci-release:
 	docker run \
