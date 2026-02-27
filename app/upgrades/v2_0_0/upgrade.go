@@ -1,4 +1,4 @@
-package v_1_0_3
+package v_2_0_0
 
 import (
 	"context"
@@ -34,7 +34,7 @@ func CreateUpgradeHandler(
 			return vm, errorsmod.Wrapf(err, "unable to set CosmWasm params")
 		}
 
-		ctx.Logger().Info("Upgrade v1.0.3 complete")
+		ctx.Logger().Info("Upgrade v2.0.0 complete")
 		return vm, nil
 	}
 }
