@@ -1,4 +1,4 @@
-package v_1_0_3
+package v_2_0_0
 
 import (
 	"testing"
@@ -223,7 +223,7 @@ func TestWasmModuleInStoreUpgrades(t *testing.T) {
 // TestUpgradeReadiness verifies the upgrade is ready for production
 func TestUpgradeReadiness(t *testing.T) {
 	// Check upgrade name matches version
-	require.Equal(t, "v1.0.3", UpgradeName, "upgrade name should match version")
+	require.Equal(t, "v2.0.0", UpgradeName, "upgrade name should match version")
 
 	// Check upgrade object is complete
 	require.NotNil(t, Upgrade, "upgrade object should exist")
@@ -240,7 +240,7 @@ func TestUpgradeReadiness(t *testing.T) {
 		require.NotNil(t, handler, "handler should be created")
 	}, "upgrade handler creation should not panic")
 
-	t.Log("✓ Upgrade v1.0.3 is ready for production deployment")
+	t.Log("✓ Upgrade v2.0.0 is ready for production deployment")
 	t.Log("✓ All upgrade components are properly configured")
 	t.Log("✓ CosmWasm module integration is complete")
 }

@@ -1,6 +1,6 @@
-# CosmWasm v1.0.3 Upgrade Tests
+# CosmWasm v2.0.0 Upgrade Tests
 
-This directory contains comprehensive tests for the v1.0.3 upgrade that implements CosmWasm module support in the Hippo Protocol.
+This directory contains comprehensive tests for the v2.0.0 upgrade that implements CosmWasm module support in the Hippo Protocol.
 
 ## Test Files
 
@@ -34,7 +34,7 @@ The repository also includes end-to-end tests in `/test/e2e/wasm_test.go`:
 
 ### CosmWasm Functionality Tests
 - `TestWasmQuery` - Basic wasm query commands
-- `TestWasmParams` - Verifies parameters after v1.0.3 upgrade
+- `TestWasmParams` - Verifies parameters after v2.0.0 upgrade
 - `TestWasmStoreCode` - Tests contract deployment (store-code)
 - `TestWasmInstantiateContract` - Tests contract instantiation
 - `TestWasmExecuteContract` - Tests contract execution (sendTx)
@@ -46,13 +46,13 @@ The repository also includes end-to-end tests in `/test/e2e/wasm_test.go`:
 ### Unit and Integration Tests
 ```bash
 # Run all upgrade tests
-go test ./app/upgrades/v1_0_3/... -v
+go test ./app/upgrades/v2_0_0/... -v
 
 # Run specific test
-go test ./app/upgrades/v1_0_3 -run TestUpgradeHandlerIntegration -v
+go test ./app/upgrades/v2_0_0 -run TestUpgradeHandlerIntegration -v
 
 # Run with coverage
-go test ./app/upgrades/v1_0_3/... -cover
+go test ./app/upgrades/v2_0_0/... -cover
 ```
 
 ### E2E Tests
@@ -97,7 +97,7 @@ The test suite covers:
 
 ## Production Deployment
 
-Before deploying the v1.0.3 upgrade to production:
+Before deploying the v2.0.0 upgrade to production:
 
 1. ✅ All unit tests pass
 2. ✅ All integration tests pass
@@ -116,7 +116,7 @@ Tests are automatically run in the GitHub Actions workflow (`.github/workflows/g
 
 ## Upgrade Process
 
-When the network upgrades to v1.0.3:
+When the network upgrades to v2.0.0:
 
 1. The upgrade handler will be triggered at the specified block height
 2. The wasm module will be added to the store

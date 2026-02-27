@@ -83,7 +83,7 @@ jobs:
           echo "Port open. Waiting 30s for chain initialization and CosmWasm module setup..."
           sleep 30
 
-          echo "Node started. Chain is running at v1.0.3 with CosmWasm support. Ready for tests."
+          echo "Node started. Chain is running at v2.0.0 with CosmWasm support. Ready for tests."
 
       - name: Run Command Test # Ensure all the commands pass.
         run: |

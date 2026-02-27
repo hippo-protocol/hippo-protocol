@@ -1,4 +1,4 @@
-package v_1_0_3
+package v_2_0_0
 
 import (
 	"sync"
@@ -22,7 +22,7 @@ func setupWalletConfig() {
 
 // TestUpgradeNameConstant verifies the upgrade name constant
 func TestUpgradeNameConstant(t *testing.T) {
-	require.Equal(t, "v1.0.3", UpgradeName, "upgrade name should be v1.0.3")
+	require.Equal(t, "v2.0.0", UpgradeName, "upgrade name should be v2.0.0")
 }
 
 // TestUpgradeStoreConfiguration verifies store upgrade configuration
@@ -84,7 +84,7 @@ func TestUpgradePlan(t *testing.T) {
 		Height: 100,
 	}
 
-	require.Equal(t, "v1.0.3", plan.Name)
+	require.Equal(t, "v2.0.0", plan.Name)
 	require.Equal(t, int64(100), plan.Height)
 }
 

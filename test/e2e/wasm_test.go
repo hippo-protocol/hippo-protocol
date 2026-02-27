@@ -134,7 +134,7 @@ assert.Contains(t, string(out), test.expect, test.errorMsg)
 }
 }
 
-// TestWasmParams tests that CosmWasm parameters are correctly set after v1.0.3 upgrade
+// TestWasmParams tests that CosmWasm parameters are correctly set after v2.0.0 upgrade
 func TestWasmParams(t *testing.T) {
 cmd := exec.Command("go", "run", path, "query", "wasm", "params")
 out, err := cmd.CombinedOutput()
