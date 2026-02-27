@@ -59,11 +59,18 @@ func NewRootCmd() *cobra.Command {
 	if err != nil {
 		panic(err)
 	}
-	defer os.RemoveAll(tempDir) // remove temp directory
 
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
 	hippoApp := app.New(log.NewNopLogger(), dbm.NewMemDB(), nil, true, simtestutil.NewAppOptionsWithFlagHome(tempDir), app.EmptyWasmOptions)
+	defer func() {
+		if err := hippoApp.Close(); err != nil {
+			panic(err)
+		}
+		if tempDir != app.DefaultNodeHome {
+			os.RemoveAll(tempDir)
+		}
+	}()
 
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: hippoApp.InterfaceRegistry(),
