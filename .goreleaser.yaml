@@ -31,19 +31,20 @@ builds:
           - -trimpath
       tags:
           - netgo
+          - osusergo
           - ledger
           - muslc
       ldflags:
           - -s -w
           - -linkmode=external
-          - -extldflags "-L/usr/lib -lwasmvm_muslc.x86_64 -lm -ldl -Wl,-z,muldefs -static -z noexecstack"
+          - -extldflags "-L/lib -lwasmvm_muslc.x86_64 -lm -ldl -Wl,-z,muldefs -static -z noexecstack"
           - -X main.commit={{.Commit}}
           - -X main.date={{ .CommitDate }}
           - -X github.com/cosmos/cosmos-sdk/version.Name=hippo-protocol
           - -X github.com/cosmos/cosmos-sdk/version.AppName=hippod
           - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
           - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
-          - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger
+          - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,osusergo,ledger,muslc
           - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.TM_VERSION }}
 
     - id: hippod-linux-arm64
@@ -64,6 +65,7 @@ builds:
           - -trimpath
       tags:
           - netgo
+          - osusergo
           - ledger
           - muslc
       ldflags:
@@ -76,7 +78,7 @@ builds:
           - -X github.com/cosmos/cosmos-sdk/version.AppName=hippod
           - -X github.com/cosmos/cosmos-sdk/version.Version=v{{ .Version }}
           - -X github.com/cosmos/cosmos-sdk/version.Commit={{ .Commit }}
-          - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,ledger
+          - -X github.com/cosmos/cosmos-sdk/version.BuildTags=netgo,osusergo,ledger,muslc
           - -X github.com/cometbft/cometbft/version.TMCoreSemVer={{ .Env.TM_VERSION }}
 
     - id: hippod-darwin-amd64
