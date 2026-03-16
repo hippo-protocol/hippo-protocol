@@ -34,6 +34,7 @@ import (
 	"github.com/hippocrat-dao/hippo-protocol/app/upgrades"
 	v_1_0_1 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_1"
 	v_1_0_2 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v1_0_2"
+	v_2_0_0 "github.com/hippocrat-dao/hippo-protocol/app/upgrades/v2_0_0"
 
 	"cosmossdk.io/x/evidence"
 	evidencetypes "cosmossdk.io/x/evidence/types"
@@ -97,10 +98,17 @@ import (
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	tmos "github.com/cometbft/cometbft/libs/os"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
 const Name = "hippo"
-const Version = "v1.0.2"
+const Version = "v2.0.0"
 
 var (
 	// DefaultNodeHome default home directories for the application daemon
@@ -116,12 +124,13 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		nft.ModuleName:                 nil,
+		wasmtypes.ModuleName:           {authtypes.Burner},
 	}
 
 	_ runtime.AppI            = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 
-	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade, v_1_0_2.Upgrade}
+	Upgrades = []upgrades.Upgrade{v_1_0_1.Upgrade, v_1_0_2.Upgrade, v_2_0_0.Upgrade}
 )
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -172,6 +181,7 @@ func New(
 	traceStore io.Writer,
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
+	wasmOpts []wasmkeeper.Option,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
 	interfaceRegistry, _ := types.NewInterfaceRegistryWithOptions(types.InterfaceRegistryOptions{
@@ -211,7 +221,7 @@ func New(
 		interfaceRegistry: interfaceRegistry,
 	}
 
-	app.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, BlockedAddresses(), appOpts, bApp, logger)
+	app.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, BlockedAddresses(), appOpts, bApp, logger, wasmOpts)
 
 	// optional: enable sign mode textual by overwriting the default tx config (after setting the bank keeper)
 	enabledSignModes := append(tx.DefaultSignModes, sigtypes.SignMode_SIGN_MODE_TEXTUAL)
@@ -268,6 +278,9 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctm.NewAppModule(),
 		transfer.NewAppModule(app.TransferKeeper),
+		// GetSubspace is used to retrieve legacy params subspace for wasm module.
+		// This is required for backward compatibility with older versions that used params module for configuration.
+		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.MsgServiceRouter(), app.GetSubspace(wasmtypes.ModuleName)),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -304,6 +317,7 @@ func New(
 		authz.ModuleName, feegrant.ModuleName, group.ModuleName,
 		paramstypes.ModuleName, vestingtypes.ModuleName, consensusparamtypes.ModuleName,
 		ibcexported.ModuleName, ibctransfertypes.ModuleName,
+		wasmtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -315,6 +329,7 @@ func New(
 		feegrant.ModuleName, group.ModuleName,
 		paramstypes.ModuleName, upgradetypes.ModuleName, vestingtypes.ModuleName, consensusparamtypes.ModuleName,
 		ibcexported.ModuleName, ibctransfertypes.ModuleName,
+		wasmtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -323,6 +338,8 @@ func New(
 	// NOTE: Capability module must occur first so that it can initialize any capabilities
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
+	// NOTE: wasm module should be at the end as it can call other module functionality direct or via message dispatching during
+	// genesis phase. For example bank transfer, auth account check, staking, ...
 	genesisModuleOrder := []string{
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName, banktypes.ModuleName,
@@ -331,6 +348,8 @@ func New(
 		feegrant.ModuleName, group.ModuleName, paramstypes.ModuleName, upgradetypes.ModuleName,
 		vestingtypes.ModuleName, consensusparamtypes.ModuleName,
 		ibcexported.ModuleName, ibctransfertypes.ModuleName,
+		// wasm after ibc transfer
+		wasmtypes.ModuleName,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -340,11 +359,6 @@ func New(
 
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.ModuleManager.RegisterServices(app.configurator)
-
-	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
-	// Make sure it's called after `app.ModuleManager` and `app.configurator` are set.
-	app.setupUpgradeStoreLoaders()
-	app.setupUpgradeHandlers()
 
 	autocliv1.RegisterQueryServer(app.GRPCQueryRouter(), runtimeservices.NewAutoCLIQueryService(app.ModuleManager.Modules))
 
@@ -376,12 +390,17 @@ func New(
 	app.MountTransientStores(app.GetTransientStoreKey())
 	app.MountMemoryStores(app.GetMemoryStoreKey())
 
+	wasmConfig, err := wasm.ReadNodeConfig(appOpts)
+	if err != nil {
+		panic("error while reading wasm config: " + err.Error())
+	}
+
 	// initialize BaseApp
 	app.SetInitChainer(app.InitChainer)
 	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
-	app.setAnteHandler(txConfig)
+	app.setAnteHandler(txConfig, wasmConfig, runtime.NewKVStoreService(app.GetKVStoreKey()[wasmtypes.StoreKey]))
 
 	// In v0.46, the SDK introduces _postHandlers_. PostHandlers are like
 	// antehandlers, but are run _after_ the `runMsgs` execution. They are also
@@ -398,10 +417,30 @@ func New(
 	// upgrade.
 	app.setPostHandler()
 
+	// Register wasm snapshot extension to enable state-sync with wasm contract data and code
+	if manager := app.SnapshotManager(); manager != nil {
+		err = manager.RegisterExtensions(wasmkeeper.NewWasmSnapshotter(app.CommitMultiStore(), &app.AppKeepersWithKey.WasmKeeper))
+		if err != nil {
+			panic("failed to register snapshot extension: " + err.Error())
+		}
+	}
+
+	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
+	// Make sure it's called after `app.ModuleManager` and `app.configurator` are set.
+	app.setupUpgradeStoreLoaders()
+	app.setupUpgradeHandlers()
+
 	if loadLatest {
 		if err := app.LoadLatestVersion(); err != nil {
 			logger.Error("error on loading last version", "err", err)
 			os.Exit(1)
+		}
+
+		ctx := app.NewUncachedContext(true, tmproto.Header{})
+
+		// Initialize pinned codes in wasmvm as they are not persisted there
+		if err := app.WasmKeeper.InitializePinnedCodes(ctx); err != nil {
+			tmos.Exit(fmt.Sprintf("failed to initialize pinned codes: %s", err))
 		}
 	}
 
@@ -606,3 +645,16 @@ func (app *App) AutoCliOpts() autocli.AppOptions {
 		ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	}
 }
+
+// EmptyAppOptions is a stub implementing AppOptions
+type EmptyAppOptions struct{}
+
+// EmptyWasmOptions is a stub implementing Wasmkeeper Option
+// Available options include:
+// - WithMessageEncoders: custom message encoders for contract execution
+// - WithQueryPlugins: custom query plugins for contract queries
+// - WithMessageHandlerDecorator: decorator for message handling
+// - WithCoinTransferrer: custom coin transfer implementation
+// - WithVMCacheMetrics: enable VM cache metrics
+// - WithGasRegister: custom gas register for operations
+var EmptyWasmOptions []wasmkeeper.Option

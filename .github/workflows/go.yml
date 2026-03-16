@@ -5,9 +5,9 @@ name: Go
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feature/cosmwasm"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "feature/cosmwasm"]
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23"
+          go-version: "1.24"
 
       - name: Build
         run: make build
@@ -31,12 +31,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23"
+          go-version: "1.24"
 
       - name: Test
         run: |
-          go test -coverpkg=$(go list ./... | grep -v "/test/e2e") $(go list ./... | grep -v "/test/e2e") -v
-          go test $(go list ./... | grep -v "/test/e2e") -coverprofile=cover.out
+          PKGS=$(go list ./... | grep -v "/test/e2e" | tr '\n' ',' | sed 's/,$//')
+          go test -coverpkg=$PKGS -v $(go list ./... | grep -v "/test/e2e")
+          go test -coverpkg=$PKGS -coverprofile=cover.out $(go list ./... | grep -v "/test/e2e")
           go tool cover -func=cover.out
 
           coverage=$(go tool cover -func=cover.out | awk '/total:/ {print $3}' | sed 's/%//' | awk '{print $1}')
@@ -63,7 +64,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23"
+          go-version: "1.24"
 
       - name: Genesis Node Start
         run: |
@@ -74,11 +75,15 @@ jobs:
           go run hippod/main.go genesis collect-gentxs
           sed -i '/\[api\]/{ N;N;N; s/enable = false/enable = true/; }' ~/.hippo/config/app.toml
           go run hippod/main.go start &
-          while ! nc -z localhost 26657; do # Or your node's RPC port
+          while ! nc -z localhost 26657; do
             echo "Waiting for node to start..."
             sleep 1
           done
-          echo "Node started."
+
+          echo "Port open. Waiting 30s for chain initialization and CosmWasm module setup..."
+          sleep 30
+
+          echo "Node started. Chain is running at v2.0.0 with CosmWasm support. Ready for tests."
 
       - name: Run Command Test # Ensure all the commands pass.
         run: |

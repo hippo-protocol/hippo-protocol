@@ -8,18 +8,21 @@ import (
 	store "cosmossdk.io/store"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/tx/signing"
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/server"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/hippocrat-dao/hippo-protocol/types/consensus"
 	"github.com/stretchr/testify/require"
 )
+
+var EmptyWasmOptions []wasmkeeper.Option
 
 // helper function to generate dummy keys
 func generateTestStoreKeys() (map[string]*storetypes.KVStoreKey, map[string]*storetypes.TransientStoreKey, map[string]*storetypes.MemoryStoreKey) {
@@ -72,7 +75,8 @@ func TestInitKeyAndKeepers(t *testing.T) {
 	}
 
 	blockedAddrs := map[string]bool{}
-	appOpts := server.NewDefaultContext().Viper
+	tempDir := t.TempDir()
+	appOpts := simtestutil.NewAppOptionsWithFlagHome(tempDir)
 
 	logger := log.NewNopLogger()
 
@@ -113,7 +117,7 @@ func TestInitKeyAndKeepers(t *testing.T) {
 	}
 
 	require.NotPanics(t, func() {
-		appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger)
+		appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger, EmptyWasmOptions)
 	})
 
 	// Simple verification of important keepers
@@ -139,7 +143,9 @@ func TestSetupHooks(t *testing.T) {
 		"transfer":               {"minter", "burner"},
 	}
 	blockedAddrs := map[string]bool{}
-	appOpts := server.NewDefaultContext().Viper
+
+	tempDir := t.TempDir()
+	appOpts := simtestutil.NewAppOptionsWithFlagHome(tempDir)
 	logger := log.NewNopLogger()
 
 	db := dbm.NewMemDB()
@@ -176,7 +182,7 @@ func TestSetupHooks(t *testing.T) {
 		tkeys:   tkeys,
 		memKeys: memKeys,
 	}
-	appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger)
+	appKeepers.InitKeyAndKeepers(appCodec, legacyAmino, maccPerms, blockedAddrs, appOpts, baseApp, logger, EmptyWasmOptions)
 
 	require.NotPanics(t, func() {
 		appKeepers.SetupHooks()

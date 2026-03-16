@@ -9,6 +9,7 @@ import (
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
@@ -30,6 +31,7 @@ func (appKeepers *AppKeepersWithKey) GenerateKeys() {
 		evidencetypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, group.StoreKey,
 		ibcexported.StoreKey, ibctransfertypes.StoreKey,
+		wasmtypes.StoreKey,
 	)
 
 	appKeepers.tkeys = storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
