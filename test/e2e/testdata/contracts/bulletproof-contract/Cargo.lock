@@ -33,9 +33,9 @@ checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "base64ct"
-version = "1.8.3"
+version = "1.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
+checksum = "89e25b6adfb930f02d1981565a6e5d9c547ac15a96606256d3b59040e5cd4ca3"
 
 [[package]]
 name = "bech32"
@@ -79,6 +79,7 @@ name = "bulletproof-contract"
 version = "1.0.0"
 dependencies = [
  "bulletproofs",
+ "clear_on_drop",
  "cosmwasm-schema",
  "cosmwasm-std",
  "curve25519-dalek-ng",
