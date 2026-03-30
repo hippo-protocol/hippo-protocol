@@ -612,11 +612,13 @@ txOut := testTx(t, []string{
 wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
 "--gas=5000000",
-"--fees=1000000000000000000ahp",
+"--fees=2500000000000000000ahp",
 "-y",
 "--keyring-backend=file",
 })
 
+// Extra wait for larger contract compilation
+time.Sleep(6 * time.Second)
 txhash := extractTxHashAndWait(t, txOut)
 codeID := queryTxAndExtractCodeID(t, txhash)
 t.Logf("Bulletproof contract stored with code_id: %s", codeID)
@@ -636,7 +638,7 @@ codeID,
 initMsg,
 "--label=bulletproof-verify",
 fmt.Sprintf("--from=%s", delegator_address),
-"--gas=5000000",
+"--gas=2000000",
 "--fees=1000000000000000000ahp",
 "--no-admin",
 "-y",
@@ -670,8 +672,8 @@ txOut = testTx(t, []string{
 contractAddr,
 execMsg,
 fmt.Sprintf("--from=%s", delegator_address),
-"--gas=5000000",
-"--fees=1000000000000000000ahp",
+"--gas=50000000",
+"--fees=25000000000000000000ahp",
 "-y",
 "--keyring-backend=file",
 })
@@ -730,12 +732,20 @@ wasmBytes := loadContractWasm(t, contract.path)
 err := os.WriteFile(wasmFile, wasmBytes, 0644)
 require.NoError(t, err, "should write wasm file for %s", contract.name)
 
+// Use higher gas and fees for larger contracts
+gas := "2000000"
+fees := "1000000000000000000ahp"
+if contract.path == bulletproofContractPath {
+gas = "5000000"
+fees = "2500000000000000000ahp"
+}
+
 txOut := testTx(t, []string{
 "tx", "wasm", "store",
 wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
+fmt.Sprintf("--gas=%s", gas),
+fmt.Sprintf("--fees=%s", fees),
 
 "-y",
 "--keyring-backend=file",

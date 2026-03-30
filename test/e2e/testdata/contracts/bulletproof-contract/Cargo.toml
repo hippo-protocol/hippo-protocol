@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [profile.release]
-opt-level = 3
+opt-level = "z"
 debug = false
 rpath = false
 lto = true
@@ -17,6 +17,7 @@ codegen-units = 1
 panic = 'abort'
 incremental = false
 overflow-checks = true
+strip = true
 
 [features]
 # for more explicit tests, cargo test --features=backtraces
