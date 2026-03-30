@@ -542,7 +542,11 @@ if json.Unmarshal(out, &txResult) == nil {
 if gasUsed, ok := txResult["gas_used"]; ok {
 switch v := gasUsed.(type) {
 case string:
-gas, _ := strconv.ParseInt(v, 10, 64)
+gas, err := strconv.ParseInt(v, 10, 64)
+if err != nil {
+t.Logf("Failed to parse gas_used string %q: %v", v, err)
+return 0
+}
 return gas
 case float64:
 return int64(v)
@@ -553,7 +557,11 @@ if txResp, ok := txResult["tx_response"].(map[string]interface{}); ok {
 if gasUsed, ok := txResp["gas_used"]; ok {
 switch v := gasUsed.(type) {
 case string:
-gas, _ := strconv.ParseInt(v, 10, 64)
+gas, err := strconv.ParseInt(v, 10, 64)
+if err != nil {
+t.Logf("Failed to parse gas_used string %q: %v", v, err)
+return 0
+}
 return gas
 case float64:
 return int64(v)
@@ -566,7 +574,11 @@ return int64(v)
 re := regexp.MustCompile(`gas_used:\s*"?(\d+)"?`)
 match := re.FindStringSubmatch(outStr)
 if len(match) >= 2 {
-gas, _ := strconv.ParseInt(match[1], 10, 64)
+gas, err := strconv.ParseInt(match[1], 10, 64)
+if err != nil {
+t.Logf("Failed to parse gas_used from YAML %q: %v", match[1], err)
+return 0
+}
 return gas
 }
 

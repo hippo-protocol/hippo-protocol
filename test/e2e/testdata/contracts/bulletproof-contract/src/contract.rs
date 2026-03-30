@@ -152,12 +152,14 @@ fn query_verify(deps: Deps) -> StdResult<VerifyResponse> {
     let state = PROOF_STATE.load(deps.storage)?;
 
     let proof_bytes = hex::decode(&state.proof_hex)
-        .unwrap_or_default();
+        .map_err(|e| cosmwasm_std::StdError::generic_err(format!("invalid stored proof hex: {}", e)))?;
     let commitment_bytes = hex::decode(&state.commitment_hex)
-        .unwrap_or_default();
+        .map_err(|e| cosmwasm_std::StdError::generic_err(format!("invalid stored commitment hex: {}", e)))?;
 
-    let is_valid = verify_bulletproof(&proof_bytes, &commitment_bytes, state.num_bits)
-        .unwrap_or(false);
+    let is_valid = match verify_bulletproof(&proof_bytes, &commitment_bytes, state.num_bits) {
+        Ok(valid) => valid,
+        Err(_) => false,
+    };
 
     Ok(VerifyResponse {
         is_valid,
