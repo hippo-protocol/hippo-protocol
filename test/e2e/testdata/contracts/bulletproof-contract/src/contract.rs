@@ -24,7 +24,7 @@ fn compute_hash(data: &[u8]) -> String {
 /// Verify a bulletproof range proof
 fn verify_bulletproof(proof_bytes: &[u8], commitment_bytes: &[u8], num_bits: u32) -> Result<bool, ContractError> {
     let pc_gens = PedersenGens::default();
-    let bp_gens = BulletproofGens::new(64, 1);
+    let bp_gens = BulletproofGens::new(num_bits as usize, 1);
 
     let proof = RangeProof::from_bytes(proof_bytes)
         .map_err(|e| ContractError::InvalidProof {
@@ -84,6 +84,11 @@ pub fn instantiate(
         });
     }
 
+    // Validate proof can be deserialized
+    RangeProof::from_bytes(&proof_bytes).map_err(|e| ContractError::InvalidProof {
+        reason: format!("proof bytes are not a valid RangeProof: {:?}", e),
+    })?;
+
     // Compute SHA-256 hash of proof bytes
     let proof_hash = compute_hash(&proof_bytes);
 
@@ -125,7 +130,10 @@ pub fn execute_verify(deps: DepsMut) -> Result<Response, ContractError> {
         reason: format!("invalid stored commitment hex: {}", e),
     })?;
 
-    let is_valid = verify_bulletproof(&proof_bytes, &commitment_bytes, state.num_bits)?;
+    let is_valid = match verify_bulletproof(&proof_bytes, &commitment_bytes, state.num_bits) {
+        Ok(valid) => valid,
+        Err(_) => false,
+    };
 
     Ok(Response::new()
         .add_attribute("action", "verify")
@@ -213,9 +221,9 @@ mod tests {
     fn query_proof_hash_works() {
         let mut deps = mock_dependencies();
 
-        // Use a valid hex string for proof (doesn't need to be a valid proof for hash test)
-        let proof_hex = "abcdef0123456789".to_string();
-        let commitment_hex = "0000000000000000000000000000000000000000000000000000000000000000".to_string();
+        // Use the pre-generated valid proof for hash test
+        let proof_hex = TEST_PROOF_HEX.to_string();
+        let commitment_hex = TEST_COMMITMENT_HEX.to_string();
 
         let msg = InstantiateMsg {
             proof_hex: proof_hex.clone(),
@@ -258,7 +266,8 @@ mod tests {
     fn verify_invalid_proof_returns_false() {
         let mut deps = mock_dependencies();
 
-        // Use valid hex but invalid proof bytes (all zeros)
+        // Use valid hex but cryptographically invalid proof bytes (all zeros)
+        // RangeProof::from_bytes accepts these, but verification will fail
         let msg = InstantiateMsg {
             proof_hex: hex::encode([0u8; 608]),
             commitment_hex: TEST_COMMITMENT_HEX.to_string(),
@@ -267,7 +276,7 @@ mod tests {
         let info = mock_info("creator", &coins(1000, "earth"));
         let _res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
 
-        // Query verify - should fail because proof is invalid
+        // Query verify - should return is_valid=false because proof is cryptographically invalid
         let res = query(deps.as_ref(), mock_env(), QueryMsg::Verify {}).unwrap();
         let value: VerifyResponse = from_json(&res).unwrap();
         assert!(!value.is_valid, "invalid proof should fail verification");

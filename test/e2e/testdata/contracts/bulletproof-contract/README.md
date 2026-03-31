@@ -55,16 +55,18 @@ The bulletproof proof is generated off-chain using the standard `bulletproofs` l
 use bulletproofs::{BulletproofGens, PedersenGens, RangeProof};
 use curve25519_dalek_ng::scalar::Scalar;
 use merlin::Transcript;
+use rand::thread_rng;
 
 let pc_gens = PedersenGens::default();
 let bp_gens = BulletproofGens::new(64, 1);
 let secret_value = 1037578891u64;
-let blinding = Scalar::random(&mut thread_rng());
+let mut rng = thread_rng();
+let blinding = Scalar::random(&mut rng);
 let mut prover_transcript = Transcript::new(b"doctest example");
 
-let (proof, committed_value) = RangeProof::prove_single(
+let (proof, committed_value) = RangeProof::prove_single_with_rng(
     &bp_gens, &pc_gens, &mut prover_transcript,
-    secret_value, &blinding, 32,
+    secret_value, &blinding, 32, &mut rng,
 ).expect("proof generation failed");
 ```
 

@@ -544,7 +544,7 @@ switch v := gasUsed.(type) {
 case string:
 gas, err := strconv.ParseInt(v, 10, 64)
 if err != nil {
-t.Logf("Failed to parse gas_used string %q: %v", v, err)
+t.Fatalf("Failed to parse gas_used string %q: %v", v, err)
 return 0
 }
 return gas
@@ -559,7 +559,7 @@ switch v := gasUsed.(type) {
 case string:
 gas, err := strconv.ParseInt(v, 10, 64)
 if err != nil {
-t.Logf("Failed to parse gas_used string %q: %v", v, err)
+t.Fatalf("Failed to parse gas_used string %q: %v", v, err)
 return 0
 }
 return gas
@@ -576,13 +576,13 @@ match := re.FindStringSubmatch(outStr)
 if len(match) >= 2 {
 gas, err := strconv.ParseInt(match[1], 10, 64)
 if err != nil {
-t.Logf("Failed to parse gas_used from YAML %q: %v", match[1], err)
+t.Fatalf("Failed to parse gas_used from YAML %q: %v\nfull tx output: %s", match[1], err, outStr)
 return 0
 }
 return gas
 }
 
-t.Logf("Could not extract gas_used from tx output: %s", outStr)
+t.Fatalf("Could not extract gas_used from tx output: %s", outStr)
 return 0
 }
 
@@ -654,15 +654,10 @@ t.Log("Step 3: Querying stored proof hash...")
 queryMsg := `{"get_proof_hash":{}}`
 cmd = exec.Command("go", "run", path, "query", "wasm", "contract-state", "smart", contractAddr, queryMsg)
 out, err = cmd.CombinedOutput()
-if err == nil {
+require.NoErrorf(t, err, "failed to query stored proof hash: %s", string(out))
 outStr := string(out)
 t.Logf("Proof hash query result: %s", outStr)
-if strings.Contains(outStr, expectedProofHash) {
-t.Logf("Proof hash matches expected value: %s", expectedProofHash)
-}
-} else {
-t.Logf("Proof hash query completed with: %s", string(out))
-}
+require.Contains(t, outStr, expectedProofHash, "stored proof hash should match expected value")
 
 // Step 4: Execute verification and measure gas
 t.Log("Step 4: Executing bulletproof verification...")
@@ -690,22 +685,15 @@ t.Log("Step 5: Querying bulletproof verification result...")
 verifyQueryMsg := `{"verify":{}}`
 cmd = exec.Command("go", "run", path, "query", "wasm", "contract-state", "smart", contractAddr, verifyQueryMsg)
 out, err = cmd.CombinedOutput()
-if err == nil {
-outStr := string(out)
+require.NoErrorf(t, err, "verification smart query failed: %s", string(out))
+outStr = string(out)
 t.Logf("Verification query result: %s", outStr)
-if strings.Contains(outStr, "true") {
-t.Log("Bulletproof verification succeeded via query!")
-} else {
-t.Logf("Verification query returned: %s", outStr)
-}
-} else {
-t.Logf("Verification query completed with: %s", string(out))
-}
+require.Contains(t, outStr, "true", "bulletproof verification query should contain true")
 
 t.Log("Bulletproof contract test completed successfully")
 }
 
-// TestMultipleContracts tests all three contracts in sequence
+// TestMultipleContracts tests all listed contracts in sequence
 func TestMultipleContracts(t *testing.T) {
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
