@@ -7,3 +7,6 @@ build/
 artifacts/
 # Added by goreleaser init:
 dist/
+
+# Rust build artifacts
+target/

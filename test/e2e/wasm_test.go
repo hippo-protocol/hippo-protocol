@@ -1,6 +1,7 @@
 package test
 
 import (
+"encoding/json"
 "fmt"
 "io"
 "net/http"
@@ -8,6 +9,7 @@ import (
 "os/exec"
 "path/filepath"
 "regexp"
+"strconv"
 "strings"
 "testing"
 "time"
@@ -18,9 +20,10 @@ import (
 
 // Contract file paths
 const (
-counterContractPath     = "testdata/contracts/counter.wasm"
-cw20TokenContractPath   = "testdata/contracts/cw20_token.wasm"
-nameserviceContractPath = "testdata/contracts/nameservice.wasm"
+counterContractPath      = "testdata/contracts/counter.wasm"
+cw20TokenContractPath    = "testdata/contracts/cw20_token.wasm"
+nameserviceContractPath  = "testdata/contracts/nameservice.wasm"
+bulletproofContractPath  = "testdata/contracts/bulletproof.wasm"
 )
 
 type WasmTest struct {
@@ -520,7 +523,177 @@ t.Logf("API endpoint %s returned status %d", test.path, response.StatusCode)
 }
 }
 
-// TestMultipleContracts tests all three contracts in sequence
+// queryTxAndExtractGasUsed queries a transaction by hash and extracts the gas_used value
+func queryTxAndExtractGasUsed(t *testing.T, txhash string) int64 {
+cmd := exec.Command("go", "run", path, "query", "tx", txhash, "--output=json")
+out, err := cmd.CombinedOutput()
+if err != nil {
+// Try without --output=json
+cmd = exec.Command("go", "run", path, "query", "tx", txhash)
+out, err = cmd.CombinedOutput()
+require.NoError(t, err, "should be able to query transaction: %s", string(out))
+}
+
+outStr := string(out)
+
+// Try JSON format first
+var txResult map[string]interface{}
+if json.Unmarshal(out, &txResult) == nil {
+if gasUsed, ok := txResult["gas_used"]; ok {
+switch v := gasUsed.(type) {
+case string:
+gas, err := strconv.ParseInt(v, 10, 64)
+if err != nil {
+t.Fatalf("Failed to parse gas_used string %q: %v", v, err)
+return 0
+}
+return gas
+case float64:
+return int64(v)
+}
+}
+// Try nested tx_response
+if txResp, ok := txResult["tx_response"].(map[string]interface{}); ok {
+if gasUsed, ok := txResp["gas_used"]; ok {
+switch v := gasUsed.(type) {
+case string:
+gas, err := strconv.ParseInt(v, 10, 64)
+if err != nil {
+t.Fatalf("Failed to parse gas_used string %q: %v", v, err)
+return 0
+}
+return gas
+case float64:
+return int64(v)
+}
+}
+}
+}
+
+// Try YAML format: gas_used: "123"
+re := regexp.MustCompile(`gas_used:\s*"?(\d+)"?`)
+match := re.FindStringSubmatch(outStr)
+if len(match) >= 2 {
+gas, err := strconv.ParseInt(match[1], 10, 64)
+if err != nil {
+t.Fatalf("Failed to parse gas_used from YAML %q: %v\nfull tx output: %s", match[1], err, outStr)
+return 0
+}
+return gas
+}
+
+t.Fatalf("Could not extract gas_used from tx output: %s", outStr)
+return 0
+}
+
+// TestBulletproofContract tests the bulletproof verification contract
+// It stores the contract, instantiates it with a pre-generated bulletproof range proof,
+// executes verification, and measures gas consumption.
+func TestBulletproofContract(t *testing.T) {
+delegator_address := os.Getenv(key_delegator_address)
+require.NotEmpty(t, delegator_address, "delegator address should be set")
+
+// Pre-generated bulletproof range proof data
+// Generated using: secret_value=1037578891, num_bits=32, transcript="doctest example"
+proofHex := "8026afd76427529f11bcc07e29a182e3122bab7595b61237dda31548ba96cc3e4a84148c615bb889cd99bab5519e2e7d815a2469b76b5e6bf56c1051264f9b5b0a75a84e179a21b7701de8b744612ecd96b5e73f2ad4ffda4dde5a0bf0fa5b4490bd0c7ec41b331068f3db152278f5147c876201e741a6817616ece7c58a6507a7736c1fc341bb3ab65cc6e7196855a42eed503f04b56b190fced87eab134400c9fdcb1eb43fc7fed2882b2f56b9eea62ce8a024bca4f23aa4d70afb323d4c0ad3a38d409012207bb35e174a112794008d2c3f8a0d7f4282ab718493096da30d5e432f7917f017e4ee80191990aed9a51d404700c1e441ef3c46e83129aa2f5b4a1047757dc4ce4c11d1ea429c7a95dd95bc13f7c9fd5b4c64c5aa97040948142a72e57ef4658bf2894029fc69dcd893fe5bf72d90aced60e2b4608b0bfa6a06f26414c843a86df58d95f92c1904565898262d1170ad70252445bd883ec208415ef350cb0515a602d37cbb668d78e6f6211fa4caf338513c5e551f3a36b33214c89e9681301b830da28be02204d062ca19b2edacd56fa5ce4c7e1d0a9f1fd85f7049fe27dffc601b41f35dce8b0f61b3c92a8f51ab40299e6bf452c81d95ee1880dede9a6da64b3237451715c8da5970296d3b34b0c9b585b355f31e2b71c46cd49fe004d2ec5371b3029ee2d6d0881d90d73ac81b1d16a82a74f46e36b14e33a6abaf35b81fdccbe00031d8c5918974f53d35973cd7077b839c2dbfcead70236581065006dbb5f1e1541fa6226e172e0e9471a7a0a1ed5aa627d26e9aac140f0b2ddee38a4502fe9f6327e81fdb849cd7c7698e9add48aecab22f512b56fd0b"
+commitmentHex := "5e50cca6bdd5d8c04e1a2848d74d885647d93b883cb4f182fbb5e3bdbf00506c"
+expectedProofHash := "e0b23f6f13944e490c2a28d0ee297e0112e1c4b2c26edb9329286ed5dcf69034"
+
+// Step 1: Store the bulletproof contract
+t.Log("Step 1: Storing bulletproof contract...")
+tempDir := t.TempDir()
+wasmFile := filepath.Join(tempDir, "bulletproof.wasm")
+wasmBytes := loadContractWasm(t, bulletproofContractPath)
+err := os.WriteFile(wasmFile, wasmBytes, 0644)
+require.NoError(t, err, "should write wasm file")
+
+txOut := testTx(t, []string{
+"tx", "wasm", "store",
+wasmFile,
+fmt.Sprintf("--from=%s", delegator_address),
+"--gas=5000000",
+"--fees=2500000000000000000ahp",
+"-y",
+"--keyring-backend=file",
+})
+
+// Extra wait for larger contract compilation
+time.Sleep(6 * time.Second)
+txhash := extractTxHashAndWait(t, txOut)
+codeID := queryTxAndExtractCodeID(t, txhash)
+t.Logf("Bulletproof contract stored with code_id: %s", codeID)
+
+// Verify the code was stored
+cmd := exec.Command("go", "run", path, "query", "wasm", "code-info", codeID)
+out, err := cmd.CombinedOutput()
+require.NoError(t, err, "should be able to query code info")
+assert.Contains(t, string(out), codeID, "code info should contain code_id")
+
+// Step 2: Instantiate with bulletproof proof data
+t.Log("Step 2: Instantiating bulletproof contract with proof data...")
+initMsg := fmt.Sprintf(`{"proof_hex":"%s","commitment_hex":"%s","num_bits":32}`, proofHex, commitmentHex)
+txOut = testTx(t, []string{
+"tx", "wasm", "instantiate",
+codeID,
+initMsg,
+"--label=bulletproof-verify",
+fmt.Sprintf("--from=%s", delegator_address),
+"--gas=2000000",
+"--fees=1000000000000000000ahp",
+"--no-admin",
+"-y",
+"--keyring-backend=file",
+})
+
+txhash = extractTxHashAndWait(t, txOut)
+contractAddr := queryTxAndExtractContractAddr(t, txhash)
+t.Logf("Bulletproof contract instantiated at address: %s", contractAddr)
+
+// Step 3: Query the stored proof hash
+t.Log("Step 3: Querying stored proof hash...")
+queryMsg := `{"get_proof_hash":{}}`
+cmd = exec.Command("go", "run", path, "query", "wasm", "contract-state", "smart", contractAddr, queryMsg)
+out, err = cmd.CombinedOutput()
+require.NoErrorf(t, err, "failed to query stored proof hash: %s", string(out))
+outStr := string(out)
+t.Logf("Proof hash query result: %s", outStr)
+require.Contains(t, outStr, expectedProofHash, "stored proof hash should match expected value")
+
+// Step 4: Execute verification and measure gas
+t.Log("Step 4: Executing bulletproof verification...")
+execMsg := `{"verify":{}}`
+txOut = testTx(t, []string{
+"tx", "wasm", "execute",
+contractAddr,
+execMsg,
+fmt.Sprintf("--from=%s", delegator_address),
+"--gas=50000000",
+"--fees=25000000000000000000ahp",
+"-y",
+"--keyring-backend=file",
+})
+
+assert.Contains(t, txOut, "txhash", "execute verification transaction should return txhash")
+txhash = extractTxHashAndWait(t, txOut)
+
+// Extract gas consumed for verification
+gasUsed := queryTxAndExtractGasUsed(t, txhash)
+t.Logf("=== BULLETPROOF VERIFICATION GAS CONSUMED: %d ===", gasUsed)
+
+// Step 5: Query verification via smart query
+t.Log("Step 5: Querying bulletproof verification result...")
+verifyQueryMsg := `{"verify":{}}`
+cmd = exec.Command("go", "run", path, "query", "wasm", "contract-state", "smart", contractAddr, verifyQueryMsg)
+out, err = cmd.CombinedOutput()
+require.NoErrorf(t, err, "verification smart query failed: %s", string(out))
+outStr = string(out)
+t.Logf("Verification query result: %s", outStr)
+require.Contains(t, outStr, "true", "bulletproof verification query should contain true")
+
+t.Log("Bulletproof contract test completed successfully")
+}
+
+// TestMultipleContracts tests all listed contracts in sequence
 func TestMultipleContracts(t *testing.T) {
 delegator_address := os.Getenv(key_delegator_address)
 require.NotEmpty(t, delegator_address, "delegator address should be set")
@@ -532,6 +705,7 @@ path string
 {"Counter", counterContractPath},
 {"CW20 Token", cw20TokenContractPath},
 {"Name Service", nameserviceContractPath},
+{"Bulletproof", bulletproofContractPath},
 }
 
 codeIDs := make([]string, 0, len(contracts))
@@ -546,12 +720,20 @@ wasmBytes := loadContractWasm(t, contract.path)
 err := os.WriteFile(wasmFile, wasmBytes, 0644)
 require.NoError(t, err, "should write wasm file for %s", contract.name)
 
+// Use higher gas and fees for larger contracts
+gas := "2000000"
+fees := "1000000000000000000ahp"
+if contract.path == bulletproofContractPath {
+gas = "5000000"
+fees = "2500000000000000000ahp"
+}
+
 txOut := testTx(t, []string{
 "tx", "wasm", "store",
 wasmFile,
 fmt.Sprintf("--from=%s", delegator_address),
-"--gas=2000000",
-"--fees=1000000000000000000ahp",
+fmt.Sprintf("--gas=%s", gas),
+fmt.Sprintf("--fees=%s", fees),
 
 "-y",
 "--keyring-backend=file",
