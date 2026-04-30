@@ -2,9 +2,13 @@
 name = "hippo-sdk"
 version = "2.0.2"
 edition = "2021"
+description = "Core WebAssembly SDK for the Hippo Protocol"
+license = "MIT"
+repository = "https://github.com/hippo-protocol/hippo-protocol"
+readme = "README.md"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 aes-gcm = "0.10.3"
@@ -19,3 +23,10 @@ console_error_panic_hook = "0.1.6"
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.0"
+
+# Optimize the final Wasm binary
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
+codegen-units = 1
