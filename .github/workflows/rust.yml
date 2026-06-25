@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   test_and_build:
@@ -40,34 +41,56 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      # 4. Code Formatting Check
+      # 4. Install clang (required by some wasm-pack dependencies)
+      - name: Install clang
+        run: sudo apt-get update -qq && sudo apt-get install -y clang
+
+      # 5. Code Formatting Check
       # Run 'cargo fmt --check' to ensure the code adheres to style guidelines.
       # This step will fail the workflow if any files need formatting.
       - name: Check Code Formatting (cargo fmt --check)
         run: cargo fmt -- --check
         working-directory: ./sdk/core
 
-      # 5. Standard Cargo Tests
+      # 6. Standard Cargo Tests
       - name: Run Cargo Tests
         run: cargo test
         working-directory: ./sdk/core
 
-      # 6. wasm-pack Tests for Node.js environment
+      # 7. wasm-pack Tests for Node.js environment
       - name: Run wasm-pack Node.js Tests
         run: wasm-pack test --node
         working-directory: ./sdk/core
 
-      # 7. Build for nodejs
+      # 8. Build for nodejs
       - name: Build for Node.js
         run: wasm-pack build --target=nodejs --out-dir=../js/pkg/node --out-name=core && rm ../js/pkg/node/.gitignore
         working-directory: ./sdk/core
 
-      # 8. Build for web (bundler target)
+      # 9. Build for web (bundler target)
       - name: Build for Web (Bundler)
         run: wasm-pack build --target=bundler --out-dir=../js/pkg/bundle --out-name=core && rm ../js/pkg/bundle/.gitignore
         working-directory: ./sdk/core
 
-      # 9. Package for npm
+      # 10. Package for npm
       - name: Package for NPM
         run: wasm-pack pack ../js/pkg
         working-directory: ./sdk/core
+
+      # 11. JS example smoke test — installs the packed .tgz into the real consumer
+      #     project and runs it, catching packaging/export issues wasm-pack pack alone won't surface.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install JS example dependencies
+        run: |
+          TARBALL=$(ls ../../pkg/*.tgz | head -1)
+          npm pkg set dependencies.hippo-sdk="file:$TARBALL"
+          npm install
+        working-directory: ./sdk/js/examples/nodejs
+
+      - name: Run JS example
+        run: node index.js
+        working-directory: ./sdk/js/examples/nodejs
