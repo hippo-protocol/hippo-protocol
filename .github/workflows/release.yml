@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      TM_VERSION: v0.38.21
+      COSMWASM_VERSION: v2.2.4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run GoReleaser Cross
+        run: |
+          docker run \
+            --rm \
+            -e CGO_ENABLED=1 \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -e TM_VERSION="${TM_VERSION}" \
+            -e COSMWASM_VERSION="${COSMWASM_VERSION}" \
+            -v "$(pwd):/go/src/hippod" \
+            -w /go/src/hippod \
+            ghcr.io/goreleaser/goreleaser-cross:v1.24 \
+            release --clean --timeout=90m
