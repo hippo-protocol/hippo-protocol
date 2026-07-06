@@ -130,8 +130,10 @@ checksum:
     algorithm: sha256
 
 changelog:
-    disable: true
+    use: github
 
 release:
-    prerelease: true
+    prerelease: auto
     name_template: "v{{.Version}}"
+
+# To trigger a release: git tag v2.0.3 && git push origin v2.0.3
