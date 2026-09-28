@@ -70,8 +70,8 @@ console.log("Signature Verified:", isVerified);
 // Expected output: true
 
 // 7. Prove a secret value lies in [0, 2^32) without revealing it
-const bulletproof = generate_bulletproof(42n, 32);
-const isProofValid = verify_bulletproof(bulletproof, 32);
+const bulletproof = generate_bulletproof(42n, 32, "my-app");
+const isProofValid = verify_bulletproof(bulletproof, 32, "my-app");
 
 console.log("Bulletproof:", bulletproof.to_object());
 console.log("Bulletproof Verified:", isProofValid);
@@ -150,21 +150,23 @@ Performs an **Elliptic Curve Diffie-Hellman (ECDH)** key exchange to compute a s
 - **`pubkey`**: The other party's public key.
 - **Returns**: The shared secret as a hex string.
 
-### `generate_bulletproof(value: bigint, bits: number): Bulletproof`
+### `generate_bulletproof(value: bigint, bits: number, tag: string): Bulletproof`
 
-Generates a **Bulletproof** zero-knowledge range proof that a secret value lies in `[0, 2^bits)`, without revealing the value. The proof is compatible with the Hippo Protocol on-chain bulletproof contract.
+Generates a **Bulletproof** zero-knowledge range proof that a secret value lies in `[0, 2^bits)`, without revealing the value.
 
 - **`value`**: The secret value, which must be less than `2^bits`.
 - **`bits`**: The range bit size: `8`, `16`, `32`, or `64`.
+- **`tag`**: A domain separation tag naming the proof's purpose (e.g. your app), as with `pedersen_commit`. The proof only verifies with the same tag.
 - **Returns**: `Bulletproof` with the hex-encoded `proof` and `commitment`.
 
-### `verify_bulletproof(bulletproof: Bulletproof, bits: number): boolean`
+### `verify_bulletproof(bulletproof: Bulletproof, bits: number, tag: string): boolean`
 
 Verifies a **Bulletproof** range proof against its commitment. A received proof can be rebuilt with `new Bulletproof(proof, commitment)` or `Bulletproof.from_object({ proof, commitment })`.
 
 - **`bulletproof`**: The `Bulletproof` object.
 - **`bits`**: The range bit size to verify: `8`, `16`, `32`, or `64`.
-- **Returns**: `boolean` indicating if the proof is valid for the range.
+- **`tag`**: The tag the proof was generated with.
+- **Returns**: `boolean` indicating if the proof is valid for the range and tag.
 
 ---
 

@@ -126,7 +126,7 @@ export function encrypt_aes_bytes(data: Uint8Array, key: string): AesEncryptedDa
 
 export function encrypt_bytes(data: Uint8Array, pubkey: string): EncryptedDataBytes;
 
-export function generate_bulletproof(value: bigint, bits: number): Bulletproof;
+export function generate_bulletproof(value: bigint, bits: number, tag: string): Bulletproof;
 
 export function init_panic_hook(): void;
 
@@ -144,4 +144,4 @@ export function sign(data: string, privkey: string): string;
 
 export function verify(data: string, sig: string, pubkey: string): boolean;
 
-export function verify_bulletproof(bulletproof: Bulletproof, bits: number): boolean;
+export function verify_bulletproof(bulletproof: Bulletproof, bits: number, tag: string): boolean;

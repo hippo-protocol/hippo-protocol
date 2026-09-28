@@ -1347,12 +1347,15 @@ exports.encrypt_bytes = encrypt_bytes;
 /**
  * @param {bigint} value
  * @param {number} bits
+ * @param {string} tag
  * @returns {Bulletproof}
  */
-function generate_bulletproof(value, bits) {
+function generate_bulletproof(value, bits, tag) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        wasm.generate_bulletproof(retptr, value, bits);
+        const ptr0 = passStringToWasm0(tag, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.generate_bulletproof(retptr, value, bits, ptr0, len0);
         var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
         var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
         var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -1535,13 +1538,16 @@ exports.verify = verify;
 /**
  * @param {Bulletproof} bulletproof
  * @param {number} bits
+ * @param {string} tag
  * @returns {boolean}
  */
-function verify_bulletproof(bulletproof, bits) {
+function verify_bulletproof(bulletproof, bits, tag) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         _assertClass(bulletproof, Bulletproof);
-        wasm.verify_bulletproof(retptr, bulletproof.__wbg_ptr, bits);
+        const ptr0 = passStringToWasm0(tag, wasm.__wbindgen_export, wasm.__wbindgen_export2);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.verify_bulletproof(retptr, bulletproof.__wbg_ptr, bits, ptr0, len0);
         var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
         var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
         var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
