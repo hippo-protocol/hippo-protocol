@@ -119,27 +119,32 @@ mod tests {
     fn test_bulletproof() {
         // given
         let bits = 32;
-        let proof = generate_bulletproof(1234, bits).unwrap();
-        let other_proof = generate_bulletproof(1234, bits).unwrap();
+        let tag = String::from("hippo");
+        let proof = generate_bulletproof(1234, bits, tag.clone()).unwrap();
+        let other_proof = generate_bulletproof(1234, bits, tag.clone()).unwrap();
         let mut tampered_proof = hex::decode(proof.proof()).unwrap();
         tampered_proof[0] ^= 1;
         // when
-        let is_verified = verify_bulletproof(&proof, bits).unwrap();
-        let wrong_bits = verify_bulletproof(&proof, 64).unwrap();
-        let unsupported_bits = verify_bulletproof(&proof, 10).unwrap();
+        let is_verified = verify_bulletproof(&proof, bits, tag.clone()).unwrap();
+        let wrong_tag = verify_bulletproof(&proof, bits, String::from("wrong hippo")).unwrap();
+        let wrong_bits = verify_bulletproof(&proof, 64, tag.clone()).unwrap();
+        let unsupported_bits = verify_bulletproof(&proof, 10, tag.clone()).unwrap();
         let wrong_commitment = verify_bulletproof(
             // Same value, but commitment is from another proof.
             &Bulletproof::new(proof.proof(), other_proof.commitment()),
             bits,
+            tag.clone(),
         )
         .unwrap();
         let wrong_proof = verify_bulletproof(
             &Bulletproof::new(hex::encode(tampered_proof), proof.commitment()),
             bits,
+            tag,
         )
         .unwrap();
         // then
         assert!(is_verified);
+        assert!(!wrong_tag);
         assert!(!wrong_bits);
         assert!(!unsupported_bits);
         assert!(!wrong_commitment);
@@ -148,24 +153,25 @@ mod tests {
 
     #[test]
     fn test_bulletproof_range_bounds() {
+        let tag = String::from("hippo");
         for bits in [8, 16, 32, 64] {
             // both ends of the range [0, 2^bits)
             for value in [0, u64::MAX >> (64 - bits)] {
-                let proof = generate_bulletproof(value, bits).unwrap();
-                assert!(verify_bulletproof(&proof, bits).unwrap());
+                let proof = generate_bulletproof(value, bits, tag.clone()).unwrap();
+                assert!(verify_bulletproof(&proof, bits, tag.clone()).unwrap());
             }
         }
     }
 
     #[test]
-    fn test_bulletproof_onchain_proof() {
-        // given: pre-generated proof of the on-chain bulletproof contract e2e test(value 1037578891, 32 bits).
+    fn test_bulletproof_known_proof() {
+        // given: pre-generated proof(value 1037578891, 32 bits, tag "hippo"), so a change of proof format is caught.
         let proof = Bulletproof::new(
-            String::from("8026afd76427529f11bcc07e29a182e3122bab7595b61237dda31548ba96cc3e4a84148c615bb889cd99bab5519e2e7d815a2469b76b5e6bf56c1051264f9b5b0a75a84e179a21b7701de8b744612ecd96b5e73f2ad4ffda4dde5a0bf0fa5b4490bd0c7ec41b331068f3db152278f5147c876201e741a6817616ece7c58a6507a7736c1fc341bb3ab65cc6e7196855a42eed503f04b56b190fced87eab134400c9fdcb1eb43fc7fed2882b2f56b9eea62ce8a024bca4f23aa4d70afb323d4c0ad3a38d409012207bb35e174a112794008d2c3f8a0d7f4282ab718493096da30d5e432f7917f017e4ee80191990aed9a51d404700c1e441ef3c46e83129aa2f5b4a1047757dc4ce4c11d1ea429c7a95dd95bc13f7c9fd5b4c64c5aa97040948142a72e57ef4658bf2894029fc69dcd893fe5bf72d90aced60e2b4608b0bfa6a06f26414c843a86df58d95f92c1904565898262d1170ad70252445bd883ec208415ef350cb0515a602d37cbb668d78e6f6211fa4caf338513c5e551f3a36b33214c89e9681301b830da28be02204d062ca19b2edacd56fa5ce4c7e1d0a9f1fd85f7049fe27dffc601b41f35dce8b0f61b3c92a8f51ab40299e6bf452c81d95ee1880dede9a6da64b3237451715c8da5970296d3b34b0c9b585b355f31e2b71c46cd49fe004d2ec5371b3029ee2d6d0881d90d73ac81b1d16a82a74f46e36b14e33a6abaf35b81fdccbe00031d8c5918974f53d35973cd7077b839c2dbfcead70236581065006dbb5f1e1541fa6226e172e0e9471a7a0a1ed5aa627d26e9aac140f0b2ddee38a4502fe9f6327e81fdb849cd7c7698e9add48aecab22f512b56fd0b"),
-            String::from("5e50cca6bdd5d8c04e1a2848d74d885647d93b883cb4f182fbb5e3bdbf00506c"),
+            String::from("e212dffd521fb6d3d8b50ce340282dae99550da537e974c44a14aed10fb6181056a6712ede1569a2e5322f9f7597541b9e4d4db86ec4e8d85ad7f81907e85322e80253330072ae2cbfc952499f13179823445cf670c970cd77a6c085f9bbb57d8c1521c815565be19e48562a6b8272e9d5ab632057e3501b22de200c28318a33a1de7c84bdc052aa856526c15b9aca47c28e3bcb1e46ae55a6327078eab45c022371548ae03c43b7eb6a34bcecd84036368c544f76848ba90289e8df08b6e10512034a06222a0126c72c2e891aa19274b80a66b8564dfb41e3a27a58aeb52207325875ed52ae98057782a316cea9bf0a5da35e8ecda7183a3d5e6ba8d0af66219802e8d59a16bf9e61972939d0088c694f4bc572822008329577a77435752307ac9c4e77c4f23e7183816148fcd9e26063150348bc30d083c0bac539183cf1350cb6ab3b0e16c869506b42254cc92b755a56ee6b95f553458a183f75377e1c1de260546d1dee299a03d662f28f26279b4bf1a091755a0aa7d3f204608a37f26860c55f9a5f8b4af37ebc573e0817df2a1b7e2fec4219cb13628c54b87717ee5066814d23d78bc6cf669bbb3d656d48781c53f806106c6de758c5a6450dd7a62f7649bb544e79db21bdd6b4043b89bc23fdb3dad7516e76964986e2b7ce1c6101dcd6ca57accc97d4565b3202d6c37e7f1c87119cdd632c8fd4c1e7b7695bbb2454a3baffbe506379246629949bbf9fc72a77a3b5d53caefdafd5aa7e8d98be5963d6778b3046aae2ff666f0aacc1488381d6917eaad65d489e8ae029ea52fc0a357ccd683140694e2934e8b4cb3bc8ae8ffdcf2cd2b8810bd37f25aac610b502"),
+            String::from("30129e12b0a685521465275031da1d57b7386c7f6078644bc8ed88fb36d1ef51"),
         );
         // when
-        let is_verified = verify_bulletproof(&proof, 32).unwrap();
+        let is_verified = verify_bulletproof(&proof, 32, String::from("hippo")).unwrap();
         // then
         assert!(is_verified);
     }

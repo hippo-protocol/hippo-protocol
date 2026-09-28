@@ -337,11 +337,16 @@ pub fn decrypt_aes_bytes(data: AesEncryptedDataBytes, key: String) -> Result<Vec
 
 // Bulletproof is a zkp range proof, proving a committed value lies in [0, 2^bits) without revealing it.
 // bits must be 8, 16, 32 or 64. Commitment is Pedersen over Ristretto, not secp256k1 like pedersen_commit.
-// Label and generators match the on-chain bulletproof contract, so the proof is verifiable on-chain too.
-const BULLETPROOF_TRANSCRIPT_LABEL: &[u8] = b"doctest example";
+// Tag is for domain(or purpose) separation as in pedersen_commit: a proof only verifies with the same tag.
+// Merlin only takes a static label, so tag is bound into the transcript as a message.
+fn bulletproof_transcript(tag: String) -> Transcript {
+    let mut transcript = Transcript::new(b"hippo-sdk bulletproof");
+    transcript.append_message(b"tag", tag.as_bytes());
+    transcript
+}
 
 #[wasm_bindgen]
-pub fn generate_bulletproof(value: u64, bits: usize) -> Result<Bulletproof, JsError> {
+pub fn generate_bulletproof(value: u64, bits: usize, tag: String) -> Result<Bulletproof, JsError> {
     // The library silently creates an unverifiable proof for an out-of-range value, so reject it here.
     if bits < 64 && value >> bits != 0 {
         return Err(JsError::new("Value must be less than 2^bits"));
@@ -350,7 +355,7 @@ pub fn generate_bulletproof(value: u64, bits: usize) -> Result<Bulletproof, JsEr
         // Generators are deterministic, so capacity 64 (max bits) is compatible with any bits.
         &BulletproofGens::new(64, 1),
         &PedersenGens::default(),
-        &mut Transcript::new(BULLETPROOF_TRANSCRIPT_LABEL),
+        &mut bulletproof_transcript(tag),
         value,
         // Blinding factor is not returned, as opening the commitment would reveal the value.
         &Scalar::random(&mut Secp256k1Rng),
@@ -365,7 +370,11 @@ pub fn generate_bulletproof(value: u64, bits: usize) -> Result<Bulletproof, JsEr
 }
 
 #[wasm_bindgen]
-pub fn verify_bulletproof(bulletproof: &Bulletproof, bits: usize) -> Result<bool, JsError> {
+pub fn verify_bulletproof(
+    bulletproof: &Bulletproof,
+    bits: usize,
+    tag: String,
+) -> Result<bool, JsError> {
     let proof_bytes = hex::decode(bulletproof.proof())
         .map_err(|e| JsError::new(&format!("Invalid proof: {}", e)))?;
     let proof = RangeProof::from_bytes(&proof_bytes)
@@ -379,7 +388,7 @@ pub fn verify_bulletproof(bulletproof: &Bulletproof, bits: usize) -> Result<bool
         .verify_single(
             &BulletproofGens::new(64, 1),
             &PedersenGens::default(),
-            &mut Transcript::new(BULLETPROOF_TRANSCRIPT_LABEL),
+            &mut bulletproof_transcript(tag),
             &CompressedRistretto(commitment_bytes),
             bits,
         )

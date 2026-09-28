@@ -56,17 +56,19 @@ fn ecdh_shared_secret() {
 #[wasm_bindgen_test]
 fn bulletproof() {
     use crate::{generate_bulletproof, types::Bulletproof, verify_bulletproof};
-    let proof = generate_bulletproof(1234, 32).unwrap();
-    assert!(verify_bulletproof(&proof, 32).unwrap());
-    assert!(!verify_bulletproof(&proof, 64).unwrap());
+    let tag = || String::from("hippo");
+    let proof = generate_bulletproof(1234, 32, tag()).unwrap();
+    assert!(verify_bulletproof(&proof, 32, tag()).unwrap());
+    assert!(!verify_bulletproof(&proof, 32, String::from("wrong hippo")).unwrap());
+    assert!(!verify_bulletproof(&proof, 64, tag()).unwrap());
     // Value must be less than 2^bits, and bits must be 8, 16, 32 or 64.
-    assert!(generate_bulletproof(256, 8).is_err());
-    assert!(generate_bulletproof(1, 10).is_err());
+    assert!(generate_bulletproof(256, 8, tag()).is_err());
+    assert!(generate_bulletproof(1, 10, tag()).is_err());
     // Malformed proof or commitment.
     let invalid_hex = Bulletproof::new(String::from("zz"), proof.commitment());
     let truncated_proof = Bulletproof::new(proof.proof()[..64].to_string(), proof.commitment());
     let short_commitment = Bulletproof::new(proof.proof(), proof.commitment()[..62].to_string());
-    assert!(verify_bulletproof(&invalid_hex, 32).is_err());
-    assert!(verify_bulletproof(&truncated_proof, 32).is_err());
-    assert!(verify_bulletproof(&short_commitment, 32).is_err());
+    assert!(verify_bulletproof(&invalid_hex, 32, tag()).is_err());
+    assert!(verify_bulletproof(&truncated_proof, 32, tag()).is_err());
+    assert!(verify_bulletproof(&short_commitment, 32, tag()).is_err());
 }
