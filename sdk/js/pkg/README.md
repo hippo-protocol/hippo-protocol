@@ -1,6 +1,6 @@
 # 🦛 hippo-sdk
 
-`hippo-sdk` is a WebAssembly-based npm library for cryptographic operations, including **key pair generation**, **ECDH encryption**, **ECDSA signing**, and **DID management**. It's built with Rust for high performance and compiled to WebAssembly for seamless use in web applications.
+`hippo-sdk` is a WebAssembly-based npm library for cryptographic operations, including **key pair generation**, **ECDH encryption**, **ECDSA signing**, **DID management**, and **Bulletproof range proofs**. It's built with Rust for high performance and compiled to WebAssembly for seamless use in web applications.
 
 ---
 
@@ -28,6 +28,8 @@ import {
   decrypt,
   sign,
   verify,
+  generate_bulletproof,
+  verify_bulletproof,
 } from "hippo-sdk";
 
 // 1. Generate a new key pair
@@ -65,6 +67,14 @@ console.log("Signature:", signature);
 const isVerified = verify(messageToSign, signature, pubkey);
 
 console.log("Signature Verified:", isVerified);
+// Expected output: true
+
+// 7. Prove a secret value lies in [0, 2^32) without revealing it
+const bulletproof = generate_bulletproof(42n, 32);
+const isProofValid = verify_bulletproof(bulletproof, 32);
+
+console.log("Bulletproof:", bulletproof.to_object());
+console.log("Bulletproof Verified:", isProofValid);
 // Expected output: true
 ```
 
@@ -139,6 +149,22 @@ Performs an **Elliptic Curve Diffie-Hellman (ECDH)** key exchange to compute a s
 - **`privkey`**: Your private key.
 - **`pubkey`**: The other party's public key.
 - **Returns**: The shared secret as a hex string.
+
+### `generate_bulletproof(value: bigint, bits: number): Bulletproof`
+
+Generates a **Bulletproof** zero-knowledge range proof that a secret value lies in `[0, 2^bits)`, without revealing the value. The proof is compatible with the Hippo Protocol on-chain bulletproof contract.
+
+- **`value`**: The secret value, which must be less than `2^bits`.
+- **`bits`**: The range bit size: `8`, `16`, `32`, or `64`.
+- **Returns**: `Bulletproof` with the hex-encoded `proof` and `commitment`.
+
+### `verify_bulletproof(bulletproof: Bulletproof, bits: number): boolean`
+
+Verifies a **Bulletproof** range proof against its commitment. A received proof can be rebuilt with `new Bulletproof(proof, commitment)` or `Bulletproof.from_object({ proof, commitment })`.
+
+- **`bulletproof`**: The `Bulletproof` object.
+- **`bits`**: The range bit size to verify: `8`, `16`, `32`, or `64`.
+- **Returns**: `boolean` indicating if the proof is valid for the range.
 
 ---
 

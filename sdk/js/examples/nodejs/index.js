@@ -3,6 +3,8 @@ import {
   encrypt,
   decrypt,
   key_to_did,
+  generate_bulletproof,
+  verify_bulletproof,
   EncodingType,
 } from "hippo-sdk";
 
@@ -23,6 +25,12 @@ try {
 
   const did = key_to_did(keyPair.pubkey);
   console.log("did:", did.id);
+
+  const bulletproof = generate_bulletproof(42n, 32);
+  console.log(
+    "prove a secret value is in [0, 2^32) with bulletproof: ",
+    verify_bulletproof(bulletproof, 32)
+  );
 } catch (e) {
   if (e.code === "MODULE_NOT_FOUND") {
     console.log("You should build the sdk using wasm-pack");
