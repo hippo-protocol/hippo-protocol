@@ -7,6 +7,9 @@ use aes_gcm::{
     aead::{Aead, AeadCore, OsRng as AesRng},
     Aes256Gcm, Key, KeyInit, Nonce,
 };
+use bulletproofs::{BulletproofGens, PedersenGens, RangeProof};
+use curve25519_dalek_ng::{ristretto::CompressedRistretto, scalar::Scalar};
+use merlin::Transcript;
 use secp256k1_zkp::{
     ecdh, rand::rngs::OsRng as Secp256k1Rng, verify_commitments_sum_to_equal, Generator, Message,
     PedersenCommitment, PublicKey, Secp256k1, SecretKey,
@@ -18,7 +21,7 @@ use secp256k1_zkp::{
 };
 use wasm_bindgen::prelude::*;
 
-use types::{AesEncryptedData, Commitment, Did, EncodingType, EncryptedData, KeyPair};
+use types::{AesEncryptedData, Bulletproof, Commitment, Did, EncodingType, EncryptedData, KeyPair};
 
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
@@ -330,6 +333,66 @@ pub fn decrypt_aes_bytes(data: AesEncryptedDataBytes, key: String) -> Result<Vec
             data.data().as_slice(),
         )
         .map_err(|e| JsError::new(&format!("AES decryption failed: {}", e)))
+}
+
+// Bulletproof is a zkp range proof, proving a committed value lies in [0, 2^bits) without revealing it.
+// bits must be 8, 16, 32 or 64. Commitment is Pedersen over Ristretto, not secp256k1 like pedersen_commit.
+// Tag is for domain(or purpose) separation as in pedersen_commit: a proof only verifies with the same tag.
+// Merlin only takes a static label, so tag is bound into the transcript as a message.
+fn bulletproof_transcript(tag: String) -> Transcript {
+    let mut transcript = Transcript::new(b"hippo-sdk bulletproof");
+    transcript.append_message(b"tag", tag.as_bytes());
+    transcript
+}
+
+#[wasm_bindgen]
+pub fn generate_bulletproof(value: u64, bits: usize, tag: String) -> Result<Bulletproof, JsError> {
+    // The library silently creates an unverifiable proof for an out-of-range value, so reject it here.
+    if bits < 64 && value >> bits != 0 {
+        return Err(JsError::new("Value must be less than 2^bits"));
+    }
+    let (proof, commitment) = RangeProof::prove_single(
+        // Generators are deterministic, so capacity 64 (max bits) is compatible with any bits.
+        &BulletproofGens::new(64, 1),
+        &PedersenGens::default(),
+        &mut bulletproof_transcript(tag),
+        value,
+        // Blinding factor is not returned, as opening the commitment would reveal the value.
+        &Scalar::random(&mut Secp256k1Rng),
+        bits,
+    )
+    .map_err(|e| JsError::new(&format!("Bulletproof generation failed: {}", e)))?;
+
+    Ok(Bulletproof::new(
+        hex::encode(proof.to_bytes()),
+        hex::encode(commitment.to_bytes()),
+    ))
+}
+
+#[wasm_bindgen]
+pub fn verify_bulletproof(
+    bulletproof: &Bulletproof,
+    bits: usize,
+    tag: String,
+) -> Result<bool, JsError> {
+    let proof_bytes = hex::decode(bulletproof.proof())
+        .map_err(|e| JsError::new(&format!("Invalid proof: {}", e)))?;
+    let proof = RangeProof::from_bytes(&proof_bytes)
+        .map_err(|e| JsError::new(&format!("Invalid proof: {}", e)))?;
+    let commitment_bytes: [u8; 32] = hex::decode(bulletproof.commitment())
+        .map_err(|e| JsError::new(&format!("Invalid commitment: {}", e)))?
+        .try_into()
+        .map_err(|_| JsError::new("Invalid commitment: must be 32 bytes"))?;
+
+    Ok(proof
+        .verify_single(
+            &BulletproofGens::new(64, 1),
+            &PedersenGens::default(),
+            &mut bulletproof_transcript(tag),
+            &CompressedRistretto(commitment_bytes),
+            bits,
+        )
+        .is_ok())
 }
 
 #[wasm_bindgen(start)]

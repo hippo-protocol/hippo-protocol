@@ -1,6 +1,6 @@
 {
   "name": "hippo-sdk",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "main": "./node/core.js",
   "module": "./bundle/core.js",
   "files": [

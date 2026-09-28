@@ -383,6 +383,39 @@ impl Commitment {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[wasm_bindgen]
+pub struct Bulletproof {
+    proof: String,
+    commitment: String,
+}
+
+#[wasm_bindgen]
+impl Bulletproof {
+    #[wasm_bindgen(constructor)]
+    pub fn new(proof: String, commitment: String) -> Self {
+        Bulletproof { proof, commitment }
+    }
+    #[wasm_bindgen]
+    pub fn to_object(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self).unwrap()
+    }
+    #[wasm_bindgen]
+    pub fn from_object(object: JsValue) -> Bulletproof {
+        serde_wasm_bindgen::from_value(object)
+            .map_err(|e| JsValue::from_str(&format!("Failed to deserialize: {}", e)))
+            .unwrap()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn proof(&self) -> String {
+        self.proof.clone()
+    }
+    #[wasm_bindgen(getter)]
+    pub fn commitment(&self) -> String {
+        self.commitment.clone()
+    }
+}
+
 #[derive(Serialize, Deserialize, Copy, Debug, Clone)]
 #[wasm_bindgen]
 pub enum EncodingType {
