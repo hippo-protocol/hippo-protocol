@@ -1,4 +1,4 @@
-FROM golang:1.24.0-bullseye AS build-env
+FROM golang:1.25.8-bookworm AS build-env
 
 # Install minimum necessary dependencies,
 ENV PACKAGES make git gcc
@@ -15,7 +15,7 @@ WORKDIR /src/hippo-protocol
 RUN make clean && make build
 
 # Final image
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 # Copy over binaries from the build-env
 COPY --from=build-env /src/hippo-protocol/build/hippod /usr/bin/hippod
